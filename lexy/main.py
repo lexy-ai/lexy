@@ -5,7 +5,6 @@ from lexy.core.config import settings
 from lexy.api.router import lexy_api
 from lexy.db.init_db import init_db
 from lexy.db.session import create_db_and_tables
-from lexy.core import events
 
 
 app = FastAPI(
