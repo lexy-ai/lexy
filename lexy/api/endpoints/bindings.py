@@ -1,0 +1,88 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
+from lexy.db.session import get_session
+from lexy.models.binding import (
+    TransformerIndexBinding,
+    TransformerIndexBindingCreate,
+    TransformerIndexBindingUpdate
+)
+
+
+router = APIRouter()
+
+
+@router.get("/bindings",
+            response_model=list[TransformerIndexBinding],
+            status_code=status.HTTP_200_OK,
+            name="get_bindings",
+            description="Get all bindings")
+async def get_bindings(session: AsyncSession = Depends(get_session)) -> list[TransformerIndexBinding]:
+    result = await session.execute(select(TransformerIndexBinding))
+    bindings = result.scalars().all()
+    return bindings
+
+
+@router.post("/bindings",
+             status_code=status.HTTP_201_CREATED,
+             name="add_binding",
+             description="Create a new binding")
+async def add_binding(binding: TransformerIndexBindingCreate,
+                      session: AsyncSession = Depends(get_session)) -> TransformerIndexBinding:
+    binding = TransformerIndexBinding(**binding.dict())
+    session.add(binding)
+    await session.commit()
+    await session.refresh(binding)
+    return binding
+
+
+@router.get("/bindings/{binding_id}",
+            response_model=TransformerIndexBinding,
+            status_code=status.HTTP_200_OK,
+            name="get_binding",
+            description="Get a binding")
+async def get_binding(binding_id: int, session: AsyncSession = Depends(get_session)) -> TransformerIndexBinding:
+    result = await session.execute(select(TransformerIndexBinding).where(TransformerIndexBinding.binding_id ==
+                                                                         binding_id))
+    binding = result.scalars().first()
+    if not binding:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Binding not found")
+    return binding
+
+
+@router.patch("/bindings/{binding_id}",
+              response_model=TransformerIndexBinding,
+              status_code=status.HTTP_200_OK,
+              name="update_binding",
+              description="Update a binding")
+async def update_binding(binding_id: int, binding: TransformerIndexBindingUpdate,
+                         session: AsyncSession = Depends(get_session)) -> TransformerIndexBinding:
+    result = await session.execute(select(TransformerIndexBinding).where(TransformerIndexBinding.binding_id ==
+                                                                         binding_id))
+    db_binding = result.scalars().first()
+    if not db_binding:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Binding not found")
+    update_data = binding.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_binding, key, value)
+    session.add(db_binding)
+    await session.commit()
+    await session.refresh(db_binding)
+    return db_binding
+
+
+@router.delete("/bindings/{binding_id}",
+               status_code=status.HTTP_200_OK,
+               name="delete_binding",
+               description="Delete a binding")
+async def delete_binding(binding_id: int, session: AsyncSession = Depends(get_session)):
+    result = await session.execute(select(TransformerIndexBinding).where(TransformerIndexBinding.binding_id ==
+                                                                         binding_id))
+    binding = result.scalars().first()
+    if not binding:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Binding not found")
+    await session.delete(binding)
+    await session.commit()
+    return {"Say": "Binding deleted!"}
+

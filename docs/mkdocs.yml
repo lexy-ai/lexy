@@ -1,0 +1,27 @@
+site_name: Lexy AI
+
+theme:
+  name: material
+  icon:
+    logo: material/wizard-hat
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      primary: indigo
+      accent: pink
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: indigo
+      accent: pink
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+  markdown_extensions:
+    - pymdownx.emoji:
+        emoji_index: !!python/name:materialx.emoji.twemoji
+        emoji_generator: !!python/name:materialx.emoji.to_svg

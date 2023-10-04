@@ -1,0 +1,12 @@
+### Send POST request with json body
+POST http://localhost:9900/documents
+Content-Type: application/json
+
+[
+  {
+    "title": "My first document",
+    "content": "This is my very first document and I'm very excited about it!"
+  }
+]
+
+###
