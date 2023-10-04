@@ -117,4 +117,4 @@ volumes:
 
 networks:
   my-net:
-    external: true
+    external: false

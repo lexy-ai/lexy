@@ -1,12 +1,12 @@
 # SOURCE: https://gist.github.com/runeb/ed1a64859a7c762d9b6f5d41a8c63521
 FROM postgres:15.4-bullseye
 
-RUN apt-get update && \
-    apt-get upgrade -y
+RUN apt-get update
 RUN apt-get install -y git build-essential postgresql-server-dev-15
 
 # Clone and install pg_embedding
-RUN git clone https://github.com/neondatabase/pg_embedding.git
+# Make the operation idempotent to avoid issues when Docker reuses partial images
+RUN if [ ! -d "pg_embedding/.git" ]; then git clone https://github.com/neondatabase/pg_embedding.git && echo "Repo cloned"; else echo "Repo exists"; fi
 RUN cd pg_embedding && \
     make && \
     make install
