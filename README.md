@@ -12,22 +12,7 @@ git clone https://github.com/lexy-ai/lexy.git
 
 ### Install dependencies
 
-Python 3.11 or greater is required. 
-
 ```Shell
-# create a virtualenv
-python3 -m venv venv 
-source venv/bin/activate
-
-# install poetry
-pip install poetry
-
-# install dev dependencies and extras
-poetry install --no-root --with test,docs -E "lexy_transformers"
-
-# install lexy in editable mode
-pip install -e .
-
 # initialize .env file
 touch .env
 
