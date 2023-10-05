@@ -29,7 +29,6 @@ services:
       - my-net
 
   db_postgres:
-    image: postgres:15.4-bullseye
     hostname: db_postgres
     container_name: lexy-postgres
     restart: always
