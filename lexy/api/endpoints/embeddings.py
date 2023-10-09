@@ -7,7 +7,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from lexy.db.session import get_session
 from lexy.models.document import Document
 from lexy.models.embedding import Embedding, EmbeddingCreate
-from lexy.transformers.embeddings import text_embeddings
+from lexy.transformers.embeddings import custom_transformer, get_default_transformer
 
 
 router = APIRouter()
@@ -44,7 +44,8 @@ async def add_embeddings(embeddings: list[EmbeddingCreate], session: AsyncSessio
              name="query_embeddings",
              description="Query for similar documents")
 async def query_embeddings(query_string: str, k: int = 5, session: AsyncSession = Depends(get_session)) -> dict:
-    task = text_embeddings.apply_async(args=[query_string], priority=10)
+    doc = Document(content=query_string)
+    task = custom_transformer.apply_async(args=[doc, get_default_transformer()], priority=10)
     result = task.get()
     query_embedding = result.tolist()
     search_result = await session.execute(
