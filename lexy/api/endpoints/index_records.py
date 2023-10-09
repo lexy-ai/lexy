@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import asc, func, select
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, selectinload
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -42,20 +42,20 @@ async def query_records(query_string: str, k: int = 5, query_field: str = "embed
                         index_id: str = "default_text_embeddings", session: AsyncSession = Depends(get_session)) \
         -> dict:
 
-    # get embedding for query string
-    doc = Document(content=query_string)
-    transformer_result = await session.execute(select(Transformer).where(Transformer.transformer_id == "text.embeddings.minilm"))
-    transformer = transformer_result.scalar_one()
-    task = custom_transformer.apply_async(args=[doc, transformer.code], priority=10)
-    result = task.get()
-    query_embedding = result.tolist()
-
     # get index table
-    result = await session.execute(select(Index).where(Index.index_id == index_id))
+    result = await session.execute(select(Index).where(Index.index_id == index_id).options(selectinload(Index.transformer_bindings)))
     index = result.scalars().first()
     if not index:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Index '{index_id}' not found")
     index_tbl = SQLModel.metadata.tables.get(index.index_table_name)
+
+    # get embedding for query string
+    doc = Document(content=query_string)
+    transformer_result = await session.execute(select(Transformer).where(Transformer.transformer_id == index.transformer_bindings[0].transformer_id))
+    transformer = transformer_result.scalar_one()
+    task = custom_transformer.apply_async(args=[doc, transformer.code], priority=10)
+    result = task.get()
+    query_embedding = result.tolist()
 
     # get query column and index fields to return
     query_column = index_tbl.c.get(query_field, None)
