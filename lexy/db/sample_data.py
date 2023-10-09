@@ -55,8 +55,14 @@ sample_data = {
     },
     "transformer_1": {
         "transformer_id": "text.embeddings.minilm",
-        "path": "lexy.transformers.embeddings.text_embeddings",
-        "description": "Text embeddings using Hugging Face model 'sentence-transformers/all-MiniLM-L6-v2'"
+        "description": "Text embeddings using Hugging Face model 'sentence-transformers/all-MiniLM-L6-v2'",
+        "code": """import torch
+from sentence_transformers import SentenceTransformer
+torch.set_num_threads(1)
+model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+                       
+def transform(document):
+    return model.encode([document.content], batch_size=len([document.content]))"""
     },
     "index_1": {
         "index_id": "default_text_embeddings",

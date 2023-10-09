@@ -11,7 +11,7 @@ from lexy.db.session import get_session
 from lexy.models.document import Document
 from lexy.models.transformer import Transformer, TransformerCreate, TransformerUpdate
 from lexy.transformers.counter import count_words
-from lexy.transformers.embeddings import get_chunks, just_split, custom_transformer, get_default_transformer
+from lexy.transformers.embeddings import get_chunks, just_split
 
 
 router = APIRouter()
@@ -86,32 +86,6 @@ async def delete_transformer(transformer_id: str, session: AsyncSession = Depend
     await session.delete(transformer)
     await session.commit()
     return {"Say": "Transformer deleted!"}
-
-
-@router.post("/embed/string",
-             response_model=dict,
-             status_code=status.HTTP_200_OK,
-             name="embed_string",
-             description="Get embeddings for query string")
-async def embed_string(string: str) -> dict:
-    doc = Document(content=string)
-    task = custom_transformer.apply_async(args=[doc, get_default_transformer()], priority=10)
-    result = task.get()
-    return {"embedding": result.tolist()}
-
-
-@router.post("/embed/documents",
-             response_model=dict,
-             status_code=status.HTTP_202_ACCEPTED,
-             name="embed_documents",
-             description="Create embeddings for a list of documents")
-async def embed_documents(documents: List[Document], index_id: str = "default_text_embeddings") -> dict:
-    tasks = []
-    for doc in documents:
-        task = custom_transformer.apply_async(args=[doc, get_default_transformer()], priority=10)
-        tasks.append({"task_id": task.id, "document_id": doc.document_id})
-    return {"tasks": tasks}
-
 
 @router.post("/count",
              response_model=dict,

@@ -13,11 +13,10 @@ class TransformerBase(SQLModel):
         max_length=255,
         regex=r"^[a-zA-Z][a-zA-Z0-9_.]+$"
     )
-    path: Optional[str] = Field(
+    code: str = Field(
         default=None,
         min_length=1,
-        max_length=255,
-        regex=r"^[a-zA-Z][a-zA-Z0-9_.]+$"
+        max_length=255*255,
     )
     description: Optional[str] = None
 

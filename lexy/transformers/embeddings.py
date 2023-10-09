@@ -9,17 +9,6 @@ from lexy.models.document import Document
 torch.set_num_threads(1)
 model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
-def get_default_transformer():
-    return """
-import torch
-from sentence_transformers import SentenceTransformer
-torch.set_num_threads(1)
-model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-                       
-def transform(document):
-    return model.encode([document.content], batch_size=len([document.content]))
-"""
-
 @shared_task(name="custom_transformer")
 def custom_transformer(document: Document, transformer: str) -> list[dict]:
     """ Apply a custom transformer to a document.

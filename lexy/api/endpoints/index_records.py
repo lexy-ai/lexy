@@ -7,7 +7,8 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from lexy.db.session import get_session
 from lexy.models.document import Document
 from lexy.models.index import Index
-from lexy.transformers.embeddings import custom_transformer, get_default_transformer
+from lexy.transformers.embeddings import custom_transformer
+from lexy.models.transformer import Transformer
 
 
 router = APIRouter()
@@ -43,7 +44,9 @@ async def query_records(query_string: str, k: int = 5, query_field: str = "embed
 
     # get embedding for query string
     doc = Document(content=query_string)
-    task = custom_transformer.apply_async(args=[doc, get_default_transformer()], priority=10)
+    transformer_result = await session.execute(select(Transformer).where(Transformer.transformer_id == "text.embeddings.minilm"))
+    transformer = transformer_result.scalar_one()
+    task = custom_transformer.apply_async(args=[doc, transformer.code], priority=10)
     result = task.get()
     query_embedding = result.tolist()
 
