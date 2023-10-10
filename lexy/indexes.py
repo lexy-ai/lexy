@@ -94,7 +94,7 @@ TBLNAME_TO_CLASS = map_tablename_to_class(SQLModel)
 # TODO: add hnsw index type (e.g., cosine, euclidean, etc.) to DDL statement
 class IndexManager(object):
 
-    _db: Session | None
+    _db: Session | None = None
     index_models = {}
     TBLNAME_TO_CLASS = TBLNAME_TO_CLASS
 
