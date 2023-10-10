@@ -9,7 +9,7 @@ from pydantic import create_model
 from sqlalchemy import Column, DDL, event, inspect, REAL
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import sessionmaker
-from sqlmodel import ARRAY, SQLModel, Field
+from sqlmodel import ARRAY, SQLModel, Field, Session, select
 
 from lexy.db.session import sync_engine
 from lexy.models.binding import TransformerIndexBinding
@@ -19,7 +19,7 @@ from lexy.models.index_record import IndexRecordBaseTable
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-SyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
+SyncSessionLocal = sessionmaker(class_=Session, autocommit=False, autoflush=False, bind=sync_engine)
 insp = inspect(sync_engine)
 
 LEXY_INDEX_FIELD_TYPES: Dict = {
@@ -94,19 +94,21 @@ TBLNAME_TO_CLASS = map_tablename_to_class(SQLModel)
 # TODO: add hnsw index type (e.g., cosine, euclidean, etc.) to DDL statement
 class IndexManager(object):
 
-    _db = None
+    _db: Session | None = None
     index_models = {}
     TBLNAME_TO_CLASS = TBLNAME_TO_CLASS
 
+    # TODO: Make session management more robust, specifically by
+    # ensuring that distinct API requests don't use the same session
     @property
-    def db(self):
+    def db(self) -> Session:
         if self._db is None:
             self._db = SyncSessionLocal()
         return self._db
 
     def get_indexes(self) -> list[Index]:
         """ Get all indexes """
-        indexes = self.db.query(Index).all()
+        indexes = self.db.exec(select(Index)).all()
         return indexes
 
     def get_index(self, index_id: str) -> Index:
@@ -121,7 +123,7 @@ class IndexManager(object):
         Raises:
             ValueError: if index is not found
         """
-        index = self.db.query(Index).filter(Index.index_id == index_id).first()
+        index = self.db.exec(select(Index).filter(Index.index_id == index_id)).first()
         if not index:
             raise ValueError(f"Index {index_id} not found")
         return index
