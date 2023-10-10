@@ -188,7 +188,7 @@ class IndexManager(object):
                 fd_info = Field(sa_column=Column(ARRAY(REAL)))
             else:
                 fd_type = LEXY_INDEX_FIELD_TYPES.get(fv['type'])
-                if fv['optional'] is True:
+                if 'optional' in fv and fv['optional'] is True:
                     fd_type = Optional[fd_type]
 
                 if fv['type'] in ['dict', 'object', 'list', 'array']:
