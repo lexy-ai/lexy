@@ -9,7 +9,7 @@ from pydantic import create_model
 from sqlalchemy import Column, DDL, event, inspect, REAL
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import sessionmaker
-from sqlmodel import ARRAY, SQLModel, Field, Session
+from sqlmodel import ARRAY, SQLModel, Field, Session, select
 
 from lexy.db.session import sync_engine
 from lexy.models.binding import TransformerIndexBinding
@@ -106,7 +106,7 @@ class IndexManager(object):
 
     def get_indexes(self) -> list[Index]:
         """ Get all indexes """
-        indexes = self.db.query(Index).all()
+        indexes = self.db.exec(select(Index)).all()
         return indexes
 
     def get_index(self, index_id: str) -> Index:
@@ -121,7 +121,7 @@ class IndexManager(object):
         Raises:
             ValueError: if index is not found
         """
-        index = self.db.query(Index).filter(Index.index_id == index_id).first()
+        index = self.db.exec(select(Index).filter(Index.index_id == index_id)).first()
         if not index:
             raise ValueError(f"Index {index_id} not found")
         return index
