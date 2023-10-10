@@ -1,5 +1,5 @@
 serve-docs:
-	(cd docs && mkdocs serve)
+	mkdocs serve -f docs/mkdocs.yml
 
 recreate-queues:
 	docker exec lexy-queue rabbitmqctl stop_app
