@@ -9,7 +9,7 @@ from pydantic import create_model
 from sqlalchemy import Column, DDL, event, inspect, REAL
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import sessionmaker
-from sqlmodel import ARRAY, SQLModel, Field
+from sqlmodel import ARRAY, SQLModel, Field, Session
 
 from lexy.db.session import sync_engine
 from lexy.models.binding import TransformerIndexBinding
@@ -19,7 +19,7 @@ from lexy.models.index_record import IndexRecordBaseTable
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-SyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
+SyncSessionLocal = sessionmaker(class_=Session, autocommit=False, autoflush=False, bind=sync_engine)
 insp = inspect(sync_engine)
 
 LEXY_INDEX_FIELD_TYPES: Dict = {
@@ -94,7 +94,7 @@ TBLNAME_TO_CLASS = map_tablename_to_class(SQLModel)
 # TODO: add hnsw index type (e.g., cosine, euclidean, etc.) to DDL statement
 class IndexManager(object):
 
-    _db = None
+    _db: Session
     index_models = {}
     TBLNAME_TO_CLASS = TBLNAME_TO_CLASS
 
