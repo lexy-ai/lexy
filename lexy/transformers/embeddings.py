@@ -1,3 +1,4 @@
+from typing import Any
 from celery import shared_task
 
 import torch
@@ -21,14 +22,14 @@ def transform(document):
 """
 
 @shared_task(name="custom_transformer")
-def custom_transformer(document: Document, transformer: str) -> list[dict]:
+def custom_transformer(document: Document, transformer: str) -> list[dict['str', Any]]:
     """ Apply a custom transformer to a document.
     
     Args:
         document: document to transform
         
     Returns:
-        list[dict]: list of results"""
+        list[dict['str', Any]]: list of results"""
     
     __return__ = []
     transformer_with_return = f"""
