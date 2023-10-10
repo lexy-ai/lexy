@@ -94,12 +94,14 @@ TBLNAME_TO_CLASS = map_tablename_to_class(SQLModel)
 # TODO: add hnsw index type (e.g., cosine, euclidean, etc.) to DDL statement
 class IndexManager(object):
 
-    _db: Session
+    _db: Session | None
     index_models = {}
     TBLNAME_TO_CLASS = TBLNAME_TO_CLASS
 
+    # TODO: Make session management more robust, specifically by
+    # ensuring that distinct API requests don't use the same session
     @property
-    def db(self):
+    def db(self) -> Session:
         if self._db is None:
             self._db = SyncSessionLocal()
         return self._db
