@@ -1,27 +1,44 @@
-from typing import Tuple
-
+from typing import Any
 from celery import shared_task
 
 import torch
 from sentence_transformers import SentenceTransformer
 
+from lexy.models.document import Document
+
 
 torch.set_num_threads(1)
 model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
 
+def get_default_transformer():
+    return """
+import torch
+from sentence_transformers import SentenceTransformer
+torch.set_num_threads(1)
+model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+                       
+def transform(document):
+    return model.encode([document.content], batch_size=len([document.content]))
+"""
 
-@shared_task(name="lexy.transformers.embeddings.text_embeddings")
-def text_embeddings(sentences: list[str]) -> torch.Tensor:
-    """ Embed sentences using SentenceTransformer.
-
+@shared_task(name="custom_transformer")
+def custom_transformer(document: Document, transformer: str) -> list[dict['str', Any]]:
+    """ Apply a custom transformer to a document.
+    
     Args:
-        sentences: list of sentences to embed
-
+        document: document to transform
+        
     Returns:
-        torch.Tensor: embeddings
+        list[dict['str', Any]]: list of results"""
+    
+    __return__ = []
+    transformer_with_return = f"""
+{transformer}
 
-    """
-    return model.encode(sentences, batch_size=len(sentences))
+__return__ = transform(document)"""
+    vars = {"document": document}
+    exec(transformer_with_return, None, vars)
+    return vars['__return__']
 
 
 @shared_task(name="lexy.transformers.embeddings.get_chunks")

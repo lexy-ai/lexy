@@ -11,7 +11,7 @@ from lexy.db.session import get_session
 from lexy.models.document import Document
 from lexy.models.transformer import Transformer, TransformerCreate, TransformerUpdate
 from lexy.transformers.counter import count_words
-from lexy.transformers.embeddings import get_chunks, just_split, text_embeddings
+from lexy.transformers.embeddings import get_chunks, just_split, custom_transformer, get_default_transformer
 
 
 router = APIRouter()
@@ -94,7 +94,8 @@ async def delete_transformer(transformer_id: str, session: AsyncSession = Depend
              name="embed_string",
              description="Get embeddings for query string")
 async def embed_string(string: str) -> dict:
-    task = text_embeddings.apply_async(args=[string])
+    doc = Document(content=string)
+    task = custom_transformer.apply_async(args=[doc, get_default_transformer()], priority=10)
     result = task.get()
     return {"embedding": result.tolist()}
 
@@ -107,10 +108,7 @@ async def embed_string(string: str) -> dict:
 async def embed_documents(documents: List[Document], index_id: str = "default_text_embeddings") -> dict:
     tasks = []
     for doc in documents:
-        task = text_embeddings.apply_async(
-            args=[doc.content],
-            link=save_result_to_index.s(document_id=doc.document_id, text=doc.content, index_id=index_id)
-        )
+        task = custom_transformer.apply_async(args=[doc, get_default_transformer()], priority=10)
         tasks.append({"task_id": task.id, "document_id": doc.document_id})
     return {"tasks": tasks}
 

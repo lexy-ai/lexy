@@ -7,7 +7,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from lexy.db.session import get_session
 from lexy.models.document import Document
 from lexy.models.index import Index
-from lexy.transformers.embeddings import text_embeddings
+from lexy.transformers.embeddings import custom_transformer, get_default_transformer
 
 
 router = APIRouter()
@@ -42,7 +42,8 @@ async def query_records(query_string: str, k: int = 5, query_field: str = "embed
         -> dict:
 
     # get embedding for query string
-    task = text_embeddings.apply_async(args=[query_string], priority=10)
+    doc = Document(content=query_string)
+    task = custom_transformer.apply_async(args=[doc, get_default_transformer()], priority=10)
     result = task.get()
     query_embedding = result.tolist()
 
