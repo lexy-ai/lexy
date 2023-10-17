@@ -8,6 +8,7 @@ from lexy.models.binding import (
     TransformerIndexBindingCreate,
     TransformerIndexBindingUpdate
 )
+from lexy.core.events import process_new_binding
 
 
 router = APIRouter()
@@ -28,13 +29,18 @@ async def get_bindings(session: AsyncSession = Depends(get_session)) -> list[Tra
              status_code=status.HTTP_201_CREATED,
              name="add_binding",
              description="Create a new binding")
-async def add_binding(binding: TransformerIndexBindingCreate,
-                      session: AsyncSession = Depends(get_session)) -> TransformerIndexBinding:
+async def add_binding(binding: TransformerIndexBindingCreate, session: AsyncSession = Depends(get_session)) -> dict:
     binding = TransformerIndexBinding(**binding.dict())
     session.add(binding)
     await session.commit()
     await session.refresh(binding)
-    return binding
+    processed_binding, tasks = await process_new_binding(binding)
+    # now commit the binding again and refresh it - status should be updated
+    session.add(processed_binding)
+    await session.commit()
+    await session.refresh(processed_binding)
+    response = {"binding": processed_binding, "tasks": tasks}
+    return response
 
 
 @router.get("/bindings/{binding_id}",

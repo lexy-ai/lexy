@@ -43,7 +43,8 @@ class TransformerIndexBinding(TransformerIndexBindingBase, table=True):
         sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now()),
     )
     status: str = Field(default=BindingStatus.PENDING, nullable=False)
-    collection: Collection = Relationship(back_populates="transformer_index_bindings")
+    collection: Collection = Relationship(back_populates="transformer_index_bindings",
+                                          sa_relationship_kwargs={'lazy': 'selectin'})
     transformer: Transformer = Relationship(back_populates="index_bindings",
                                             sa_relationship_kwargs={'lazy': 'selectin'})
     index: Index = Relationship(back_populates="transformer_bindings", sa_relationship_kwargs={'lazy': 'selectin'})

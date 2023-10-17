@@ -40,6 +40,7 @@ def add_sample_data_to_db(session=db):
         logger.info("Transformer data already exists")
     else:
         session.add(models.Transformer(**sample_data["transformer_1"]))
+        session.add(models.Transformer(**sample_data["transformer_2"]))
         session.commit()
     if session.query(models.Index).count() > 0:
         logger.info("Index data already exists")

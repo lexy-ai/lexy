@@ -20,6 +20,7 @@ async def add_sample_data_to_db(session: AsyncSession):
     session.add(Document(**sample_data["document_6"]))
     await session.commit()
     session.add(Transformer(**sample_data["transformer_1"]))
+    session.add(Transformer(**sample_data["transformer_2"]))
     await session.commit()
     session.add(Index(**sample_data["index_1"]))
     await session.commit()

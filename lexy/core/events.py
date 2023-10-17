@@ -2,7 +2,7 @@ import importlib
 import logging
 
 from lexy.models import Document, TransformerIndexBinding
-from lexy.core.celery_tasks import save_result_to_index
+from lexy.core.celery_tasks import save_result_to_index, save_records_to_index
 from lexy.indexes import index_manager
 
 
@@ -60,6 +60,7 @@ async def generate_tasks_for_document(doc: Document) -> list[dict]:
     return tasks
 
 
+# TODO: this should move to lexy.indexes.IndexManager
 def create_new_index_table(index_id: str):
     """ Create a new index model and its associated table (requires that the index row already exists in the database).
 
@@ -80,10 +81,10 @@ def create_new_index_table(index_id: str):
         index_model = index_manager.create_index_model(index)
     if index_manager.table_exists(index.index_table_name):
         logger.warning(f"Index table '{index.index_table_name}' already exists")
-    index_model.metadata.create_all(index_manager.sync_engine)
+    index_model.metadata.create_all(index_manager.db.bind.engine)
 
 
-def process_new_binding(binding: TransformerIndexBinding, create_index_table: bool = False) \
+async def process_new_binding(binding: TransformerIndexBinding, create_index_table: bool = False) \
         -> tuple[TransformerIndexBinding, list[dict]]:
     """ Process a new transformer index binding.
 
@@ -102,6 +103,19 @@ def process_new_binding(binding: TransformerIndexBinding, create_index_table: bo
     """
     logger.info(f"Processing new transformer index binding {binding}")
 
+    # check if binding has a valid transformer
+    if binding.transformer is None:
+        raise Exception(f"Binding {binding} does not have a transformer associated with it")
+    if binding.transformer.path is None:
+        raise Exception(f"Binding {binding} does not have a valid transformer path associated with it")
+
+    # import the transformer function
+    # TODO: just import the function from celery?
+    tfr_mod_name, tfr_func_name = binding.transformer.path.rsplit('.', 1)
+    tfr_module = importlib.import_module(tfr_mod_name)
+    transformer_func = getattr(tfr_module, tfr_func_name)
+
+    # check if binding has a valid index
     if binding.index is None:
         logger.info(f"Binding {binding} does not have an index associated with it")
         # create index table
@@ -118,12 +132,6 @@ def process_new_binding(binding: TransformerIndexBinding, create_index_table: bo
     else:
         documents = binding.collection.documents
 
-    # import the transformer function
-    # TODO: just import the function from celery?
-    tfr_mod_name, tfr_func_name = binding.transformer.path.rsplit('.', 1)
-    tfr_module = importlib.import_module(tfr_mod_name)
-    transformer_func = getattr(tfr_module, tfr_func_name)
-
     # initiate list of tasks
     tasks = []
 
@@ -133,14 +141,16 @@ def process_new_binding(binding: TransformerIndexBinding, create_index_table: bo
         task = transformer_func.apply_async(
             args=[doc.content],
             kwargs=binding.transformer_params,
-            link=save_result_to_index.s(document_id=doc.document_id,
-                                        text=doc.content,
-                                        index_id=binding.index_id)
+            link=save_records_to_index.s(document_id=doc.document_id,
+                                         text=doc.content,
+                                         index_id=binding.index_id)
         )
         tasks.append({"task_id": task.id, "document_id": doc.document_id})
 
     # switch binding status to 'on'
-    index_manager.switch_binding_status(binding, 'on')
+    prev_status = binding.status
+    binding.status = 'on'
+    logger.info(f"Set status for binding {binding}: from '{prev_status}' to 'on'")
 
     logger.info(f"Created {len(tasks)} tasks for binding {binding}: "
                 f"[{', '.join([t['task_id'] for t in tasks])}]")
