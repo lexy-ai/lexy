@@ -2,7 +2,7 @@ import importlib
 import logging
 
 from lexy.models import Document, TransformerIndexBinding
-from lexy.core.celery_tasks import save_result_to_index, save_records_to_index
+from lexy.core.celery_tasks import save_records_to_index
 from lexy.indexes import index_manager
 
 
@@ -49,9 +49,9 @@ async def generate_tasks_for_document(doc: Document) -> list[dict]:
         task = transformer_func.apply_async(
             args=[doc.content],
             kwargs=binding.transformer_params,
-            link=save_result_to_index.s(document_id=doc.document_id,
-                                        text=doc.content,
-                                        index_id=binding.index_id)
+            link=save_records_to_index.s(document_id=doc.document_id,
+                                         text=doc.content,
+                                         index_id=binding.index_id)
         )
         tasks.append({"task_id": task.id, "document_id": doc.document_id})
 

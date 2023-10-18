@@ -9,27 +9,21 @@ Sources:
         - https://stackoverflow.com/questions/60281347/is-it-possible-to-extend-celery-so-results-would-be-store-to-several-mongodb-co
         - https://docs.celeryq.dev/en/stable/userguide/configuration.html#override-backends
 """
-
 from typing import Any
 from uuid import UUID
 
+import numpy as np
 from celery import current_app as celery, Task
 from celery.utils.log import get_logger, get_task_logger
 from sqlalchemy.orm import sessionmaker
 
 from lexy.db.session import sync_engine
 from lexy.indexes import index_manager
-# from lexy.indexes import IndexManager
-# from lexy.models.embedding import Embedding
 
 
 logger = get_logger(__name__)
 task_logger = get_task_logger(__name__)
 SyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
-
-
-# index_mgr = IndexManager()
-# index_mgr.create_index_models()
 
 
 class DatabaseTask(Task):
@@ -69,6 +63,28 @@ class DatabaseTask(Task):
 #     self.db.commit()
 
 
+def convert_arrays_to_lists(d: dict) -> dict:
+    """ Convert numpy arrays to lists in a dictionary.
+
+    Args:
+        d: dictionary to convert
+
+    Returns:
+        dict: dictionary with numpy arrays converted to lists
+
+    Examples:
+        >>> convert_arrays_to_lists({"a": np.array([1, 2, 3]), "b": {"c": np.array([4, 5, 6])}})
+        {'a': [1, 2, 3], 'b': {'c': [4, 5, 6]}}
+
+    """
+    for key, value in d.items():
+        if isinstance(value, np.ndarray):
+            d[key] = value.tolist()
+        elif isinstance(value, dict):
+            d[key] = convert_arrays_to_lists(value)
+    return d
+
+
 @celery.task(base=DatabaseTask, bind=True, name="lexy.db.save_result_to_index")
 def save_result_to_index(self, res, document_id, text, index_id):
     """ Save the result of a transformer to an index. """
@@ -91,6 +107,7 @@ def save_records_to_index(self, records: list[dict[str, Any]], document_id: UUID
     # noinspection PyPep8Naming
     IndexClass = index_manager.index_models[index_id]
     for record in records:
+        record = convert_arrays_to_lists(record)
         self.db.add(
             IndexClass(document_id=document_id, text=text, task_id=self.request.parent_id, **record)
         )
