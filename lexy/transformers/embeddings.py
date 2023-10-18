@@ -1,10 +1,9 @@
-from typing import Tuple
-
 from celery import shared_task
 
 import torch
+from numpy import ndarray
 from sentence_transformers import SentenceTransformer
-
+from torch import Tensor
 
 torch.set_num_threads(1)
 model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
@@ -22,6 +21,21 @@ def text_embeddings(sentences: list[str]) -> torch.Tensor:
 
     """
     return model.encode(sentences, batch_size=len(sentences))
+
+
+@shared_task(name="lexy.transformers.embeddings.text_embeddings_transformer")
+def text_embeddings_transformer(sentences: list[str]) -> list[dict[str, list[Tensor] | ndarray | Tensor]]:
+    """ Embed sentences using SentenceTransformer.
+
+    Args:
+        sentences: list of sentences to embed
+
+    Returns:
+        torch.Tensor: embeddings
+
+    """
+    res = {'embedding': model.encode(sentences, batch_size=len(sentences))}
+    return [res]
 
 
 @shared_task(name="lexy.transformers.embeddings.get_chunks")

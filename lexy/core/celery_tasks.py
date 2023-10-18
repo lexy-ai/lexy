@@ -10,6 +10,9 @@ Sources:
         - https://docs.celeryq.dev/en/stable/userguide/configuration.html#override-backends
 """
 
+from typing import Any
+from uuid import UUID
+
 from celery import current_app as celery, Task
 from celery.utils.log import get_logger, get_task_logger
 from sqlalchemy.orm import sessionmaker
@@ -68,6 +71,7 @@ class DatabaseTask(Task):
 
 @celery.task(base=DatabaseTask, bind=True, name="lexy.db.save_result_to_index")
 def save_result_to_index(self, res, document_id, text, index_id):
+    """ Save the result of a transformer to an index. """
     task_logger.debug(f"Starting DB task 'save_result_to_index' for index {index_id} "
                       f"with task ID {self.request.id} and parent task ID {self.request.parent_id}")
     # noinspection PyPep8Naming
@@ -76,4 +80,18 @@ def save_result_to_index(self, res, document_id, text, index_id):
         # TODO: IndexClass needs to use kwargs from `index_fields`
         IndexClass(document_id=document_id, embedding=res.tolist(), text=text, task_id=self.request.parent_id)
     )
+    self.db.commit()
+
+
+@celery.task(base=DatabaseTask, bind=True, name="lexy.db.save_records_to_index")
+def save_records_to_index(self, records: list[dict[str, Any]], document_id: UUID, text: str, index_id: str):
+    """ Save the output of a transformer to an index. """
+    task_logger.debug(f"Starting DB task 'save_records_to_index' for index {index_id} "
+                      f"with task ID {self.request.id} and parent task ID {self.request.parent_id}")
+    # noinspection PyPep8Naming
+    IndexClass = index_manager.index_models[index_id]
+    for record in records:
+        self.db.add(
+            IndexClass(document_id=document_id, text=text, task_id=self.request.parent_id, **record)
+        )
     self.db.commit()

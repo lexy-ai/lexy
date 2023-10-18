@@ -58,6 +58,11 @@ sample_data = {
         "path": "lexy.transformers.embeddings.text_embeddings",
         "description": "Text embeddings using Hugging Face model 'sentence-transformers/all-MiniLM-L6-v2'"
     },
+    "transformer_2": {
+        "transformer_id": "text.counter.word_counter",
+        "path": "lexy.transformers.counter.word_counter",
+        "description": "Returns count of words and the longest word"
+    },
     "index_1": {
         "index_id": "default_text_embeddings",
         "description": "Text embeddings for default collection",

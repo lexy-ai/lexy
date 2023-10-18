@@ -1,3 +1,5 @@
+from typing import Any
+
 from celery import shared_task
 
 
@@ -24,3 +26,13 @@ def count_words(text: str) -> dict[str, int]:
         else:
             counts[word] = 1
     return counts
+
+
+@shared_task(name="lexy.transformers.counter.word_counter")
+def word_counter(text: str) -> list[dict[str, Any]]:
+    """ Testing a transformer. """
+    words = text.split()
+    word_count = len(words)
+    longest_word = max(words, key=len)
+    return [{"word_count": word_count, "longest_word": longest_word}]
+
