@@ -55,7 +55,7 @@ sample_data = {
     },
     "transformer_1": {
         "transformer_id": "text.embeddings.minilm",
-        "path": "lexy.transformers.embeddings.text_embeddings_transformer",
+        "path": "lexy.transformers.embeddings.text_embeddings",
         "description": "Text embeddings using Hugging Face model 'sentence-transformers/all-MiniLM-L6-v2'"
     },
     "transformer_2": {
@@ -143,7 +143,11 @@ sample_data = {
         "index_id": "default_text_embeddings",
         "description": "Default transformer-index binding",
         "execution_params": {},
-        "transformer_params": {},
+        "transformer_params": {
+            "lexy_index_fields": [
+                "embedding"
+            ]
+        },
         "filters": {}
     }
 }

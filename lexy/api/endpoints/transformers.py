@@ -11,7 +11,7 @@ from lexy.db.session import get_session
 from lexy.models.document import Document
 from lexy.models.transformer import Transformer, TransformerCreate, TransformerUpdate
 from lexy.transformers.counter import count_words
-from lexy.transformers.embeddings import get_chunks, just_split, text_embeddings, text_embeddings_transformer
+from lexy.transformers.embeddings import get_chunks, just_split, text_embeddings
 
 
 router = APIRouter()
@@ -104,11 +104,13 @@ async def embed_string(string: str) -> dict:
              status_code=status.HTTP_202_ACCEPTED,
              name="embed_documents",
              description="Create embeddings for a list of documents")
-async def embed_documents(documents: List[Document], index_id: str = "default_text_embeddings") -> dict:
+async def embed_documents(documents: List[Document], index_id: str = "default_text_embeddings",
+                          index_field: str = "embedding") -> dict:
     tasks = []
     for doc in documents:
-        task = text_embeddings_transformer.apply_async(
+        task = text_embeddings.apply_async(
             args=[doc.content],
+            kwargs={"lexy_index_fields": [index_field]},
             link=save_records_to_index.s(document_id=doc.document_id, text=doc.content, index_id=index_id)
         )
         tasks.append({"task_id": task.id, "document_id": doc.document_id})
