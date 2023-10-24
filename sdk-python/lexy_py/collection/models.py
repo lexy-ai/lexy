@@ -13,5 +13,5 @@ class Collection(BaseModel):
         regex=r"^[a-z0-9_-]+$"
     )
     description: Optional[str] = None
-    created_at: datetime = Optional[datetime]
-    updated_at: datetime = Optional[datetime]
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None

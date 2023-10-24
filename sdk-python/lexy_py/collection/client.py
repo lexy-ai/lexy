@@ -95,3 +95,55 @@ class CollectionClient:
         )
         r = await self.aclient.post("/collections", json=collection.dict(exclude_none=True))
         return Collection(**r.json())
+
+    def update_collection(self, collection_id: str, description: Optional[str] = None) -> Collection:
+        """ Synchronously update a collection.
+
+        Args:
+            collection_id (str): The ID of the collection to update.
+            description (Optional[str], optional): The description of the collection. Defaults to None.
+
+        Returns:
+            Collection: The updated collection.
+        """
+        collection = Collection(
+            collection_id=collection_id,
+            description=description
+        )
+        r = self.client.patch(f"/collections/{collection_id}", json=collection.dict(exclude_none=True))
+        return Collection(**r.json())
+
+    async def aupdate_collection(self, collection_id: str, description: Optional[str] = None) -> Collection:
+        """ Asynchronously update a collection.
+
+        Args:
+            collection_id (str): The ID of the collection to update.
+            description (Optional[str], optional): The description of the collection. Defaults to None.
+
+        Returns:
+            Collection: The updated collection.
+        """
+        collection = Collection(
+            collection_id=collection_id,
+            description=description
+        )
+        r = await self.aclient.patch(f"/collections/{collection_id}", json=collection.dict(exclude_none=True))
+        return Collection(**r.json())
+
+    def delete_collection(self, collection_id: str) -> dict:
+        """ Synchronously delete a collection.
+
+        Args:
+            collection_id (str): The ID of the collection to delete.
+        """
+        r = self.client.delete(f"/collections/{collection_id}")
+        return r.json()
+
+    async def adelete_collection(self, collection_id: str) -> dict:
+        """ Asynchronously delete a collection.
+
+        Args:
+            collection_id (str): The ID of the collection to delete.
+        """
+        r = await self.aclient.delete(f"/collections/{collection_id}")
+        return r.json()
