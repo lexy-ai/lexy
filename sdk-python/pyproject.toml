@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "lexy-py"
+version = "0.1.0"
+description = "A Python client for Lexy."
+authors = ["Reza Shabani"]
+license = "Apache 2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+httpx = "^0.24.1"
+pydantic = "^1.10"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.1"
+pytest-asyncio = "^0.21.1"
+pytest-httpx = "^0.24.0"
+pytest-mock = "^3.11.1"
+
+[build-system]
+requires = ["poetry>=1.2"]
+build-backend = "poetry.core.masonry.api"
