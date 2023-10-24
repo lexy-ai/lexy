@@ -4,6 +4,7 @@ import httpx
 
 from .settings import DEFAULT_BASE_URL
 from .collection.client import CollectionClient
+from .document.client import DocumentClient
 
 
 API_TIMEOUT = 10
@@ -30,6 +31,7 @@ class LexyClient:
         self.client = httpx.Client(base_url=self.base_url, timeout=API_TIMEOUT)
 
         self.collection = CollectionClient(self.aclient, self.client)
+        self.document = DocumentClient(self.aclient, self.client)
 
     async def __aenter__(self) -> "LexyClient":
         """ Async context manager entry point. """
@@ -78,11 +80,3 @@ class LexyClient:
     async def adelete(self, url: str, **kwargs) -> httpx.Response:
         """ Async DELETE request. """
         return await self.aclient.delete(url, **kwargs)
-
-    def get_bindings(self, **kwargs) -> httpx.Response:
-        """ Get all bindings. """
-        return self.get("/bindings", **kwargs)
-
-    async def aget_bindings(self, **kwargs) -> httpx.Response:
-        """ Async get all bindings. """
-        return await self.aget("/bindings", **kwargs)
