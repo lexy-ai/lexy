@@ -136,9 +136,9 @@ class DocumentClient:
 
         Args:
             document_id (str): The ID of the document to update.
-            title (Optional[str]): The new title of the document.
-            content (Optional[str]): The new content of the document.
-            meta (Optional[dict]): The new metadata for the document.
+            title (str, optional): The new title of the document.
+            content (str, optional): The new content of the document.
+            meta (dict, optional): The new metadata for the document.
 
         Returns:
             dict: A dictionary containing the updated document and its associated tasks.
@@ -153,9 +153,9 @@ class DocumentClient:
 
         Args:
             document_id (str): The ID of the document to update.
-            title (Optional[str]): The new title of the document.
-            content (Optional[str]): The new content of the document.
-            meta (Optional[dict]): The new metadata for the document.
+            title (str, optional): The new title of the document.
+            content (str, optional): The new content of the document.
+            meta (dict, optional): The new metadata for the document.
 
         Returns:
             dict: A dictionary containing the updated document and its associated tasks.
