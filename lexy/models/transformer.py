@@ -41,3 +41,4 @@ class TransformerCreate(TransformerBase):
 
 class TransformerUpdate(TransformerBase):
     description: Optional[str] = None
+    path: Optional[str] = None

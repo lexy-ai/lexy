@@ -6,6 +6,7 @@ from .settings import DEFAULT_BASE_URL
 from .collection.client import CollectionClient
 from .document.client import DocumentClient
 from .index.client import IndexClient
+from .transformer.client import TransformerClient
 
 
 API_TIMEOUT = 10
@@ -24,8 +25,11 @@ class LexyClient:
     base_url: str
     aclient: httpx.AsyncClient
     client: httpx.Client
+
     collection: CollectionClient
+    document: DocumentClient
     index: IndexClient
+    transformer: TransformerClient
 
     def __init__(self, base_url: str = DEFAULT_BASE_URL) -> None:
         self.base_url = base_url
@@ -35,6 +39,7 @@ class LexyClient:
         self.collection = CollectionClient(self.aclient, self.client)
         self.document = DocumentClient(self.aclient, self.client)
         self.index = IndexClient(self.aclient, self.client)
+        self.transformer = TransformerClient(self.aclient, self.client)
 
     async def __aenter__(self) -> "LexyClient":
         """ Async context manager entry point. """
