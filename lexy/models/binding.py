@@ -50,8 +50,12 @@ class TransformerIndexBinding(TransformerIndexBindingBase, table=True):
     index: Index = Relationship(back_populates="transformer_bindings", sa_relationship_kwargs={'lazy': 'selectin'})
 
     def __repr__(self):
-        return f"<TransformerIndexBinding id={self.binding_id}, status={self.status}, " \
-               f"collection_id={self.collection_id}, transformer_id={self.transformer_id}, index_id={self.index_id}>"
+        return f"<TransformerIndexBinding " \
+               f"id={self.binding_id}, " \
+               f"status={self.status}, " \
+               f"collection_id={self.collection_id}, " \
+               f"transformer_id={self.transformer_id}, " \
+               f"index_id={self.index_id}>"
 
 
 class TransformerIndexBindingCreate(TransformerIndexBindingBase):

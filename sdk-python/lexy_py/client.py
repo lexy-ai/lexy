@@ -3,6 +3,7 @@
 import httpx
 
 from .settings import DEFAULT_BASE_URL
+from .binding.client import BindingClient
 from .collection.client import CollectionClient
 from .document.client import DocumentClient
 from .index.client import IndexClient
@@ -26,6 +27,7 @@ class LexyClient:
     aclient: httpx.AsyncClient
     client: httpx.Client
 
+    binding: BindingClient
     collection: CollectionClient
     document: DocumentClient
     index: IndexClient
@@ -36,6 +38,7 @@ class LexyClient:
         self.aclient = httpx.AsyncClient(base_url=self.base_url, timeout=API_TIMEOUT)
         self.client = httpx.Client(base_url=self.base_url, timeout=API_TIMEOUT)
 
+        self.binding = BindingClient(self.aclient, self.client)
         self.collection = CollectionClient(self.aclient, self.client)
         self.document = DocumentClient(self.aclient, self.client)
         self.index = IndexClient(self.aclient, self.client)

@@ -63,8 +63,8 @@ class IndexClient:
         return Index(**r.json())
 
     def add_index(self, index_id: str, description: Optional[str] = None,
-                  index_table_schema: dict[str, Any] | None = None,
-                  index_fields: dict[str, Any] | None = None) -> Index:
+                  index_table_schema: Optional[dict[str, Any]] = None,
+                  index_fields: Optional[dict[str, Any]] = None) -> Index:
         """ Synchronously add an index.
 
         Args:
@@ -101,8 +101,8 @@ class IndexClient:
         return Index(**r.json())
 
     async def aadd_index(self, index_id: str, description: Optional[str] = None,
-                         index_table_schema: dict[str, Any] | None = None,
-                         index_fields: dict[str, Any] | None = None) -> Index:
+                         index_table_schema: Optional[dict[str, Any]] = None,
+                         index_fields: Optional[dict[str, Any]] = None) -> Index:
         """ Asynchronously add an index.
 
         Args:
@@ -157,8 +157,8 @@ class IndexClient:
         return r.json()
 
     def update_index(self, index_id: str, description: Optional[str] = None,
-                     index_table_schema: dict[str, Any] | None = None,
-                     index_fields: dict[str, Any] | None = None) -> Index:
+                     index_table_schema: Optional[dict[str, Any]] = None,
+                     index_fields: Optional[dict[str, Any]] = None) -> Index:
         """ Synchronously update an index.
 
         Args:
@@ -179,8 +179,8 @@ class IndexClient:
         return Index(**r.json())
 
     async def aupdate_index(self, index_id: str, description: Optional[str] = None,
-                            index_table_schema: dict[str, Any] | None = None,
-                            index_fields: dict[str, Any] | None = None) -> Index:
+                            index_table_schema: Optional[dict[str, Any]] = None,
+                            index_fields: Optional[dict[str, Any]] = None) -> Index:
         """ Asynchronously update an index.
 
         Args:
