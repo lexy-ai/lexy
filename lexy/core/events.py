@@ -134,15 +134,21 @@ async def process_new_binding(binding: TransformerIndexBinding, create_index_tab
 
     # check that the binding has lexy_index_fields defined
     if "lexy_index_fields" not in binding.transformer_params.keys():
-        logger.info(f"Binding {binding} does not have 'lexy_index_fields' defined in 'transformer_params'"
-                    f" - will attempt to set them using index fields")
+        logger.info(f"Binding {binding} does not have 'lexy_index_fields' defined in 'transformer_params'")
+        if len(binding.index.index_fields) > 0:
+            logger.info(f"Will assign them using 'index_fields' from index '{binding.index.index_id}'.")
 
-        # it seems this next line is required because binding.transformer_params is a JSON field
-        #   see https://github.com/sqlalchemy/sqlalchemy/discussions/6473
-        binding.transformer_params = dict(binding.transformer_params)
+            # it seems this next line is required because binding.transformer_params is a JSON field
+            #   see https://github.com/sqlalchemy/sqlalchemy/discussions/6473
+            binding.transformer_params = dict(binding.transformer_params)
 
-        binding.transformer_params["lexy_index_fields"] = list(binding.index.index_fields.keys())
-        logger.info(f"Updated binding.transformer_params: {binding.transformer_params}")
+            binding.transformer_params["lexy_index_fields"] = list(binding.index.index_fields.keys())
+            logger.info(f"Updated binding.transformer_params: {binding.transformer_params}")
+        else:
+            raise Exception(f"Binding {binding} does not have 'lexy_index_fields' defined in 'transformer_params' "
+                            f"and index '{binding.index.index_id}' does not have 'index_fields' defined. Either define "
+                            f"'lexy_index_fields' in 'transformer_params' or define 'index_fields' for index "
+                            f"'{binding.index.index_id}'.")
 
     # filter documents in the collection that match the binding filters
     if binding.filters:
