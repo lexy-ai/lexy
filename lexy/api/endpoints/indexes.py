@@ -4,6 +4,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from lexy.db.session import get_session
 from lexy.models.index import Index, IndexCreate, IndexUpdate
+from lexy.core.events import create_new_index_table
 
 
 router = APIRouter()
@@ -29,6 +30,7 @@ async def add_index(index: IndexCreate, session: AsyncSession = Depends(get_sess
     session.add(index)
     await session.commit()
     await session.refresh(index)
+    create_new_index_table(index_id=index.index_id)
     return index
 
 

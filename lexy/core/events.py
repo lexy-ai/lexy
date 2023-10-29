@@ -101,6 +101,11 @@ async def process_new_binding(binding: TransformerIndexBinding, create_index_tab
         tuple[TransformerIndexBinding, list[dict]]: The binding and the tasks that were created
 
     """
+    # TODO: update this function to potentially create the index object in the database if it doesn't exist. in this
+    #  case, require a value for "lexy_index_fields"
+    # TODO: if types are not specified, infer them from the transformer below using
+    #  `transformer_func.__wrapped__.__annotations__.get('return')`
+
     logger.info(f"Processing new transformer index binding {binding}")
 
     # check if binding has a valid transformer
@@ -120,13 +125,26 @@ async def process_new_binding(binding: TransformerIndexBinding, create_index_tab
         logger.info(f"Binding {binding} does not have an index associated with it")
         # create index table
         if create_index_table:
+            logger.info(f"Creating index table for binding {binding}")
             create_new_index_table(binding.index_id)
             # update binding
             binding.index = index_manager.get_index(binding.index_id)
         else:
             raise Exception(f"Binding {binding} does not have an index associated with it")
 
-    # create tasks for all documents in the collection that match the binding filters
+    # check that the binding has lexy_index_fields defined
+    if "lexy_index_fields" not in binding.transformer_params.keys():
+        logger.info(f"Binding {binding} does not have 'lexy_index_fields' defined in 'transformer_params'"
+                    f" - will attempt to set them using index fields")
+
+        # it seems this next line is required because binding.transformer_params is a JSON field
+        #   see https://github.com/sqlalchemy/sqlalchemy/discussions/6473
+        binding.transformer_params = dict(binding.transformer_params)
+
+        binding.transformer_params["lexy_index_fields"] = list(binding.index.index_fields.keys())
+        logger.info(f"Updated binding.transformer_params: {binding.transformer_params}")
+
+    # filter documents in the collection that match the binding filters
     if binding.filters:
         documents = [doc for doc in binding.collection.documents if all(f(doc) for f in binding.filters)]
     else:
@@ -135,7 +153,7 @@ async def process_new_binding(binding: TransformerIndexBinding, create_index_tab
     # initiate list of tasks
     tasks = []
 
-    # generate tasks
+    # generate tasks for documents
     # TODO: should this be done as a celery group?
     for doc in documents:
         task = transformer_func.apply_async(
