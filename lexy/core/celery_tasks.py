@@ -167,5 +167,5 @@ def save_records_to_index(self, records: list[dict[str, Any]], document_id: UUID
 def restart_db_worker(self, msg):
     """ Restart the celery worker of the current task. """
     response = self.restart_worker(msg=msg)
-    task_logger.info(f'restart_db_worker response: {response}')
+    task_logger.info(f"restart_db_worker response: {response}")
     return response

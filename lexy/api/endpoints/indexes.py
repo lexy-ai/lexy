@@ -1,4 +1,5 @@
 import logging
+import time
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import select
@@ -6,12 +7,14 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from lexy.db.session import get_session
 from lexy.models.index import Index, IndexCreate, IndexUpdate
-from lexy.core.events import create_new_index_table
-from lexy.core.celery_tasks import restart_db_worker
+from lexy.core.events import create_new_index_table, restart_celery_worker
 
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+# TODO: move this to the proper config location
+celery_db_worker = 'celery@celeryworker'
 
 
 @router.get("/indexes",
@@ -36,9 +39,12 @@ async def add_index(index: IndexCreate, session: AsyncSession = Depends(get_sess
     await session.refresh(index)
 
     create_new_index_table(index_id=index.index_id)
-    msg = f"restarting db worker following creation of index table for index_id: {index.index_id}"
-    t = restart_db_worker.apply_async(args=[msg], priority=10)
-    logger.info(t.get())
+    logger.info(f"Restarting db worker '{celery_db_worker}' following creation of index table for index_id: "
+                f"{index.index_id}")
+    time.sleep(0.5)
+    celery_restart_response = restart_celery_worker(celery_db_worker)
+    logger.info(f"Response: {celery_restart_response}")
+    time.sleep(0.5)
 
     return index
 
