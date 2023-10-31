@@ -91,4 +91,3 @@ async def delete_binding(binding_id: int, session: AsyncSession = Depends(get_se
     await session.delete(binding)
     await session.commit()
     return {"Say": "Binding deleted!"}
-

@@ -9,6 +9,7 @@ def create_celery():
     celery_app = current_celery_app
     celery_app.config_from_object(settings, namespace='CELERY')
     celery_app.conf.update(task_track_started=True)
+    celery_app.conf.update(worker_pool_restarts=True)
 
     # serialization settings
     celery_app.conf.update(task_serializer='pickle')

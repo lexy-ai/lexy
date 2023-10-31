@@ -96,10 +96,10 @@ class IndexManager(object):
 
     _db: Session | None = None
     index_models = {}
-    TBLNAME_TO_CLASS = TBLNAME_TO_CLASS
+    TBLNAME_TO_CLASS: dict | None = TBLNAME_TO_CLASS
 
     # TODO: Make session management more robust, specifically by
-    # ensuring that distinct API requests don't use the same session
+    #  ensuring that distinct API requests don't use the same session
     @property
     def db(self) -> Session:
         if self._db is None:
@@ -133,15 +133,16 @@ class IndexManager(object):
         indexes = self.get_indexes()
         for index in indexes:
             if self.table_exists(index.index_table_name):
-                logger.warning(f"Index table {index.index_table_name} already exists.")
+                logger.warning(f"create_index_models -- Index table {index.index_table_name} already exists.")
             self.create_index_model(index)
 
     def create_index_model(self, index: Index):
         index_table_name = index.index_table_name
         field_defs = self.get_field_definitions(index.index_fields)
         if index_table_name in self.TBLNAME_TO_CLASS.keys():
-            logger.warning(f"Index table {index_table_name} already exists.")
+            logger.warning(f"create_index_model -- Index table {index_table_name} exists in TBLNAME_TO_CLASS.keys().")
             index_model = self.TBLNAME_TO_CLASS.get(index_table_name)
+            self.index_models[index.index_id] = index_model
             return index_model
         index_model = create_model(
             index.index_table_schema.get("title", index_table_name),
@@ -162,6 +163,19 @@ class IndexManager(object):
             )
         self.index_models[index.index_id] = index_model
         return index_model
+
+    def get_or_create_index_model(self, index_id: str):
+        """ Get or create index model """
+        if index_id in self.index_models.keys():
+            return self.index_models.get(index_id)
+        else:
+            print(f"index model {index_id} is not in self.index_models.keys() - will try to create it")
+            index = self.get_index(index_id)
+            if index is None:
+                raise ValueError(f"Index {index_id} not found")
+            if self.table_exists(index.index_table_name):
+                logger.warning(f"get_or_create_index_model -- Index table {index.index_table_name} already exists.")
+            return self.create_index_model(index)
 
     @staticmethod
     def get_field_definitions(index_fields: dict) -> dict:
