@@ -4,6 +4,7 @@ from typing import Optional
 
 import httpx
 
+from lexy_py.exceptions import handle_response
 from .models import Transformer, TransformerUpdate
 
 
@@ -27,6 +28,7 @@ class TransformerClient:
             list[Transformer]: A list of all transformers.
         """
         r = self.client.get("/transformers")
+        handle_response(r)
         return [Transformer(**transformer) for transformer in r.json()]
 
     async def alist_transformers(self) -> list[Transformer]:
@@ -36,6 +38,7 @@ class TransformerClient:
             list[Transformer]: A list of all transformers.
         """
         r = await self.aclient.get("/transformers")
+        handle_response(r)
         return [Transformer(**transformer) for transformer in r.json()]
 
     def get_transformer(self, transformer_id: str) -> Transformer:
@@ -48,6 +51,7 @@ class TransformerClient:
             Transformer: The transformer.
         """
         r = self.client.get(f"/transformers/{transformer_id}")
+        handle_response(r)
         return Transformer(**r.json())
 
     async def aget_transformer(self, transformer_id: str) -> Transformer:
@@ -60,6 +64,7 @@ class TransformerClient:
             Transformer: The transformer.
         """
         r = await self.aclient.get(f"/transformers/{transformer_id}")
+        handle_response(r)
         return Transformer(**r.json())
 
     def add_transformer(self, transformer_id: str, path: str, description: Optional[str] = None) -> Transformer:
@@ -77,6 +82,7 @@ class TransformerClient:
         if description:
             data["description"] = description
         r = self.client.post("/transformers", json=data)
+        handle_response(r)
         return Transformer(**r.json())
 
     async def aadd_transformer(self, transformer_id: str, path: str, description: Optional[str] = None) -> Transformer:
@@ -94,6 +100,7 @@ class TransformerClient:
         if description:
             data["description"] = description
         r = await self.aclient.post("/transformers", json=data)
+        handle_response(r)
         return Transformer(**r.json())
 
     def update_transformer(self, transformer_id: str, path: Optional[str] = None,
@@ -110,6 +117,7 @@ class TransformerClient:
         """
         transformer = TransformerUpdate(path=path, description=description)
         r = self.client.patch(f"/transformers/{transformer_id}", json=transformer.dict(exclude_none=True))
+        handle_response(r)
         return Transformer(**r.json())
 
     async def aupdate_transformer(self, transformer_id: str, path: Optional[str] = None,
@@ -126,6 +134,7 @@ class TransformerClient:
         """
         transformer = TransformerUpdate(path=path, description=description)
         r = await self.aclient.patch(f"/transformers/{transformer_id}", json=transformer.dict(exclude_none=True))
+        handle_response(r)
         return Transformer(**r.json())
 
     def delete_transformer(self, transformer_id: str) -> dict:
@@ -135,6 +144,7 @@ class TransformerClient:
             transformer_id (str): The ID of the transformer to delete.
         """
         r = self.client.delete(f"/transformers/{transformer_id}")
+        handle_response(r)
         return r.json()
 
     async def adelete_transformer(self, transformer_id: str) -> dict:
@@ -144,4 +154,5 @@ class TransformerClient:
             transformer_id (str): The ID of the transformer to delete.
         """
         r = await self.aclient.delete(f"/transformers/{transformer_id}")
+        handle_response(r)
         return r.json()

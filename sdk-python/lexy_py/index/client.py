@@ -4,6 +4,7 @@ from typing import Any, Optional
 
 import httpx
 
+from lexy_py.exceptions import handle_response
 from .models import Index, IndexUpdate
 
 
@@ -27,6 +28,7 @@ class IndexClient:
             list[Index]: A list of all indexes.
         """
         r = self.client.get("/indexes")
+        handle_response(r)
         return [Index(**index) for index in r.json()]
 
     async def alist_indexes(self) -> list[Index]:
@@ -36,6 +38,7 @@ class IndexClient:
             list[Index]: A list of all indexes.
         """
         r = await self.aclient.get("/indexes")
+        handle_response(r)
         return [Index(**index) for index in r.json()]
 
     def get_index(self, index_id: str) -> Index:
@@ -48,6 +51,7 @@ class IndexClient:
             Index: The index.
         """
         r = self.client.get(f"/indexes/{index_id}")
+        handle_response(r)
         return Index(**r.json())
 
     async def aget_index(self, index_id: str) -> Index:
@@ -60,6 +64,7 @@ class IndexClient:
             Index: The index.
         """
         r = await self.aclient.get(f"/indexes/{index_id}")
+        handle_response(r)
         return Index(**r.json())
 
     def add_index(self, index_id: str, description: Optional[str] = None,
@@ -98,6 +103,7 @@ class IndexClient:
             "index_fields": index_fields
         }
         r = self.client.post("/indexes", json=data)
+        handle_response(r)
         return Index(**r.json())
 
     async def aadd_index(self, index_id: str, description: Optional[str] = None,
@@ -136,6 +142,7 @@ class IndexClient:
             "index_fields": index_fields
         }
         r = await self.aclient.post("/indexes", json=data)
+        handle_response(r)
         return Index(**r.json())
 
     def delete_index(self, index_id: str) -> dict:
@@ -145,6 +152,7 @@ class IndexClient:
             index_id (str): The ID of the index to delete.
         """
         r = self.client.delete(f"/indexes/{index_id}")
+        handle_response(r)
         return r.json()
 
     async def adelete_index(self, index_id: str) -> dict:
@@ -154,6 +162,7 @@ class IndexClient:
             index_id (str): The ID of the index to delete.
         """
         r = await self.aclient.delete(f"/indexes/{index_id}")
+        handle_response(r)
         return r.json()
 
     def update_index(self, index_id: str, description: Optional[str] = None,
@@ -176,6 +185,7 @@ class IndexClient:
             index_fields=index_fields
         )
         r = self.client.patch(f"/indexes/{index_id}", json=index.dict(exclude_none=True))
+        handle_response(r)
         return Index(**r.json())
 
     async def aupdate_index(self, index_id: str, description: Optional[str] = None,
@@ -198,6 +208,7 @@ class IndexClient:
             index_fields=index_fields
         )
         r = await self.aclient.patch(f"/indexes/{index_id}", json=index.dict(exclude_none=True))
+        handle_response(r)
         return Index(**r.json())
 
     def list_index_records(self, index_id: str) -> list[dict]:
@@ -210,6 +221,7 @@ class IndexClient:
             list[dict]: A list of all index records for an index.
         """
         r = self.client.get(f"/indexes/{index_id}/records")
+        handle_response(r)
         return r.json()
 
     async def alist_index_records(self, index_id: str) -> list[dict]:
@@ -222,6 +234,7 @@ class IndexClient:
             list[dict]: A list of all index records for an index.
         """
         r = await self.aclient.get(f"/indexes/{index_id}/records")
+        handle_response(r)
         return r.json()
 
     def query_index(self, index_id: str, query_string: str, k: int = 5, query_field: str = "embedding") -> list[dict]:
@@ -242,6 +255,7 @@ class IndexClient:
             "query_field": query_field
         }
         r = self.client.get(f"/indexes/{index_id}/records/query", params=params)
+        handle_response(r)
         return r.json()["search_results"]
 
     async def aquery_index(self, index_id: str, query_string: str, k: int = 5, query_field: str = "embedding") \
@@ -263,5 +277,5 @@ class IndexClient:
             "query_field": query_field
         }
         r = await self.aclient.get(f"/indexes/{index_id}/records/query", params=params)
+        handle_response(r)
         return r.json()["search_results"]
-
