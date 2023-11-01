@@ -4,6 +4,7 @@ from typing import Optional
 
 import httpx
 
+from lexy_py.exceptions import handle_response
 from .models import Document, DocumentUpdate
 
 
@@ -30,6 +31,7 @@ class DocumentClient:
             list[Document]: A list of all documents in a collection.
         """
         r = self.client.get("/documents", params={"collection_id": collection_id})
+        handle_response(r)
         return [Document(**document) for document in r.json()]
 
     async def alist_documents(self, collection_id: str = "default") -> list[Document]:
@@ -42,6 +44,7 @@ class DocumentClient:
             list[Document]: A list of all documents in a collection.
         """
         r = await self.aclient.get("/documents", params={"collection_id": collection_id})
+        handle_response(r)
         return [Document(**document) for document in r.json()]
 
     def add_documents(self, docs: Document | list[Document] | dict | list[dict],
@@ -58,6 +61,7 @@ class DocumentClient:
         processed_docs = self._process_docs(docs)
 
         r = self.client.post("/documents", json=processed_docs, params={"collection_id": collection_id})
+        handle_response(r)
         return r.json()
 
     async def aadd_documents(self, docs: Document | list[Document] | dict | list[dict],
@@ -74,6 +78,7 @@ class DocumentClient:
         processed_docs = self._process_docs(docs)
 
         r = await self.aclient.post("/documents", json=processed_docs, params={"collection_id": collection_id})
+        handle_response(r)
         return r.json()
 
     def add_document(self, doc: Document | dict, collection_id: str) -> dict:
@@ -89,6 +94,7 @@ class DocumentClient:
         processed_docs = self._process_docs(doc)
 
         r = self.client.post("/documents", json=processed_docs, params={"collection_id": collection_id})
+        handle_response(r)
         return r.json()[0]
 
     async def aadd_document(self, doc: Document | dict, collection_id: str) -> dict:
@@ -104,6 +110,7 @@ class DocumentClient:
         processed_docs = self._process_docs(doc)
 
         r = await self.aclient.post("/documents", json=processed_docs, params={"collection_id": collection_id})
+        handle_response(r)
         return r.json()[0]
 
     def get_document(self, document_id: str) -> Document:
@@ -116,6 +123,7 @@ class DocumentClient:
             Document: The document.
         """
         r = self.client.get(f"/documents/{document_id}")
+        handle_response(r)
         return Document(**r.json())
 
     async def aget_document(self, document_id: str) -> Document:
@@ -128,6 +136,7 @@ class DocumentClient:
             Document: The document.
         """
         r = await self.aclient.get(f"/documents/{document_id}")
+        handle_response(r)
         return Document(**r.json())
 
     def update_document(self, document_id: str, title: Optional[str] = None, content: Optional[str] = None,
@@ -145,6 +154,7 @@ class DocumentClient:
         """
         document = DocumentUpdate(title=title, content=content, meta=meta)
         r = self.client.patch(f"/documents/{document_id}", json=document.dict(exclude_none=True))
+        handle_response(r)
         return r.json()
 
     async def aupdate_document(self, document_id: str, title: Optional[str] = None, content: Optional[str] = None,
@@ -162,6 +172,7 @@ class DocumentClient:
         """
         document = DocumentUpdate(title=title, content=content, meta=meta)
         r = await self.aclient.patch(f"/documents/{document_id}", json=document.dict(exclude_none=True))
+        handle_response(r)
         return r.json()
 
     def delete_document(self, document_id: str) -> dict:
@@ -171,6 +182,7 @@ class DocumentClient:
             document_id (str): The ID of the document to delete.
         """
         r = self.client.delete(f"/documents/{document_id}")
+        handle_response(r)
         return r.json()
 
     async def adelete_document(self, document_id: str) -> dict:
@@ -180,6 +192,7 @@ class DocumentClient:
             document_id (str): The ID of the document to delete.
         """
         r = await self.aclient.delete(f"/documents/{document_id}")
+        handle_response(r)
         return r.json()
 
     @staticmethod

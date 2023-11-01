@@ -4,6 +4,7 @@ from typing import Optional
 
 import httpx
 
+from lexy_py.exceptions import handle_response
 from .models import Collection
 
 
@@ -27,6 +28,7 @@ class CollectionClient:
             list[Collection]: A list of all collections.
         """
         r = self.client.get("/collections")
+        handle_response(r)
         return [Collection(**collection) for collection in r.json()]
 
     async def alist_collections(self) -> list[Collection]:
@@ -36,6 +38,7 @@ class CollectionClient:
             list[Collection]: A list of all collections.
         """
         r = await self.aclient.get("/collections")
+        handle_response(r)
         return [Collection(**collection) for collection in r.json()]
 
     def get_collection(self, collection_id: str) -> Collection:
@@ -48,6 +51,7 @@ class CollectionClient:
             Collection: The collection.
         """
         r = self.client.get(f"/collections/{collection_id}")
+        handle_response(r)
         return Collection(**r.json())
 
     async def aget_collection(self, collection_id: str) -> Collection:
@@ -60,6 +64,7 @@ class CollectionClient:
             Collection: The collection.
         """
         r = await self.aclient.get(f"/collections/{collection_id}")
+        handle_response(r)
         return Collection(**r.json())
 
     def add_collection(self, collection_id: str, description: Optional[str] = None) -> Collection:
@@ -77,6 +82,7 @@ class CollectionClient:
             description=description
         )
         r = self.client.post("/collections", json=collection.dict(exclude_none=True))
+        handle_response(r)
         return Collection(**r.json())
 
     async def aadd_collection(self, collection_id: str, description: Optional[str] = None) -> Collection:
@@ -94,6 +100,7 @@ class CollectionClient:
             description=description
         )
         r = await self.aclient.post("/collections", json=collection.dict(exclude_none=True))
+        handle_response(r)
         return Collection(**r.json())
 
     def update_collection(self, collection_id: str, description: Optional[str] = None) -> Collection:
@@ -111,6 +118,7 @@ class CollectionClient:
             description=description
         )
         r = self.client.patch(f"/collections/{collection_id}", json=collection.dict(exclude_none=True))
+        handle_response(r)
         return Collection(**r.json())
 
     async def aupdate_collection(self, collection_id: str, description: Optional[str] = None) -> Collection:
@@ -128,6 +136,7 @@ class CollectionClient:
             description=description
         )
         r = await self.aclient.patch(f"/collections/{collection_id}", json=collection.dict(exclude_none=True))
+        handle_response(r)
         return Collection(**r.json())
 
     def delete_collection(self, collection_id: str) -> dict:
@@ -137,6 +146,7 @@ class CollectionClient:
             collection_id (str): The ID of the collection to delete.
         """
         r = self.client.delete(f"/collections/{collection_id}")
+        handle_response(r)
         return r.json()
 
     async def adelete_collection(self, collection_id: str) -> dict:
@@ -146,4 +156,5 @@ class CollectionClient:
             collection_id (str): The ID of the collection to delete.
         """
         r = await self.aclient.delete(f"/collections/{collection_id}")
+        handle_response(r)
         return r.json()

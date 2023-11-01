@@ -4,6 +4,7 @@ from typing import Optional
 
 import httpx
 
+from lexy_py.exceptions import handle_response
 from .models import TransformerIndexBinding, TransformerIndexBindingUpdate
 
 
@@ -27,6 +28,7 @@ class BindingClient:
             list[TransformerIndexBinding]: A list of all bindings.
         """
         r = self.client.get("/bindings")
+        handle_response(r)
         return [TransformerIndexBinding(**binding) for binding in r.json()]
 
     async def alist_bindings(self) -> list[TransformerIndexBinding]:
@@ -36,6 +38,7 @@ class BindingClient:
             list[TransformerIndexBinding]: A list of all bindings.
         """
         r = await self.aclient.get("/bindings")
+        handle_response(r)
         return [TransformerIndexBinding(**binding) for binding in r.json()]
 
     def add_binding(self, collection_id: str, transformer_id: str, index_id: str, description: Optional[str] = None,
@@ -73,6 +76,7 @@ class BindingClient:
             status=status
         )
         r = self.client.post("/bindings", json=binding.dict(exclude_none=True))
+        handle_response(r)
         return TransformerIndexBinding(**r.json())
 
     async def aadd_binding(self, collection_id: str, transformer_id: str, index_id: str,
@@ -111,6 +115,7 @@ class BindingClient:
             status=status
         )
         r = await self.aclient.post("/bindings", json=binding.dict(exclude_none=True))
+        handle_response(r)
         return TransformerIndexBinding(**r.json())
 
     def get_binding(self, binding_id: int) -> TransformerIndexBinding:
@@ -123,6 +128,7 @@ class BindingClient:
             TransformerIndexBinding: The binding.
         """
         r = self.client.get(f"/bindings/{binding_id}")
+        handle_response(r)
         return TransformerIndexBinding(**r.json())
 
     async def aget_binding(self, binding_id: int) -> TransformerIndexBinding:
@@ -135,6 +141,7 @@ class BindingClient:
             TransformerIndexBinding: The binding.
         """
         r = await self.aclient.get(f"/bindings/{binding_id}")
+        handle_response(r)
         return TransformerIndexBinding(**r.json())
 
     def update_binding(self, binding_id: int, description: Optional[str] = None,
@@ -161,6 +168,7 @@ class BindingClient:
             status=status
         )
         r = self.client.patch(f"/bindings/{binding_id}", json=binding.dict(exclude_none=True))
+        handle_response(r)
         return TransformerIndexBinding(**r.json())
 
     async def aupdate_binding(self, binding_id: int, description: Optional[str] = None,
@@ -187,6 +195,7 @@ class BindingClient:
             status=status
         )
         r = await self.aclient.patch(f"/bindings/{binding_id}", json=binding.dict(exclude_none=True))
+        handle_response(r)
         return TransformerIndexBinding(**r.json())
 
     def delete_binding(self, binding_id: int) -> dict:
@@ -196,6 +205,7 @@ class BindingClient:
             binding_id (int): The ID of the binding to delete.
         """
         r = self.client.delete(f"/bindings/{binding_id}")
+        handle_response(r)
         return r.json()
 
     async def adelete_binding(self, binding_id: int) -> dict:
@@ -205,4 +215,5 @@ class BindingClient:
             binding_id (int): The ID of the binding to delete.
         """
         r = await self.aclient.delete(f"/bindings/{binding_id}")
+        handle_response(r)
         return r.json()

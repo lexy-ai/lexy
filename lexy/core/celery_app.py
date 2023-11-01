@@ -11,6 +11,11 @@ def create_celery():
     celery_app.conf.update(task_track_started=True)
     celery_app.conf.update(worker_pool_restarts=True)
 
+    # # list of modules to import when the Celery worker starts.
+    # celery_app.conf.update(imports=(
+    #     'myapp.tasks',
+    # ))
+
     # serialization settings
     celery_app.conf.update(task_serializer='pickle')
     celery_app.conf.update(result_serializer='pickle')

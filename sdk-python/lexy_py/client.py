@@ -91,3 +91,7 @@ class LexyClient:
     async def adelete(self, url: str, **kwargs) -> httpx.Response:
         """ Async DELETE request. """
         return await self.aclient.delete(url, **kwargs)
+
+
+
+
