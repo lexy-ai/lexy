@@ -1,3 +1,4 @@
+import textwrap
 from datetime import datetime
 from typing import Any, Optional
 
@@ -13,6 +14,9 @@ class Document(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     collection_id: Optional[str] = None
+
+    def __repr__(self):
+        return f'<Document("{textwrap.shorten(self.content, 100, placeholder="...")}", document_id={self.document_id})>'
 
 
 class DocumentCreate(BaseModel):
