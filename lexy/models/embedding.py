@@ -27,12 +27,10 @@ class Embedding(EmbeddingBase, table=True):
         nullable=False,
     )
     created_at: datetime = Field(
-        nullable=False,
-        sa_column=Column(DateTime(timezone=True), server_default=func.now()),
+        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now()),
     )
     updated_at: datetime = Field(
-        nullable=False,
-        sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now()),
+        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
     )
     document: Document = Relationship(back_populates="embeddings")
     task_id: Optional[UUID] = Field(default=None)

@@ -24,9 +24,9 @@ class TransformerIndexBindingBase(SQLModel):
     index_id: str = Field(default=None, foreign_key="indexes.index_id")
 
     description: Optional[str] = None
-    execution_params: dict[str, Any] = Field(default={}, sa_column=Column(JSONB), nullable=False)
-    transformer_params: dict[str, Any] = Field(default={}, sa_column=Column(JSONB), nullable=False)
-    filters = Field(default={}, sa_column=Column(JSONB), nullable=False)
+    execution_params: dict[str, Any] = Field(default={}, sa_column=Column(JSONB, nullable=False))
+    transformer_params: dict[str, Any] = Field(default={}, sa_column=Column(JSONB, nullable=False))
+    filters = Field(default={}, sa_column=Column(JSONB, nullable=False))
     # # TODO: make this ENUM
     # run_frequency: str = Field(default="daily", nullable=False)
 
@@ -35,12 +35,10 @@ class TransformerIndexBinding(TransformerIndexBindingBase, table=True):
     __tablename__ = "transformer_index_bindings"
     binding_id: int = Field(default=None, primary_key=True)
     created_at: datetime = Field(
-        nullable=False,
-        sa_column=Column(DateTime(timezone=True), server_default=func.now()),
+        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now()),
     )
     updated_at: datetime = Field(
-        nullable=False,
-        sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now()),
+        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
     )
     status: str = Field(default=BindingStatus.PENDING, nullable=False)
     collection: Collection = Relationship(back_populates="transformer_index_bindings",

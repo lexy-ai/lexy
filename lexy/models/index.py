@@ -19,26 +19,22 @@ class IndexBase(SQLModel):
         regex=r"^[a-z0-9_-]+$"
     )
     description: Optional[str] = None
-    index_table_schema: Optional[dict[str, Any]] = Field(sa_column=Column(JSON), nullable=False, default={})
-    index_fields: Optional[dict[str, Any]] = Field(sa_column=Column(JSON), nullable=False, default={})
+    index_table_schema: Optional[dict[str, Any]] = Field(sa_column=Column(JSON, nullable=False), default={})
+    index_fields: Optional[dict[str, Any]] = Field(sa_column=Column(JSON, nullable=False), default={})
 
 
 class Index(IndexBase, table=True):
     __tablename__ = "indexes"
     created_at: datetime = Field(
-        nullable=False,
-        sa_column=Column(DateTime(timezone=True), server_default=func.now()),
+        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now()),
     )
     updated_at: datetime = Field(
-        nullable=False,
-        sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now()),
+        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
     )
     transformer_bindings: list["TransformerIndexBinding"] = Relationship(back_populates="index")
     index_table_name: str = Field(
-        nullable=False,
         regex=r"^[a-z0-9_-]+$",
-        sa_column=Column(String, default=default_index_table_name),
-        unique=True
+        sa_column=Column(String, default=default_index_table_name, nullable=False, unique=True),
     )
 
 
