@@ -19,12 +19,10 @@ class CollectionBase(SQLModel):
 class Collection(CollectionBase, table=True):
     __tablename__ = "collections"
     created_at: datetime = Field(
-        nullable=False,
-        sa_column=Column(DateTime(timezone=True), server_default=func.now()),
+        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now()),
     )
     updated_at: datetime = Field(
-        nullable=False,
-        sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now()),
+        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
     )
     documents: list["Document"] = Relationship(back_populates="collection", sa_relationship_kwargs={'lazy': 'subquery'})
     transformer_index_bindings: list["TransformerIndexBinding"] = \

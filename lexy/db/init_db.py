@@ -8,7 +8,7 @@ from lexy.db.seed import sample_data
 from lexy.db.session import sync_engine
 from lexy import models  # noqa
 # from lexy.indexes import IndexManager
-from lexy.indexes import index_manager
+# from lexy.indexes import index_manager
 
 
 logger = logging.getLogger(__name__)

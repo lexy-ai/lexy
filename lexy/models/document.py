@@ -24,12 +24,10 @@ class Document(DocumentBase, table=True):
         nullable=False,
     )
     created_at: datetime = Field(
-        nullable=False,
-        sa_column=Column(DateTime(timezone=True), server_default=func.now()),
+        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now()),
     )
     updated_at: datetime = Field(
-        nullable=False,
-        sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now()),
+        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
     )
     collection_id: str = Field(default="default", foreign_key="collections.collection_id")
     collection: Collection = Relationship(back_populates="documents", sa_relationship_kwargs={'lazy': 'selectin'})

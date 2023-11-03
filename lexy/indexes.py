@@ -106,6 +106,28 @@ class IndexManager(object):
             self._db = SyncSessionLocal()
         return self._db
 
+    def get_bindings(self) -> list[TransformerIndexBinding]:
+        """ Get all bindings """
+        bindings = self.db.exec(select(TransformerIndexBinding)).all()
+        return bindings
+
+    def get_binding(self, binding_id: int) -> TransformerIndexBinding:
+        """ Get a binding by id
+
+        Args:
+            binding_id (int): binding id
+
+        Returns:
+            TransformerIndexBinding: binding
+
+        Raises:
+            ValueError: if binding is not found
+        """
+        binding = self.db.exec(select(TransformerIndexBinding).filter(TransformerIndexBinding.binding_id == binding_id)).first()
+        if not binding:
+            raise ValueError(f"Binding {binding_id} not found")
+        return binding
+
     def get_indexes(self) -> list[Index]:
         """ Get all indexes """
         indexes = self.db.exec(select(Index)).all()
@@ -262,6 +284,22 @@ class IndexManager(object):
         self.db.refresh(binding)
         logger.info(f"Switched status for binding {binding}: from '{prev_status}' to '{status}'")
         return binding
+
+    # # TODO: this needs to move into an app initialization script
+    # def process_default_binding(self, default_index_table_name: str = 'zzidx__default_text_embeddings'):
+    #     """ Process default binding """
+    #     if not self.table_exists(default_index_table_name):
+    #         raise Exception(f"Cannot process default binding because default index table {default_index_table_name} "
+    #                         f"does not exist")
+    #     # to get default binding
+    #     default_binding = self.get_binding(binding_id=1)
+    #     processed_binding, tasks = await process_new_binding(binding)
+    #     # now commit the binding again and refresh it - status should be updated
+    #     self.db.add(processed_binding)
+    #     self.db.commit()
+    #     self.db.refresh(processed_binding)
+    #     response = {"binding": processed_binding, "tasks": tasks}
+    #     return response
 
     @staticmethod
     def table_exists(index_table_name: str) -> bool:
