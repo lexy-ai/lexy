@@ -16,8 +16,8 @@ lexy = LexyClient()
 
 ```python
 lexy.document.add_documents([
-    {"title": "doc1", "content": "This is a test document"},
-    {"title": "My second doc", "content": "This is another one!"},
+    {"content": "This is a test document"},
+    {"content": "This is another one!"},
 ])
 ```
 

@@ -8,39 +8,34 @@ sample_data = {
         "description": "Github code repos"
     },
     "document_1": {
-        "title": "My first doc",
         "content": "This is my first document! It's great!",
         "collection_id": "default"
     },
     "document_2": {
-        "title": "Another doc",
         "content": "Meh. This one is just ok.",
         "collection_id": "default"
     },
     "document_3": {
-        "title": "SpaceX Starlink",
         "content": "Starlink is a satellite internet constellation operated by American aerospace company SpaceX, "
                    "providing coverage to over 60 countries.",
         "collection_id": "default"
     },
     "document_4": {
-        "title": "Latent Space",
         "content": "A latent space, also known as a latent feature space or embedding space, is an embedding of a set "
                    "of items within a manifold in which items resembling each other are positioned closer to one "
                    "another.",
         "collection_id": "default"
     },
     "document_5": {
-        "title": "main.py",
         "content": "import this",
         "collection_id": "code",
         "meta": {
-            "language": "python",
-            "file_extension": "py"
+            "filename": "main.py",
+            "file_extension": "py",
+            "language": "python"
         }
     },
     "document_6": {
-        "title": "multiply.py",
         "content": "def multiply(a, b):"
                    "    return a * b"
                    ""
@@ -49,8 +44,9 @@ sample_data = {
                    "    print(multiply(2, 3))",
         "collection_id": "code",
         "meta": {
-            "language": "python",
-            "file_extension": "py"
+            "filename": "multiply.py",
+            "file_extension": "py",
+            "language": "python"
         }
     },
     "transformer_1": {
