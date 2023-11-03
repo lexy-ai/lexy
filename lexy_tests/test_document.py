@@ -25,14 +25,12 @@ class TestDocument:
     @pytest.mark.asyncio
     async def test_create_document(self, async_session):
         document = DocumentCreate(
-            title="Test Document",
             content="Test Content"
         )
         document = Document(**document.dict())
         async_session.add(document)
         await async_session.commit()
         await async_session.refresh(document)
-        assert document.title == "Test Document"
         assert document.content == "Test Content"
         assert document.document_id is not None
         assert document.created_at is not None
@@ -60,7 +58,7 @@ class TestDocument:
     # def test_create_documents(self, client):
     #     response = client.post(
     #         "/api/documents/",
-    #         data=b'[{"title": "my first doc", "content": "hello there!"}]',
+    #         data=b'[{"content": "hello there!"}]',
     #         headers={"Content-Type": "application/json", "Accept": "application/json"}
     #     )
     #     assert response.status_code == 201, response.text
@@ -71,7 +69,7 @@ class TestDocument:
     # async def test_create_and_get_documents(self, async_client):
     #     response = await async_client.post(
     #         "/api/documents/",
-    #         data=b'[{"title": "my first doc", "content": "hello there!"}]',
+    #         data=b'[{"content": "hello there!"}]',
     #         headers={"Content-Type": "application/json", "Accept": "application/json"},
     #     )
     #     assert response.status_code == 201, response.text
@@ -83,7 +81,7 @@ class TestDocument:
     #     async with AsyncClient(app=app, base_url='http://127.0.0.1:9900', follow_redirects=True) as async_client:
     #         response = await async_client.post(
     #             "/api/documents",
-    #             json=[{"title": "my first doc", "content": "hello there!"}],
+    #             json=[{"content": "hello there!"}],
     #         )
     #         assert response.status_code == 200, response.text
     #         data = response.json()
@@ -94,7 +92,6 @@ class TestDocument:
         result = await async_session.execute(select(Document))
         documents = result.scalars().all()
         assert len(documents) > 0
-        assert documents[0].title == "Test Document"
         assert documents[0].content == "Test Content"
         assert documents[0].document_id is not None
         assert documents[0].created_at is not None

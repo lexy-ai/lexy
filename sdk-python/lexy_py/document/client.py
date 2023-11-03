@@ -139,38 +139,35 @@ class DocumentClient:
         handle_response(r)
         return Document(**r.json())
 
-    def update_document(self, document_id: str, title: Optional[str] = None, content: Optional[str] = None,
-                        meta: Optional[dict] = None) -> dict:
+    def update_document(self, document_id: str, content: Optional[str] = None, meta: Optional[dict] = None) -> dict:
         """ Synchronously update a document.
 
         Args:
             document_id (str): The ID of the document to update.
-            title (str, optional): The new title of the document.
             content (str, optional): The new content of the document.
             meta (dict, optional): The new metadata for the document.
 
         Returns:
             dict: A dictionary containing the updated document and its associated tasks.
         """
-        document = DocumentUpdate(title=title, content=content, meta=meta)
+        document = DocumentUpdate(content=content, meta=meta)
         r = self.client.patch(f"/documents/{document_id}", json=document.dict(exclude_none=True))
         handle_response(r)
         return r.json()
 
-    async def aupdate_document(self, document_id: str, title: Optional[str] = None, content: Optional[str] = None,
+    async def aupdate_document(self, document_id: str, content: Optional[str] = None,
                                meta: Optional[dict] = None) -> dict:
         """ Asynchronously update a document.
 
         Args:
             document_id (str): The ID of the document to update.
-            title (str, optional): The new title of the document.
             content (str, optional): The new content of the document.
             meta (dict, optional): The new metadata for the document.
 
         Returns:
             dict: A dictionary containing the updated document and its associated tasks.
         """
-        document = DocumentUpdate(title=title, content=content, meta=meta)
+        document = DocumentUpdate(content=content, meta=meta)
         r = await self.aclient.patch(f"/documents/{document_id}", json=document.dict(exclude_none=True))
         handle_response(r)
         return r.json()

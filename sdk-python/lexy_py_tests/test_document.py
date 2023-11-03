@@ -24,12 +24,12 @@ class TestDocumentClient:
 
         # add documents to the test collection
         docs_added = lexy.document.add_documents(docs=[
-            {"title": "Test Document 1", "content": "Test Document 1 Content"},
-            {"title": "Test Document 2", "content": "Test Document 2 Content"}
+            {"content": "Test Document 1 Content"},
+            {"content": "Test Document 2 Content"}
         ], collection_id="tmp_collection")
         assert len(docs_added) == 2
-        assert docs_added[0]["document"]["title"] == "Test Document 1"
-        assert docs_added[1]["document"]["title"] == "Test Document 2"
+        assert docs_added[0]["document"]["content"] == "Test Document 1 Content"
+        assert docs_added[1]["document"]["content"] == "Test Document 2 Content"
         assert docs_added[0]["document"]["document_id"] is not None
         assert docs_added[0]["document"]["created_at"] is not None
         assert docs_added[0]["document"]["collection_id"] == "tmp_collection"
@@ -37,7 +37,6 @@ class TestDocumentClient:
         # get test document
         test_document = lexy.document.get_document(docs_added[0]["document"]["document_id"])
         assert test_document.document_id == docs_added[0]["document"]["document_id"]
-        assert test_document.title == "Test Document 1"
         assert test_document.content == "Test Document 1 Content"
 
         # update test document
@@ -47,7 +46,6 @@ class TestDocumentClient:
         )
         updated_document = lexy.document.get_document(doc_updated["document"]["document_id"])
         assert updated_document.document_id == test_document.document_id
-        assert updated_document.title == "Test Document 1"
         assert updated_document.content == "Test Document 1 Updated Content"
         assert updated_document.updated_at > updated_document.created_at
 

@@ -21,10 +21,10 @@ app.celery_app = create_celery()
 celery = app.celery_app
 
 
-# @app.on_event("startup")
-# def on_startup():
-#     print('starting')
-#     init_db()
+@app.on_event("startup")
+def on_startup():
+    print('starting')
+    init_db()
 
 
 if __name__ == "__main__":

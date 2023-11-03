@@ -10,7 +10,6 @@ from lexy.models.collection import Collection
 
 
 class DocumentBase(SQLModel):
-    title: str
     content: str
     meta: Optional[dict[Any, Any]] = Field(sa_column=Column(JSONB), default={})
 
@@ -39,7 +38,6 @@ class DocumentCreate(DocumentBase):
 
 
 class DocumentUpdate(DocumentBase):
-    title: Optional[str] = None
     content: Optional[str] = None
     meta: Optional[dict[Any, Any]] = None
 
