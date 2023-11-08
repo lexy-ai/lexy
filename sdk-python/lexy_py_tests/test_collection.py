@@ -1,6 +1,7 @@
 import pytest
 
 from lexy_py.client import LexyClient
+from lexy_py.collection.models import Collection
 
 
 lexy = LexyClient()
@@ -42,18 +43,29 @@ class TestCollectionClient:
         collections = lexy.collection.list_collections()
         assert len(collections) > 0
         assert collections[0].collection_id == "default"
+        assert isinstance(collections[0].client, LexyClient)
 
     @pytest.mark.asyncio
     async def test_alist_collections(self):
         collections = await lexy.collection.alist_collections()
         assert len(collections) > 0
         assert collections[0].collection_id == "default"
+        assert isinstance(collections[0].client, LexyClient)
 
     def test_get_collection(self):
         collection = lexy.collection.get_collection("default")
         assert collection.collection_id == "default"
+        assert isinstance(collection.client, LexyClient)
 
     @pytest.mark.asyncio
     async def test_aget_collection(self):
         collection = await lexy.collection.aget_collection("default")
         assert collection.collection_id == "default"
+        assert isinstance(collection.client, LexyClient)
+
+    def test_collection_client(self):
+        collection_without_a_client = Collection(collection_id="no_client", description="No client")
+        with pytest.raises(ValueError) as exc_info:
+            collection_without_a_client.list_documents()
+        assert isinstance(exc_info.value, ValueError)
+        assert str(exc_info.value) == "API client has not been set."

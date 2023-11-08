@@ -38,11 +38,11 @@ class LexyClient:
         self.aclient = httpx.AsyncClient(base_url=self.base_url, timeout=API_TIMEOUT)
         self.client = httpx.Client(base_url=self.base_url, timeout=API_TIMEOUT)
 
-        self.binding = BindingClient(self.aclient, self.client)
-        self.collection = CollectionClient(self.aclient, self.client)
-        self.document = DocumentClient(self.aclient, self.client)
-        self.index = IndexClient(self.aclient, self.client)
-        self.transformer = TransformerClient(self.aclient, self.client)
+        self.binding = BindingClient(self)
+        self.collection = CollectionClient(self)
+        self.document = DocumentClient(self)
+        self.index = IndexClient(self)
+        self.transformer = TransformerClient(self)
 
     async def __aenter__(self) -> "LexyClient":
         """ Async context manager entry point. """

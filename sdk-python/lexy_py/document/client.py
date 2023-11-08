@@ -1,11 +1,14 @@
 """ Client for interacting with the Document API. """
 
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 import httpx
 
 from lexy_py.exceptions import handle_response
 from .models import Document, DocumentUpdate
+
+if TYPE_CHECKING:
+    from lexy_py.client import LexyClient
 
 
 class DocumentClient:
@@ -17,9 +20,10 @@ class DocumentClient:
         client (httpx.Client): Synchronous API client.
     """
 
-    def __init__(self, aclient: httpx.AsyncClient, client: httpx.Client) -> None:
-        self.aclient = aclient
-        self.client = client
+    def __init__(self, lexy_client: "LexyClient") -> None:
+        self._lexy_client = lexy_client
+        self.aclient = self._lexy_client.aclient
+        self.client = self._lexy_client.client
 
     def list_documents(self, collection_id: str = "default") -> list[Document]:
         """ Synchronously get a list of all documents in a collection.
@@ -32,7 +36,7 @@ class DocumentClient:
         """
         r = self.client.get("/documents", params={"collection_id": collection_id})
         handle_response(r)
-        return [Document(**document) for document in r.json()]
+        return [Document(**document, client=self._lexy_client) for document in r.json()]
 
     async def alist_documents(self, collection_id: str = "default") -> list[Document]:
         """ Asynchronously get a list of all documents in a collection.
@@ -45,8 +49,9 @@ class DocumentClient:
         """
         r = await self.aclient.get("/documents", params={"collection_id": collection_id})
         handle_response(r)
-        return [Document(**document) for document in r.json()]
+        return [Document(**document, client=self._lexy_client) for document in r.json()]
 
+    # TODO: fix the return type here
     def add_documents(self, docs: Document | list[Document] | dict | list[dict],
                       collection_id: str = "default") -> list[dict]:
         """ Synchronously add documents to a collection.
@@ -124,7 +129,7 @@ class DocumentClient:
         """
         r = self.client.get(f"/documents/{document_id}")
         handle_response(r)
-        return Document(**r.json())
+        return Document(**r.json(), client=self._lexy_client)
 
     async def aget_document(self, document_id: str) -> Document:
         """ Asynchronously get a document.
@@ -137,7 +142,7 @@ class DocumentClient:
         """
         r = await self.aclient.get(f"/documents/{document_id}")
         handle_response(r)
-        return Document(**r.json())
+        return Document(**r.json(), client=self._lexy_client)
 
     def update_document(self, document_id: str, content: Optional[str] = None, meta: Optional[dict] = None) -> dict:
         """ Synchronously update a document.
