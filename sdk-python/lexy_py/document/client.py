@@ -51,9 +51,8 @@ class DocumentClient:
         handle_response(r)
         return [Document(**document, client=self._lexy_client) for document in r.json()]
 
-    # TODO: fix the return type here
     def add_documents(self, docs: Document | list[Document] | dict | list[dict],
-                      collection_id: str = "default") -> list[dict]:
+                      collection_id: str = "default") -> list[Document]:
         """ Synchronously add documents to a collection.
 
         Args:
@@ -61,16 +60,16 @@ class DocumentClient:
             collection_id (str): The ID of the collection to add the documents to. Defaults to "default".
 
         Returns:
-            list[dict]: A list of dictionaries containing created documents and their associated tasks.
+            list[Document]: A list of created documents.
         """
         processed_docs = self._process_docs(docs)
 
         r = self.client.post("/documents", json=processed_docs, params={"collection_id": collection_id})
         handle_response(r)
-        return r.json()
+        return [Document(**document['document'], client=self._lexy_client) for document in r.json()]
 
     async def aadd_documents(self, docs: Document | list[Document] | dict | list[dict],
-                             collection_id: str = "default") -> list[dict]:
+                             collection_id: str = "default") -> list[Document]:
         """ Asynchronously add documents to a collection.
 
         Args:
@@ -78,15 +77,15 @@ class DocumentClient:
             collection_id (str): The ID of the collection to add the documents to. Defaults to "default".
 
         Returns:
-            list[dict]: A list of dictionaries containing created documents and their associated tasks.
+            list[Document]: A list of created documents.
         """
         processed_docs = self._process_docs(docs)
 
         r = await self.aclient.post("/documents", json=processed_docs, params={"collection_id": collection_id})
         handle_response(r)
-        return r.json()
+        return [Document(**document['document'], client=self._lexy_client) for document in r.json()]
 
-    def add_document(self, doc: Document | dict, collection_id: str) -> dict:
+    def add_document(self, doc: Document | dict, collection_id: str) -> Document:
         """ Synchronously add a document to a collection.
 
         Args:
@@ -94,15 +93,15 @@ class DocumentClient:
             collection_id (str): The ID of the collection to add the document to.
 
         Returns:
-            dict: A dictionary containing the created document and its associated tasks.
+            Document: The created document.
         """
         processed_docs = self._process_docs(doc)
 
         r = self.client.post("/documents", json=processed_docs, params={"collection_id": collection_id})
         handle_response(r)
-        return r.json()[0]
+        return Document(**r.json()[0]['document'], client=self._lexy_client)
 
-    async def aadd_document(self, doc: Document | dict, collection_id: str) -> dict:
+    async def aadd_document(self, doc: Document | dict, collection_id: str) -> Document:
         """ Asynchronously add a document to a collection.
 
         Args:
@@ -110,13 +109,13 @@ class DocumentClient:
             collection_id (str): The ID of the collection to add the document to.
 
         Returns:
-            dict: A dictionary containing the created document and its associated tasks.
+            Document: The created document.
         """
         processed_docs = self._process_docs(doc)
 
         r = await self.aclient.post("/documents", json=processed_docs, params={"collection_id": collection_id})
         handle_response(r)
-        return r.json()[0]
+        return Document(**r.json()[0]['document'], client=self._lexy_client)
 
     def get_document(self, document_id: str) -> Document:
         """ Synchronously get a document.
@@ -144,7 +143,7 @@ class DocumentClient:
         handle_response(r)
         return Document(**r.json(), client=self._lexy_client)
 
-    def update_document(self, document_id: str, content: Optional[str] = None, meta: Optional[dict] = None) -> dict:
+    def update_document(self, document_id: str, content: Optional[str] = None, meta: Optional[dict] = None) -> Document:
         """ Synchronously update a document.
 
         Args:
@@ -153,15 +152,15 @@ class DocumentClient:
             meta (dict, optional): The new metadata for the document.
 
         Returns:
-            dict: A dictionary containing the updated document and its associated tasks.
+            Document: The updated document.
         """
         document = DocumentUpdate(content=content, meta=meta)
         r = self.client.patch(f"/documents/{document_id}", json=document.dict(exclude_none=True))
         handle_response(r)
-        return r.json()
+        return Document(**r.json()['document'], client=self._lexy_client)
 
     async def aupdate_document(self, document_id: str, content: Optional[str] = None,
-                               meta: Optional[dict] = None) -> dict:
+                               meta: Optional[dict] = None) -> Document:
         """ Asynchronously update a document.
 
         Args:
@@ -170,12 +169,12 @@ class DocumentClient:
             meta (dict, optional): The new metadata for the document.
 
         Returns:
-            dict: A dictionary containing the updated document and its associated tasks.
+            Document: The updated document.
         """
         document = DocumentUpdate(content=content, meta=meta)
         r = await self.aclient.patch(f"/documents/{document_id}", json=document.dict(exclude_none=True))
         handle_response(r)
-        return r.json()
+        return Document(**r.json()['document'], client=self._lexy_client)
 
     def delete_document(self, document_id: str) -> dict:
         """ Synchronously delete a document.
