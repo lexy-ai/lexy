@@ -6,7 +6,8 @@ from lexy.db.session import get_session
 from lexy.models.binding import (
     TransformerIndexBinding,
     TransformerIndexBindingCreate,
-    TransformerIndexBindingUpdate
+    TransformerIndexBindingUpdate,
+    TransformerIndexBindingRead
 )
 from lexy.core.events import process_new_binding
 
@@ -15,11 +16,11 @@ router = APIRouter()
 
 
 @router.get("/bindings",
-            response_model=list[TransformerIndexBinding],
+            response_model=list[TransformerIndexBindingRead],
             status_code=status.HTTP_200_OK,
             name="get_bindings",
             description="Get all bindings")
-async def get_bindings(session: AsyncSession = Depends(get_session)) -> list[TransformerIndexBinding]:
+async def get_bindings(session: AsyncSession = Depends(get_session)) -> list[TransformerIndexBindingRead]:
     result = await session.execute(select(TransformerIndexBinding))
     bindings = result.scalars().all()
     return bindings
@@ -44,11 +45,11 @@ async def add_binding(binding: TransformerIndexBindingCreate, session: AsyncSess
 
 
 @router.get("/bindings/{binding_id}",
-            response_model=TransformerIndexBinding,
+            response_model=TransformerIndexBindingRead,
             status_code=status.HTTP_200_OK,
             name="get_binding",
             description="Get a binding")
-async def get_binding(binding_id: int, session: AsyncSession = Depends(get_session)) -> TransformerIndexBinding:
+async def get_binding(binding_id: int, session: AsyncSession = Depends(get_session)) -> TransformerIndexBindingRead:
     result = await session.execute(select(TransformerIndexBinding).where(TransformerIndexBinding.binding_id ==
                                                                          binding_id))
     binding = result.scalars().first()

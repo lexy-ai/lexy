@@ -1,11 +1,14 @@
 """ Client for interacting with the Transformer API. """
 
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 import httpx
 
 from lexy_py.exceptions import handle_response
 from .models import Transformer, TransformerUpdate
+
+if TYPE_CHECKING:
+    from lexy_py.client import LexyClient
 
 
 class TransformerClient:
@@ -17,9 +20,10 @@ class TransformerClient:
         client (httpx.Client): Synchronous API client.
     """
 
-    def __init__(self, aclient: httpx.AsyncClient, client: httpx.Client) -> None:
-        self.aclient = aclient
-        self.client = client
+    def __init__(self, lexy_client: "LexyClient") -> None:
+        self._lexy_client = lexy_client
+        self.aclient = self._lexy_client.aclient
+        self.client = self._lexy_client.client
 
     def list_transformers(self) -> list[Transformer]:
         """ Synchronously get a list of all transformers.
@@ -29,7 +33,7 @@ class TransformerClient:
         """
         r = self.client.get("/transformers")
         handle_response(r)
-        return [Transformer(**transformer) for transformer in r.json()]
+        return [Transformer(**transformer, client=self._lexy_client) for transformer in r.json()]
 
     async def alist_transformers(self) -> list[Transformer]:
         """ Asynchronously get a list of all transformers.
@@ -39,7 +43,7 @@ class TransformerClient:
         """
         r = await self.aclient.get("/transformers")
         handle_response(r)
-        return [Transformer(**transformer) for transformer in r.json()]
+        return [Transformer(**transformer, client=self._lexy_client) for transformer in r.json()]
 
     def get_transformer(self, transformer_id: str) -> Transformer:
         """ Synchronously get a transformer.
@@ -52,7 +56,7 @@ class TransformerClient:
         """
         r = self.client.get(f"/transformers/{transformer_id}")
         handle_response(r)
-        return Transformer(**r.json())
+        return Transformer(**r.json(), client=self._lexy_client)
 
     async def aget_transformer(self, transformer_id: str) -> Transformer:
         """ Asynchronously get a transformer.
@@ -65,7 +69,7 @@ class TransformerClient:
         """
         r = await self.aclient.get(f"/transformers/{transformer_id}")
         handle_response(r)
-        return Transformer(**r.json())
+        return Transformer(**r.json(), client=self._lexy_client)
 
     def add_transformer(self, transformer_id: str, path: str, description: Optional[str] = None) -> Transformer:
         """ Synchronously add a transformer.
@@ -83,7 +87,7 @@ class TransformerClient:
             data["description"] = description
         r = self.client.post("/transformers", json=data)
         handle_response(r)
-        return Transformer(**r.json())
+        return Transformer(**r.json(), client=self._lexy_client)
 
     async def aadd_transformer(self, transformer_id: str, path: str, description: Optional[str] = None) -> Transformer:
         """ Asynchronously add a transformer.
@@ -101,7 +105,7 @@ class TransformerClient:
             data["description"] = description
         r = await self.aclient.post("/transformers", json=data)
         handle_response(r)
-        return Transformer(**r.json())
+        return Transformer(**r.json(), client=self._lexy_client)
 
     def update_transformer(self, transformer_id: str, path: Optional[str] = None,
                            description: Optional[str] = None) -> Transformer:
@@ -118,10 +122,10 @@ class TransformerClient:
         transformer = TransformerUpdate(path=path, description=description)
         r = self.client.patch(f"/transformers/{transformer_id}", json=transformer.dict(exclude_none=True))
         handle_response(r)
-        return Transformer(**r.json())
+        return Transformer(**r.json(), client=self._lexy_client)
 
     async def aupdate_transformer(self, transformer_id: str, path: Optional[str] = None,
-                                    description: Optional[str] = None) -> Transformer:
+                                  description: Optional[str] = None) -> Transformer:
         """ Asynchronously update a transformer.
 
         Args:
@@ -135,7 +139,7 @@ class TransformerClient:
         transformer = TransformerUpdate(path=path, description=description)
         r = await self.aclient.patch(f"/transformers/{transformer_id}", json=transformer.dict(exclude_none=True))
         handle_response(r)
-        return Transformer(**r.json())
+        return Transformer(**r.json(), client=self._lexy_client)
 
     def delete_transformer(self, transformer_id: str) -> dict:
         """ Synchronously delete a transformer.

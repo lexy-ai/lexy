@@ -24,7 +24,7 @@ lexy.document.add_documents([
 ### Query index
 
 ```python
-lexy.index.query_index("default_text_embeddings", "test query", k=5)
+lexy.index.query_index("test query", "default_text_embeddings", k=5)
 ```
 
 ## Testing

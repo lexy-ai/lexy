@@ -1,11 +1,14 @@
 """ Client for interacting with the Indexes API. """
 
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
 
 import httpx
 
 from lexy_py.exceptions import handle_response
 from .models import Index, IndexUpdate
+
+if TYPE_CHECKING:
+    from lexy_py.client import LexyClient
 
 
 class IndexClient:
@@ -17,9 +20,10 @@ class IndexClient:
         client (httpx.Client): Synchronous API client.
     """
 
-    def __init__(self, aclient: httpx.AsyncClient, client: httpx.Client) -> None:
-        self.aclient = aclient
-        self.client = client
+    def __init__(self, lexy_client: "LexyClient") -> None:
+        self._lexy_client = lexy_client
+        self.aclient = self._lexy_client.aclient
+        self.client = self._lexy_client.client
 
     def list_indexes(self) -> list[Index]:
         """ Synchronously get a list of all indexes.
@@ -29,7 +33,7 @@ class IndexClient:
         """
         r = self.client.get("/indexes")
         handle_response(r)
-        return [Index(**index) for index in r.json()]
+        return [Index(**index, client=self._lexy_client) for index in r.json()]
 
     async def alist_indexes(self) -> list[Index]:
         """ Asynchronously get a list of all indexes.
@@ -39,7 +43,7 @@ class IndexClient:
         """
         r = await self.aclient.get("/indexes")
         handle_response(r)
-        return [Index(**index) for index in r.json()]
+        return [Index(**index, client=self._lexy_client) for index in r.json()]
 
     def get_index(self, index_id: str) -> Index:
         """ Synchronously get an index.
@@ -52,7 +56,7 @@ class IndexClient:
         """
         r = self.client.get(f"/indexes/{index_id}")
         handle_response(r)
-        return Index(**r.json())
+        return Index(**r.json(), client=self._lexy_client)
 
     async def aget_index(self, index_id: str) -> Index:
         """ Asynchronously get an index.
@@ -65,7 +69,7 @@ class IndexClient:
         """
         r = await self.aclient.get(f"/indexes/{index_id}")
         handle_response(r)
-        return Index(**r.json())
+        return Index(**r.json(), client=self._lexy_client)
 
     def add_index(self, index_id: str, description: Optional[str] = None,
                   index_table_schema: Optional[dict[str, Any]] = None,
@@ -104,7 +108,7 @@ class IndexClient:
         }
         r = self.client.post("/indexes", json=data)
         handle_response(r)
-        return Index(**r.json())
+        return Index(**r.json(), client=self._lexy_client)
 
     async def aadd_index(self, index_id: str, description: Optional[str] = None,
                          index_table_schema: Optional[dict[str, Any]] = None,
@@ -143,7 +147,7 @@ class IndexClient:
         }
         r = await self.aclient.post("/indexes", json=data)
         handle_response(r)
-        return Index(**r.json())
+        return Index(**r.json(), client=self._lexy_client)
 
     def delete_index(self, index_id: str) -> dict:
         """ Synchronously delete an index.
@@ -186,7 +190,7 @@ class IndexClient:
         )
         r = self.client.patch(f"/indexes/{index_id}", json=index.dict(exclude_none=True))
         handle_response(r)
-        return Index(**r.json())
+        return Index(**r.json(), client=self._lexy_client)
 
     async def aupdate_index(self, index_id: str, description: Optional[str] = None,
                             index_table_schema: Optional[dict[str, Any]] = None,
@@ -209,7 +213,7 @@ class IndexClient:
         )
         r = await self.aclient.patch(f"/indexes/{index_id}", json=index.dict(exclude_none=True))
         handle_response(r)
-        return Index(**r.json())
+        return Index(**r.json(), client=self._lexy_client)
 
     def list_index_records(self, index_id: str) -> list[dict]:
         """ Synchronously get a list of all index records for an index.
@@ -237,44 +241,46 @@ class IndexClient:
         handle_response(r)
         return r.json()
 
-    def query_index(self, index_id: str, query_string: str, k: int = 5, query_field: str = "embedding") -> list[dict]:
+    def query_index(self, query_string: str, index_id: str = "default_text_embeddings", query_field: str = "embedding",
+                    k: int = 5) -> list[dict]:
         """ Synchronously query an index.
 
         Args:
-            index_id (str): The ID of the index to query.
             query_string (str): The query string.
-            k (int, optional): The number of records to return. Defaults to 5.
+            index_id (str): The ID of the index to query. Defaults to "default_text_embeddings".
             query_field (str, optional): The field to query. Defaults to "embedding".
+            k (int, optional): The number of records to return. Defaults to 5.
 
         Returns:
             list[dict]: The query results.
         """
         params = {
             "query_string": query_string,
-            "k": k,
-            "query_field": query_field
+            "query_field": query_field,
+            "k": k
         }
         r = self.client.get(f"/indexes/{index_id}/records/query", params=params)
         handle_response(r)
         return r.json()["search_results"]
 
-    async def aquery_index(self, index_id: str, query_string: str, k: int = 5, query_field: str = "embedding") \
+    async def aquery_index(self, query_string: str, index_id: str = "default_text_embeddings",
+                           query_field: str = "embedding", k: int = 5) \
             -> list[dict]:
         """ Asynchronously query an index.
 
         Args:
-            index_id (str): The ID of the index to query.
             query_string (str): The query string.
-            k (int, optional): The number of records to return. Defaults to 5.
+            index_id (str): The ID of the index to query. Defaults to "default_text_embeddings".
             query_field (str, optional): The field to query. Defaults to "embedding".
+            k (int, optional): The number of records to return. Defaults to 5.
 
         Returns:
             list[dict]: The query results.
         """
         params = {
             "query_string": query_string,
-            "k": k,
-            "query_field": query_field
+            "query_field": query_field,
+            "k": k
         }
         r = await self.aclient.get(f"/indexes/{index_id}/records/query", params=params)
         handle_response(r)

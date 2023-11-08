@@ -19,7 +19,12 @@ def create_celery():
     # serialization settings
     celery_app.conf.update(task_serializer='pickle')
     celery_app.conf.update(result_serializer='pickle')
-    celery_app.conf.update(accept_content=['pickle', 'json', 'application/json'])
+    celery_app.conf.update(accept_content=[
+        'pickle',
+        'json',
+        'application/json',
+        # 'application/x-python-serialize',  # adding for flower
+    ])
 
     # celery_app.conf.update(result_expires=200)
     celery_app.conf.update(result_persistent=True)

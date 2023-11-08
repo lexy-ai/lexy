@@ -1,11 +1,14 @@
 """ Client for interacting with the Bindings API. """
 
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 import httpx
 
 from lexy_py.exceptions import handle_response
 from .models import TransformerIndexBinding, TransformerIndexBindingUpdate
+
+if TYPE_CHECKING:
+    from lexy_py.client import LexyClient
 
 
 class BindingClient:
@@ -17,9 +20,10 @@ class BindingClient:
         client (httpx.Client): Synchronous API client.
     """
 
-    def __init__(self, aclient: httpx.AsyncClient, client: httpx.Client) -> None:
-        self.aclient = aclient
-        self.client = client
+    def __init__(self, lexy_client: "LexyClient") -> None:
+        self._lexy_client = lexy_client
+        self.aclient = self._lexy_client.aclient
+        self.client = self._lexy_client.client
 
     def list_bindings(self) -> list[TransformerIndexBinding]:
         """ Synchronously get a list of all bindings.
@@ -29,7 +33,7 @@ class BindingClient:
         """
         r = self.client.get("/bindings")
         handle_response(r)
-        return [TransformerIndexBinding(**binding) for binding in r.json()]
+        return [TransformerIndexBinding(**binding, client=self._lexy_client) for binding in r.json()]
 
     async def alist_bindings(self) -> list[TransformerIndexBinding]:
         """ Asynchronously get a list of all bindings.
@@ -39,7 +43,7 @@ class BindingClient:
         """
         r = await self.aclient.get("/bindings")
         handle_response(r)
-        return [TransformerIndexBinding(**binding) for binding in r.json()]
+        return [TransformerIndexBinding(**binding, client=self._lexy_client) for binding in r.json()]
 
     def add_binding(self, collection_id: str, transformer_id: str, index_id: str, description: Optional[str] = None,
                     execution_params: Optional[dict] = None, transformer_params: Optional[dict] = None,
@@ -77,7 +81,7 @@ class BindingClient:
         )
         r = self.client.post("/bindings", json=binding.dict(exclude_none=True))
         handle_response(r)
-        return TransformerIndexBinding(**r.json())
+        return TransformerIndexBinding(**r.json(), client=self._lexy_client)
 
     async def aadd_binding(self, collection_id: str, transformer_id: str, index_id: str,
                            description: Optional[str] = None, execution_params: Optional[dict] = None,
@@ -116,7 +120,7 @@ class BindingClient:
         )
         r = await self.aclient.post("/bindings", json=binding.dict(exclude_none=True))
         handle_response(r)
-        return TransformerIndexBinding(**r.json())
+        return TransformerIndexBinding(**r.json(), client=self._lexy_client)
 
     def get_binding(self, binding_id: int) -> TransformerIndexBinding:
         """ Synchronously get a binding.
@@ -129,7 +133,7 @@ class BindingClient:
         """
         r = self.client.get(f"/bindings/{binding_id}")
         handle_response(r)
-        return TransformerIndexBinding(**r.json())
+        return TransformerIndexBinding(**r.json(), client=self._lexy_client)
 
     async def aget_binding(self, binding_id: int) -> TransformerIndexBinding:
         """ Asynchronously get a binding.
@@ -142,7 +146,7 @@ class BindingClient:
         """
         r = await self.aclient.get(f"/bindings/{binding_id}")
         handle_response(r)
-        return TransformerIndexBinding(**r.json())
+        return TransformerIndexBinding(**r.json(), client=self._lexy_client)
 
     def update_binding(self, binding_id: int, description: Optional[str] = None,
                        execution_params: Optional[dict] = None, transformer_params: Optional[dict] = None,
@@ -169,7 +173,7 @@ class BindingClient:
         )
         r = self.client.patch(f"/bindings/{binding_id}", json=binding.dict(exclude_none=True))
         handle_response(r)
-        return TransformerIndexBinding(**r.json())
+        return TransformerIndexBinding(**r.json(), client=self._lexy_client)
 
     async def aupdate_binding(self, binding_id: int, description: Optional[str] = None,
                               execution_params: Optional[dict] = None, transformer_params: Optional[dict] = None,
@@ -196,7 +200,7 @@ class BindingClient:
         )
         r = await self.aclient.patch(f"/bindings/{binding_id}", json=binding.dict(exclude_none=True))
         handle_response(r)
-        return TransformerIndexBinding(**r.json())
+        return TransformerIndexBinding(**r.json(), client=self._lexy_client)
 
     def delete_binding(self, binding_id: int) -> dict:
         """ Synchronously delete a binding.

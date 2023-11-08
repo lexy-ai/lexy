@@ -66,3 +66,14 @@ class TransformerIndexBindingUpdate(TransformerIndexBindingBase):
     transformer_params: Optional[dict[str, Any]] = None
     filters: Optional[dict[str, Any]] = None
     status: Optional[str] = None
+
+
+class TransformerIndexBindingRead(TransformerIndexBindingBase):
+    binding_id: int
+    created_at: datetime
+    updated_at: datetime
+    status: str
+    collection: Collection
+    transformer: Transformer
+    index: Index
+
