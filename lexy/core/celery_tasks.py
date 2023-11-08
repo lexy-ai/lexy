@@ -136,7 +136,11 @@ def save_result_to_index(self, res, document_id, text, index_id):
         # TODO: IndexClass needs to use kwargs from `index_fields`
         IndexClass(document_id=document_id, embedding=res.tolist(), text=text, task_id=self.request.parent_id)
     )
-    self.db.commit()
+    try:
+        self.db.commit()
+    except Exception as e:
+        self.db.rollback()
+        raise e
 
 
 @celery.task(base=DatabaseTask, bind=True, name="lexy.db.save_records_to_index")
@@ -159,8 +163,11 @@ def save_records_to_index(self, records: list[dict[str, Any]], document_id: UUID
         self.db.add(
             IndexClass(document_id=document_id, text=text, task_id=self.request.parent_id, **record)
         )
-
-    self.db.commit()
+    try:
+        self.db.commit()
+    except Exception as e:
+        self.db.rollback()
+        raise e
 
 
 @celery.task(base=DatabaseTask, bind=True, name="lexy.db.restart_db_worker")

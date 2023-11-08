@@ -28,15 +28,15 @@ class TestDocumentClient:
             {"content": "Test Document 2 Content"}
         ], collection_id="tmp_collection")
         assert len(docs_added) == 2
-        assert docs_added[0]["document"]["content"] == "Test Document 1 Content"
-        assert docs_added[1]["document"]["content"] == "Test Document 2 Content"
-        assert docs_added[0]["document"]["document_id"] is not None
-        assert docs_added[0]["document"]["created_at"] is not None
-        assert docs_added[0]["document"]["collection_id"] == "tmp_collection"
+        assert docs_added[0].content == "Test Document 1 Content"
+        assert docs_added[1].content == "Test Document 2 Content"
+        assert docs_added[0].document_id is not None
+        assert docs_added[0].created_at is not None
+        assert docs_added[0].collection_id == "tmp_collection"
 
         # get test document
-        test_document = lexy.document.get_document(docs_added[0]["document"]["document_id"])
-        assert test_document.document_id == docs_added[0]["document"]["document_id"]
+        test_document = lexy.document.get_document(docs_added[0].document_id)
+        assert test_document.document_id == docs_added[0].document_id
         assert test_document.content == "Test Document 1 Content"
 
         # update test document
@@ -44,7 +44,7 @@ class TestDocumentClient:
             document_id=test_document.document_id,
             content="Test Document 1 Updated Content"
         )
-        updated_document = lexy.document.get_document(doc_updated["document"]["document_id"])
+        updated_document = lexy.document.get_document(doc_updated.document_id)
         assert updated_document.document_id == test_document.document_id
         assert updated_document.content == "Test Document 1 Updated Content"
         assert updated_document.updated_at > updated_document.created_at
@@ -54,7 +54,7 @@ class TestDocumentClient:
         assert response == {"Say": "Document deleted!"}
 
         # delete remaining test documents
-        response = lexy.document.delete_document(document_id=docs_added[1]["document"]["document_id"])
+        response = lexy.document.delete_document(document_id=docs_added[1].document_id)
         assert response == {"Say": "Document deleted!"}
 
         # verify that there are no documents in the test collection
