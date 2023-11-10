@@ -5,7 +5,7 @@ from typing import Optional, TYPE_CHECKING
 import httpx
 
 from lexy_py.exceptions import handle_response
-from .models import TransformerIndexBinding, TransformerIndexBindingUpdate
+from .models import TransformerIndexBinding, TransformerIndexBindingCreate, TransformerIndexBindingUpdate
 
 if TYPE_CHECKING:
     from lexy_py.client import LexyClient
@@ -69,7 +69,7 @@ class BindingClient:
             transformer_params = {}
         if filters is None:
             filters = {}
-        binding = TransformerIndexBinding(
+        binding = TransformerIndexBindingCreate(
             collection_id=collection_id,
             transformer_id=transformer_id,
             index_id=index_id,
@@ -81,7 +81,7 @@ class BindingClient:
         )
         r = self.client.post("/bindings", json=binding.dict(exclude_none=True))
         handle_response(r)
-        return TransformerIndexBinding(**r.json(), client=self._lexy_client)
+        return TransformerIndexBinding(**r.json()["binding"], client=self._lexy_client)
 
     async def aadd_binding(self, collection_id: str, transformer_id: str, index_id: str,
                            description: Optional[str] = None, execution_params: Optional[dict] = None,
@@ -108,7 +108,7 @@ class BindingClient:
             transformer_params = {}
         if filters is None:
             filters = {}
-        binding = TransformerIndexBinding(
+        binding = TransformerIndexBindingCreate(
             collection_id=collection_id,
             transformer_id=transformer_id,
             index_id=index_id,
@@ -120,7 +120,7 @@ class BindingClient:
         )
         r = await self.aclient.post("/bindings", json=binding.dict(exclude_none=True))
         handle_response(r)
-        return TransformerIndexBinding(**r.json(), client=self._lexy_client)
+        return TransformerIndexBinding(**r.json()["binding"], client=self._lexy_client)
 
     def get_binding(self, binding_id: int) -> TransformerIndexBinding:
         """ Synchronously get a binding.

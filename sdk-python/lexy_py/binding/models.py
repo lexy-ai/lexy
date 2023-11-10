@@ -40,12 +40,24 @@ class TransformerIndexBindingModel(BaseModel):
     index: Optional[IndexModel] = None
 
     def __repr__(self):
-        return f"<TransformerIndexBinding " \
+        return f"<Binding(" \
                f"id={self.binding_id}, " \
                f"status={self.status.name}, " \
-               f"collection_id={self.collection_id}, " \
-               f"transformer_id={self.transformer_id}, " \
-               f"index_id={self.index_id}>"
+               f"collection='{self.collection_id}', " \
+               f"transformer='{self.transformer_id}', " \
+               f"index='{self.index_id}')>"
+
+
+class TransformerIndexBindingCreate(BaseModel):
+    """ Transformer-index binding create model """
+    collection_id: str
+    transformer_id: str
+    index_id: str
+    description: Optional[str] = None
+    execution_params: Optional[dict[str, Any]] = Field(default={})
+    transformer_params: Optional[dict[str, Any]] = Field(default={})
+    filters: Optional[dict[str, Any]] = Field(default={})
+    status: Optional[BindingStatus] = Field(default=BindingStatus.PENDING)
 
 
 class TransformerIndexBindingUpdate(BaseModel):

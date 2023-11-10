@@ -18,7 +18,7 @@ class DocumentModel(BaseModel):
     collection_id: Optional[str] = None
 
     def __repr__(self):
-        return f'<Document("{textwrap.shorten(self.content, 100, placeholder="...")}", {self.document_id})>'
+        return f'<Document("{textwrap.shorten(self.content, 100, placeholder="...")}")>'
 
     def __init__(self, content: str, **data: Any):
         super().__init__(content=content, **data)
