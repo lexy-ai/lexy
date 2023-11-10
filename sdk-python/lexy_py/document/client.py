@@ -61,6 +61,14 @@ class DocumentClient:
 
         Returns:
             list[Document]: A list of created documents.
+
+        Examples:
+            >>> from lexy_py import LexyClient
+            >>> lexy = LexyClient()
+            >>> docs_added = lexy.add_documents(docs=[
+            ...     {"content": "My first document"},
+            ...     {"content": "My second document"}
+            ... ], collection_id="my_collection")
         """
         processed_docs = self._process_docs(docs)
 

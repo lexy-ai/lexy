@@ -34,7 +34,6 @@ def add_sample_data_to_db(session=db):
         session.add(models.Document(**sample_data["document_3"]))
         session.add(models.Document(**sample_data["document_4"]))
         session.add(models.Document(**sample_data["document_5"]))
-        session.add(models.Document(**sample_data["document_6"]))
         session.commit()
     if session.query(models.Transformer).count() > 0:
         logger.info("Transformer data already exists")

@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 
 class CollectionModel(BaseModel):
     """ Collection model """
-
     collection_id: str = Field(
         min_length=1,
         max_length=255,
@@ -22,12 +21,11 @@ class CollectionModel(BaseModel):
     updated_at: Optional[datetime] = None
 
     def __repr__(self):
-        return f"<Collection('{self.collection_id}', description={self.description})>"
+        return f"<Collection('{self.collection_id}', description='{self.description}')>"
 
 
 class CollectionUpdate(BaseModel):
     """ Collection update model """
-
     description: Optional[str] = None
 
 
@@ -45,6 +43,18 @@ class Collection(CollectionModel):
             raise ValueError("API client has not been set.")
         return self._client
 
+    def add_documents(self, docs: Document | list[Document] | dict | list[dict]) -> list[Document]:
+        """ Synchronously add documents to the collection.
+
+        Args:
+            docs (Document | list[Document] | dict | list[dict]): The documents to add.
+
+        Returns:
+            list[Document]: The added documents.
+        """
+        return self.client.document.add_documents(docs, collection_id=self.collection_id)
+
+    # TODO: add pagination
     def list_documents(self) -> list[Document]:
         """ Synchronously get all documents in the collection.
 

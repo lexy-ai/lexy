@@ -27,10 +27,12 @@ async def get_bindings(session: AsyncSession = Depends(get_session)) -> list[Tra
 
 
 @router.post("/bindings",
+             response_model=dict[str, TransformerIndexBindingRead | list[dict]],
              status_code=status.HTTP_201_CREATED,
              name="add_binding",
              description="Create a new binding")
-async def add_binding(binding: TransformerIndexBindingCreate, session: AsyncSession = Depends(get_session)) -> dict:
+async def add_binding(binding: TransformerIndexBindingCreate, session: AsyncSession = Depends(get_session)) \
+        -> dict[str, TransformerIndexBindingRead | list[dict]]:
     binding = TransformerIndexBinding(**binding.dict())
     session.add(binding)
     await session.commit()

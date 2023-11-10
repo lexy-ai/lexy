@@ -12,21 +12,17 @@ sample_data = {
         "collection_id": "default"
     },
     "document_2": {
-        "content": "Meh. This one is just ok.",
-        "collection_id": "default"
-    },
-    "document_3": {
         "content": "Starlink is a satellite internet constellation operated by American aerospace company SpaceX, "
                    "providing coverage to over 60 countries.",
         "collection_id": "default"
     },
-    "document_4": {
+    "document_3": {
         "content": "A latent space, also known as a latent feature space or embedding space, is an embedding of a set "
                    "of items within a manifold in which items resembling each other are positioned closer to one "
                    "another.",
         "collection_id": "default"
     },
-    "document_5": {
+    "document_4": {
         "content": "import this",
         "collection_id": "code",
         "meta": {
@@ -35,7 +31,7 @@ sample_data = {
             "language": "python"
         }
     },
-    "document_6": {
+    "document_5": {
         "content": "def multiply(a, b):"
                    "    return a * b"
                    ""
@@ -52,7 +48,7 @@ sample_data = {
     "transformer_1": {
         "transformer_id": "text.embeddings.minilm",
         "path": "lexy.transformers.embeddings.text_embeddings",
-        "description": "Text embeddings using Hugging Face model 'sentence-transformers/all-MiniLM-L6-v2'"
+        "description": "Text embeddings using \"sentence-transformers/all-MiniLM-L6-v2\""
     },
     "transformer_2": {
         "transformer_id": "text.counter.word_counter",

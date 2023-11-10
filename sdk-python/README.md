@@ -7,7 +7,7 @@ This is the Python SDK for Lexy.
 ### Initiate client
 
 ```python
-from lexy_py.client import LexyClient
+from lexy_py import LexyClient
 
 lexy = LexyClient()
 ```
@@ -15,7 +15,7 @@ lexy = LexyClient()
 ### Add documents
 
 ```python
-lexy.document.add_documents([
+lexy.add_documents([
     {"content": "This is a test document"},
     {"content": "This is another one!"},
 ])
@@ -24,7 +24,7 @@ lexy.document.add_documents([
 ### Query index
 
 ```python
-lexy.index.query_index("test query", "default_text_embeddings", k=5)
+lexy.query_index("test query", "default_text_embeddings", k=5)
 ```
 
 ## Testing
