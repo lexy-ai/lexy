@@ -4,8 +4,13 @@ site_url: https://getlexy.com
 docs_dir: docs
 site_dir: site
 
+repo_url: https://github.com/lexy-ai/lexy
+repo_name: lexy-ai/lexy
+
 theme:
   name: material
+  features:
+    - content.tabs.link
   icon:
     logo: material/wizard-hat
   palette:
@@ -25,7 +30,39 @@ theme:
         icon: material/weather-sunny
         name: Switch to light mode
 
-  markdown_extensions:
-    - pymdownx.emoji:
-        emoji_index: !!python/name:materialx.emoji.twemoji
-        emoji_generator: !!python/name:materialx.emoji.to_svg
+markdown_extensions:
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search
+  - encryptcontent:
+      title_prefix: '🔐 '
+      password_inventory:
+        _global:
+          lexy: !ENV [MKDOCS_ENCRYPT_PW_LEXY, 'guest']
+          lexy_trial_partner1: !ENV [MKDOCS_ENCRYPT_PW_PARTNER1, 'lexypartner1']
+          lexy_trial_partner2: !ENV [MKDOCS_ENCRYPT_PW_PARTNER2, 'lexypartner2']
+          lexy_trial_partner3: !ENV [MKDOCS_ENCRYPT_PW_PARTNER3, 'lexypartner3']
+      encrypted_something:
+        md-header__inner: [ nav, class ] #Header
+        md-footer__inner: [ nav, class ] #Footer
+        md-nav: [ nav, class ] #Menu and toc
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Quickstart: quickstart.md
+
+extra:
+  generator: false

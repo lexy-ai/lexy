@@ -1,3 +1,11 @@
 # Welcome to Lexy
 
-There's nothing to see here...yet.
+Lexy is a data framework for building AI-powered applications.
+
+## Installation
+
+Follow the steps in the [installation guide](installation.md) to install Lexy.
+
+## Quickstart
+
+See the [quickstart guide](quickstart.md) to get started with Lexy.
