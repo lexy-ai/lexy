@@ -3,6 +3,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from lexy.db.seed import add_sample_data_to_db
 from lexy.db.session import get_session, create_db_and_tables, recreate_db_and_tables
+from lexy.core.events import celery
 
 
 router = APIRouter()
@@ -45,3 +46,32 @@ async def recreate_db():
 async def add_sample_data(session: AsyncSession = Depends(get_session)):
     await add_sample_data_to_db(session=session)
     return {"Say": "Sample data added!"}
+
+
+@router.get("/celery-conf",
+            status_code=status.HTTP_200_OK,
+            name="Celery Conf")
+async def celery_conf(with_defaults: bool = False):
+    return {"Celery conf": celery.control.inspect().conf(with_defaults=with_defaults)}
+
+
+@router.get("/celery-status",
+            status_code=status.HTTP_200_OK,
+            name="Celery Status")
+async def celery_status():
+    return {"Celery status": celery.control.inspect().stats()}
+
+
+@router.get("/celery-registered-tasks",
+            status_code=status.HTTP_200_OK,
+            name="Celery Registered Tasks")
+async def celery_registered_tasks():
+    return {"Celery registered tasks": celery.control.inspect().registered_tasks(),
+            "celery.tasks.keys()": sorted(celery.tasks.keys())}
+
+
+@router.get("/celery-active",
+            status_code=status.HTTP_200_OK,
+            name="Celery Active")
+async def celery_active():
+    return {"Celery active": celery.control.inspect().active()}

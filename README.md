@@ -27,6 +27,7 @@ poetry install --no-root --with test,docs -E "lexy_transformers"
 
 # install lexy in editable mode
 pip install -e .
+pip install -e sdk-python
 
 # initialize .env file
 touch .env
@@ -56,14 +57,5 @@ The need for these manual operations result from the codebase evolving organical
 
 ### PyCharm issues
 
-If your virtualenv keeps getting bjorked by PyCharm, rerun this:
-
-```Shell
-deactivate || true
-rm -rf venv
-python -m venv venv
-source venv/bin/activate
-pip install poetry
-poetry install --no-root --with test,docs -E "lexy_transformers"
-pip install -e .
-```
+If your virtualenv keeps getting bjorked by PyCharm, make sure that you're following the instructions above verbatim, 
+and using `venv` instead of `.venv` for the path of your virtual environment.

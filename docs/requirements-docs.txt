@@ -1,5 +1,6 @@
-mkdocs-material
-mkdocstrings
-pygments
-pymdown-extensions
-mkdocs-git-revision-date-localized-plugin
+mkdocs-material~=9.3.1
+mkdocs-encryptcontent-plugin~=3.0.0
+mkdocs-git-revision-date-localized-plugin~=0.9.3
+mkdocstrings~=0.23.0
+pygments~=2.16.1
+pymdown-extensions~=10.3

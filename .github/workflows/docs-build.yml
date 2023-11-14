@@ -20,6 +20,10 @@ jobs:
           path: .cache
           restore-keys: |
             mkdocs-material-
-      - run: pip install mkdocs-material
-      # https://github.com/mkdocs/mkdocs/issues/973
+      - run: pip install -r docs/requirements-docs.txt
       - run: mkdocs gh-deploy --force -f docs/mkdocs.yml
+env:
+  MKDOCS_ENCRYPT_PW_LEXY: ${{ secrets.MKDOCS_ENCRYPT_PW_LEXY }}
+  MKDOCS_ENCRYPT_PW_PARTNER1: ${{ secrets.MKDOCS_ENCRYPT_PW_PARTNER1 }}
+  MKDOCS_ENCRYPT_PW_PARTNER2: ${{ secrets.MKDOCS_ENCRYPT_PW_PARTNER2 }}
+  MKDOCS_ENCRYPT_PW_PARTNER3: ${{ secrets.MKDOCS_ENCRYPT_PW_PARTNER3 }}
