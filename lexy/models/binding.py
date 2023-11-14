@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Optional
 
-from sqlalchemy import Column, DateTime, func
+from sqlalchemy import Column, DateTime, ForeignKey, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import SQLModel, Field, Relationship
 
@@ -19,9 +19,17 @@ class BindingStatus(str, Enum):
 
 
 class TransformerIndexBindingBase(SQLModel):
-    collection_id: str = Field(default="default", foreign_key="collections.collection_id")
+    # TODO: update ON DELETE behavior to switch to "detached" instead of deleting
+    collection_id: str = Field(
+        sa_column_args=(ForeignKey('collections.collection_id', ondelete='CASCADE'),),
+        default="default"
+    )
     transformer_id: str = Field(default=None, foreign_key="transformers.transformer_id")
-    index_id: str = Field(default=None, foreign_key="indexes.index_id")
+    # TODO: update ON DELETE behavior to switch to "detached" instead of deleting
+    index_id: str = Field(
+        sa_column_args=(ForeignKey('indexes.index_id', ondelete='CASCADE'),),
+        default=None
+    )
 
     description: Optional[str] = None
     execution_params: dict[str, Any] = Field(default={}, sa_column=Column(JSONB, nullable=False))

@@ -10,6 +10,7 @@ repo_name: lexy-ai/lexy
 theme:
   name: material
   features:
+    - content.code.copy
     - content.tabs.link
   icon:
     logo: material/wizard-hat
@@ -31,6 +32,7 @@ theme:
         name: Switch to light mode
 
 markdown_extensions:
+  - pymdownx.details
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg

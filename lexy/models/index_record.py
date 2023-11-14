@@ -11,7 +11,8 @@ class IndexRecordBase(SQLModel):
     document_id: Optional[UUID] = Field(
         sa_column_args=(ForeignKey('documents.document_id', ondelete='CASCADE'),),
         index=True,
-        nullable=True)
+        nullable=True
+    )
     custom_id: Optional[str] = Field(default=None)
     meta: Optional[dict[Any, Any]] = Field(sa_column=Column(JSONB), default={})
 
