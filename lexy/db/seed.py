@@ -1,7 +1,7 @@
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from lexy.db.sample_data import sample_data
-from lexy.models.binding import TransformerIndexBinding
+from lexy.models.binding import Binding
 from lexy.models.collection import Collection
 from lexy.models.document import Document
 from lexy.models.index import Index
@@ -23,5 +23,5 @@ async def add_sample_data_to_db(session: AsyncSession):
     await session.commit()
     session.add(Index(**sample_data["index_1"]))
     await session.commit()
-    session.add(TransformerIndexBinding(**sample_data["binding_1"]))
+    session.add(Binding(**sample_data["binding_1"]))
     await session.commit()

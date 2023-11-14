@@ -19,8 +19,8 @@ class BindingStatus(str, Enum):
     DETACHED = "detached"
 
 
-class TransformerIndexBindingModel(BaseModel):
-    """ Transformer-index binding model """
+class BindingModel(BaseModel):
+    """ Binding model """
 
     binding_id: Optional[int] = None
     collection_id: Optional[str] = None
@@ -48,8 +48,8 @@ class TransformerIndexBindingModel(BaseModel):
                f"index='{self.index_id}')>"
 
 
-class TransformerIndexBindingCreate(BaseModel):
-    """ Transformer-index binding create model """
+class BindingCreate(BaseModel):
+    """ Binding create model """
     collection_id: str
     transformer_id: str
     index_id: str
@@ -60,8 +60,8 @@ class TransformerIndexBindingCreate(BaseModel):
     status: Optional[BindingStatus] = Field(default=BindingStatus.PENDING)
 
 
-class TransformerIndexBindingUpdate(BaseModel):
-    """ Transformer-index binding update model """
+class BindingUpdate(BaseModel):
+    """ Binding update model """
     description: Optional[str] = None
     execution_params: Optional[dict[str, Any]] = None
     transformer_params: Optional[dict[str, Any]] = None
@@ -69,8 +69,8 @@ class TransformerIndexBindingUpdate(BaseModel):
     status: Optional[BindingStatus] = None
 
 
-class TransformerIndexBinding(TransformerIndexBindingModel):
-    __doc__ = TransformerIndexBindingModel.__doc__
+class Binding(BindingModel):
+    __doc__ = BindingModel.__doc__
     _client: Optional["LexyClient"] = PrivateAttr(default=None)
 
     def __init__(self, **data: Any):

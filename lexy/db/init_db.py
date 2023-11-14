@@ -46,10 +46,10 @@ def add_sample_data_to_db(session=db):
     else:
         session.add(models.Index(**sample_data["index_1"]))
         session.commit()
-    if session.query(models.TransformerIndexBinding).count() > 0:
-        logger.info("TransformerIndexBinding data already exists")
+    if session.query(models.Binding).count() > 0:
+        logger.info("Binding data already exists")
     else:
-        session.add(models.TransformerIndexBinding(**sample_data["binding_1"]))
+        session.add(models.Binding(**sample_data["binding_1"]))
         session.commit()
 
 

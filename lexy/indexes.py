@@ -12,7 +12,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlmodel import ARRAY, SQLModel, Field, Session, select
 
 from lexy.db.session import sync_engine
-from lexy.models.binding import TransformerIndexBinding
+from lexy.models.binding import Binding
 from lexy.models.index import Index
 from lexy.models.index_record import IndexRecordBaseTable
 
@@ -106,24 +106,24 @@ class IndexManager(object):
             self._db = SyncSessionLocal()
         return self._db
 
-    def get_bindings(self) -> list[TransformerIndexBinding]:
+    def get_bindings(self) -> list[Binding]:
         """ Get all bindings """
-        bindings = self.db.exec(select(TransformerIndexBinding)).all()
+        bindings = self.db.exec(select(Binding)).all()
         return bindings
 
-    def get_binding(self, binding_id: int) -> TransformerIndexBinding:
+    def get_binding(self, binding_id: int) -> Binding:
         """ Get a binding by id
 
         Args:
             binding_id (int): binding id
 
         Returns:
-            TransformerIndexBinding: binding
+            Binding: binding
 
         Raises:
             ValueError: if binding is not found
         """
-        binding = self.db.exec(select(TransformerIndexBinding).filter(TransformerIndexBinding.binding_id == binding_id)).first()
+        binding = self.db.exec(select(Binding).filter(Binding.binding_id == binding_id)).first()
         if not binding:
             raise ValueError(f"Binding {binding_id} not found")
         return binding
@@ -274,7 +274,7 @@ class IndexManager(object):
         return embedding_ddl
 
     # TODO: this should probably live outside the index manager
-    def switch_binding_status(self, binding: TransformerIndexBinding, status: str) -> TransformerIndexBinding:
+    def switch_binding_status(self, binding: Binding, status: str) -> Binding:
         """ Switch binding status """
         prev_status = binding.status
         logger.debug(f"Switching status for binding {binding}: from '{prev_status}' to '{status}'")

@@ -18,7 +18,7 @@ class BindingStatus(str, Enum):
     DETACHED = "detached"
 
 
-class TransformerIndexBindingBase(SQLModel):
+class BindingBase(SQLModel):
     # TODO: update ON DELETE behavior to switch to "detached" instead of deleting
     collection_id: str = Field(
         sa_column_args=(ForeignKey('collections.collection_id', ondelete='CASCADE'),),
@@ -39,8 +39,8 @@ class TransformerIndexBindingBase(SQLModel):
     # run_frequency: str = Field(default="daily", nullable=False)
 
 
-class TransformerIndexBinding(TransformerIndexBindingBase, table=True):
-    __tablename__ = "transformer_index_bindings"
+class Binding(BindingBase, table=True):
+    __tablename__ = "bindings"
     binding_id: int = Field(default=None, primary_key=True)
     created_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now()),
@@ -49,11 +49,9 @@ class TransformerIndexBinding(TransformerIndexBindingBase, table=True):
         sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
     )
     status: str = Field(default=BindingStatus.PENDING, nullable=False)
-    collection: Collection = Relationship(back_populates="transformer_index_bindings",
-                                          sa_relationship_kwargs={'lazy': 'selectin'})
-    transformer: Transformer = Relationship(back_populates="index_bindings",
-                                            sa_relationship_kwargs={'lazy': 'selectin'})
-    index: Index = Relationship(back_populates="transformer_bindings", sa_relationship_kwargs={'lazy': 'selectin'})
+    collection: Collection = Relationship(back_populates="bindings", sa_relationship_kwargs={'lazy': 'selectin'})
+    transformer: Transformer = Relationship(back_populates="bindings", sa_relationship_kwargs={'lazy': 'selectin'})
+    index: Index = Relationship(back_populates="bindings", sa_relationship_kwargs={'lazy': 'selectin'})
 
     def __repr__(self):
         return f"<Binding(" \
@@ -64,11 +62,11 @@ class TransformerIndexBinding(TransformerIndexBindingBase, table=True):
                f"index='{self.index_id}')>"
 
 
-class TransformerIndexBindingCreate(TransformerIndexBindingBase):
+class BindingCreate(BindingBase):
     pass
 
 
-class TransformerIndexBindingUpdate(TransformerIndexBindingBase):
+class BindingUpdate(BindingBase):
     description: Optional[str] = None
     execution_params: Optional[dict[str, Any]] = None
     transformer_params: Optional[dict[str, Any]] = None
@@ -76,7 +74,7 @@ class TransformerIndexBindingUpdate(TransformerIndexBindingBase):
     status: Optional[str] = None
 
 
-class TransformerIndexBindingRead(TransformerIndexBindingBase):
+class BindingRead(BindingBase):
     binding_id: int
     created_at: datetime
     updated_at: datetime
@@ -84,4 +82,3 @@ class TransformerIndexBindingRead(TransformerIndexBindingBase):
     collection: Collection
     transformer: Transformer
     index: Index
-

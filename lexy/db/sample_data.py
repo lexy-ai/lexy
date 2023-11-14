@@ -133,7 +133,7 @@ sample_data = {
         "collection_id": "default",
         "transformer_id": "text.embeddings.minilm",
         "index_id": "default_text_embeddings",
-        "description": "Default transformer-index binding",
+        "description": "Default binding",
         "execution_params": {},
         "transformer_params": {
             "lexy_index_fields": [
