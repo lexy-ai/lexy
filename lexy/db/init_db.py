@@ -27,16 +27,6 @@ def add_default_data_to_db(session=db):
         session.add(models.Collection(**default_data["code_collection"]))
         session.commit()
 
-    # if session.query(models.Document).count() > 0:
-    #     logger.info("Document data already exists")
-    # else:
-    #     session.add(models.Document(**default_data["document_1"]))
-    #     session.add(models.Document(**default_data["document_2"]))
-    #     session.add(models.Document(**default_data["document_3"]))
-    #     session.add(models.Document(**default_data["document_4"]))
-    #     session.add(models.Document(**default_data["document_5"]))
-    #     session.commit()
-
     logger.info("Adding default transformers")
     if session.query(models.Transformer).count() > 0:
         logger.warning("Transformer data already exists - skipping transformer data")
