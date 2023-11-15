@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import close_all_sessions
 from sqlmodel import SQLModel
 
-from lexy.db.sample_data import sample_data
+from lexy.db.sample_data import default_data, sample_docs
 from lexy.db.session import sync_engine
 from lexy import models  # noqa
 
@@ -16,38 +16,60 @@ SyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_eng
 db = SyncSessionLocal()
 
 
-def add_sample_data_to_db(session=db):
-    # check if data already exists
+def add_default_data_to_db(session=db):
+    # issue a warning if default seed data already exists in the database
+
+    logger.info("Adding default collections")
     if session.query(models.Collection).count() > 0:
-        logger.info("Collection data already exists")
+        logger.warning("Collection data already exists - skipping collection data")
     else:
-        session.add(models.Collection(**sample_data["default_collection"]))
-        session.add(models.Collection(**sample_data["code_collection"]))
+        session.add(models.Collection(**default_data["default_collection"]))
+        session.add(models.Collection(**default_data["code_collection"]))
         session.commit()
-    if session.query(models.Document).count() > 0:
-        logger.info("Document data already exists")
-    else:
-        session.add(models.Document(**sample_data["document_1"]))
-        session.add(models.Document(**sample_data["document_2"]))
-        session.add(models.Document(**sample_data["document_3"]))
-        session.add(models.Document(**sample_data["document_4"]))
-        session.add(models.Document(**sample_data["document_5"]))
-        session.commit()
+
+    # if session.query(models.Document).count() > 0:
+    #     logger.info("Document data already exists")
+    # else:
+    #     session.add(models.Document(**default_data["document_1"]))
+    #     session.add(models.Document(**default_data["document_2"]))
+    #     session.add(models.Document(**default_data["document_3"]))
+    #     session.add(models.Document(**default_data["document_4"]))
+    #     session.add(models.Document(**default_data["document_5"]))
+    #     session.commit()
+
+    logger.info("Adding default transformers")
     if session.query(models.Transformer).count() > 0:
-        logger.info("Transformer data already exists")
+        logger.warning("Transformer data already exists - skipping transformer data")
     else:
-        session.add(models.Transformer(**sample_data["transformer_1"]))
-        session.add(models.Transformer(**sample_data["transformer_2"]))
+        session.add(models.Transformer(**default_data["transformer_1"]))
+        session.add(models.Transformer(**default_data["transformer_2"]))
         session.commit()
+
+    logger.info("Adding default indexes")
     if session.query(models.Index).count() > 0:
-        logger.info("Index data already exists")
+        logger.warning("Index data already exists - skipping index data")
     else:
-        session.add(models.Index(**sample_data["index_1"]))
+        session.add(models.Index(**default_data["index_1"]))
         session.commit()
+
+    logger.info("Adding default bindings")
     if session.query(models.Binding).count() > 0:
-        logger.info("Binding data already exists")
+        logger.warning("Binding data already exists - skipping binding data")
     else:
-        session.add(models.Binding(**sample_data["binding_1"]))
+        session.add(models.Binding(**default_data["binding_1"]))
+        session.commit()
+
+
+def add_sample_docs_to_db(session=db):
+    # issue a warning if sample documents already exist in the database
+    logger.info("Adding sample documents")
+    if session.query(models.Document).count() > 0:
+        logger.warning("Sample documents already exist - skipping sample documents")
+    else:
+        # adding sample documents for code collection only - will add sample documents for default collection once
+        # the default index and binding are created through appropriate crud endpoints
+        for doc in sample_docs["code_collection_sample_docs"]:
+            session.add(models.Document(**doc))
         session.commit()
 
 
@@ -57,17 +79,13 @@ def init_db(session=db, seed_data=False):
     logger.info("Creating tables")
     SQLModel.metadata.create_all(sync_engine)
 
-    # TODO: add data via crud functions
+    # TODO: add data via crud functions instead of directly adding to the session
     if seed_data is True:
-        # TODO: replace this with default data in step below
-        logger.info("Adding sample data")
-        add_sample_data_to_db(session)
+        logger.info("Adding default seed data")
+        add_default_data_to_db(session)
 
-        logger.info("Creating default indexes")
-        # TODO: create default indexes - currently this is done in add_sample_data_to_db
-
-        logger.info("Creating default bindings")
-        # TODO: create default bindings - currently this is done in add_sample_data_to_db
+        logger.info("Adding sample documents")
+        add_sample_docs_to_db(session)
 
     logger.info("Finished initializing database")
 

@@ -23,5 +23,7 @@ celery = app.celery_app
 @app.on_event("startup")
 def on_startup():
     print('starting app')
-    # this subsequent call to init_db() is used by the index manager
+    # this subsequent call to init_db() is only used by the index manager to create
+    # the default index table (default_text_embeddings) if it doesn't exist - we may
+    # be able to remove this call once seed data is added through proper crud endpoints
     init_db()

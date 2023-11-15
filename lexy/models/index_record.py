@@ -42,24 +42,3 @@ class IndexRecordBaseTable(IndexRecordBase):
     document: "Document" = Relationship(back_populates="index_records")
     task_id: Optional[UUID] = Field(default=None)
 
-
-### PRIOR APPROACH ###
-# index_data = sample_data["index_1"]
-# index_data["index_table_name"] = f"zzidx__{index_data['index_id']}"  # "zzidx__default_text_embeddings"
-#
-# # need to construct this from schema
-# field_definitions = {
-#     "embedding": (list[float], Field(sa_column=Column(ARRAY(REAL)))),
-#     "text": (Optional[str], None),
-# }
-#
-# tbl2 = create_model(
-#     index_data["index_table_schema"]["title"],
-#     __base__=(IndexRecordBaseTable,),
-#     __cls_kwargs__={"table": True},
-#     __module__=__name__,
-#     **field_definitions,
-#     **{"__tablename__": index_data["index_table_name"],
-#        "__index_id__": index_data["index_id"]},
-# )
-### END OF PRIOR APPROACH ###
