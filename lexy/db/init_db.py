@@ -4,11 +4,9 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import close_all_sessions
 from sqlmodel import SQLModel
 
-from lexy.db.seed import sample_data
+from lexy.db.sample_data import sample_data
 from lexy.db.session import sync_engine
 from lexy import models  # noqa
-# from lexy.indexes import IndexManager
-# from lexy.indexes import index_manager
 
 
 logger = logging.getLogger(__name__)
@@ -53,23 +51,23 @@ def add_sample_data_to_db(session=db):
         session.commit()
 
 
-def init_db(session=db):
+def init_db(session=db, seed_data=False):
     logger.info("Initializing database")
 
     logger.info("Creating tables")
     SQLModel.metadata.create_all(sync_engine)
 
-    logger.info("Adding sample data")
-    # TODO: replace this with default data in step below
-    add_sample_data_to_db(session)
+    # TODO: add data via crud functions
+    if seed_data is True:
+        # TODO: replace this with default data in step below
+        logger.info("Adding sample data")
+        add_sample_data_to_db(session)
 
-    logger.info("Creating default indexes")
-    # TODO: create default indexes - currently this is done in add_sample_data_to_db
+        logger.info("Creating default indexes")
+        # TODO: create default indexes - currently this is done in add_sample_data_to_db
 
-    logger.info("Creating index models")
-    # index_manager = IndexManager()
-    # index_manager.create_index_models()
-    SQLModel.metadata.create_all(sync_engine)
+        logger.info("Creating default bindings")
+        # TODO: create default bindings - currently this is done in add_sample_data_to_db
 
     logger.info("Finished initializing database")
 
@@ -97,6 +95,6 @@ def drop_tables(session=db, drop_all=True):
 def reset_db(session=db, drop_all=True):
     logger.info("Resetting database")
     drop_tables(session, drop_all=drop_all)
-    init_db(session)
+    init_db(session, seed_data=True)
     logger.info("Finished resetting database")
 

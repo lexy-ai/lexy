@@ -22,13 +22,15 @@ class BindingBase(SQLModel):
     # TODO: update ON DELETE behavior to switch to "detached" instead of deleting
     collection_id: str = Field(
         sa_column_args=(ForeignKey('collections.collection_id', ondelete='CASCADE'),),
-        default="default"
+        default="default",
+        nullable=True
     )
     transformer_id: str = Field(default=None, foreign_key="transformers.transformer_id")
     # TODO: update ON DELETE behavior to switch to "detached" instead of deleting
     index_id: str = Field(
         sa_column_args=(ForeignKey('indexes.index_id', ondelete='CASCADE'),),
-        default=None
+        default=None,
+        nullable=True
     )
 
     description: Optional[str] = None

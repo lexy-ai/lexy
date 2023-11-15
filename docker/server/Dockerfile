@@ -23,6 +23,11 @@ RUN pip install poetry
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-root -E "lexy_transformers"
 
-#ENV PATH="/.venv/bin:$PATH"
+ENV PYTHONPATH="/home/app:${PYTHONPATH}"
 
-CMD ["poetry", "run", "uvicorn", "lexy.main:app", "--host", "0.0.0.0", "--port", "9900", "--reload"]
+# Copy init script
+COPY ./docker/server/start-server.sh /start-server.sh
+RUN chmod +x /start-server.sh
+
+# Run the start script, it will check for a /lexy/prestart.sh script (e.g. for DB initialization)
+CMD ["/start-server.sh"]
