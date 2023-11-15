@@ -15,7 +15,7 @@ class TestDocumentClient:
 
     def test_documents(self):
         # get all documents
-        documents = lexy.document.list_documents()
+        documents = lexy.document.list_documents(collection_id='code')
         assert len(documents) > 0
 
         # create a test collection for test documents
@@ -66,10 +66,10 @@ class TestDocumentClient:
         assert response == {"Say": "Collection deleted!"}
 
     def test_list_documents(self):
-        documents = lexy.document.list_documents()
+        documents = lexy.document.list_documents(collection_id='code')
         assert len(documents) > 0
 
     @pytest.mark.asyncio
     async def test_alist_documents(self):
-        documents = await lexy.document.alist_documents()
+        documents = await lexy.document.alist_documents(collection_id='code')
         assert len(documents) > 0

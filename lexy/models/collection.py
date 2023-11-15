@@ -1,8 +1,12 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy import Column, DateTime, func
 from sqlmodel import SQLModel, Field, Relationship
+
+if TYPE_CHECKING:
+    from lexy.models.binding import Binding
+    from lexy.models.document import Document
 
 
 class CollectionBase(SQLModel):
@@ -25,8 +29,7 @@ class Collection(CollectionBase, table=True):
         sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
     )
     documents: list["Document"] = Relationship(back_populates="collection", sa_relationship_kwargs={'lazy': 'subquery'})
-    transformer_index_bindings: list["TransformerIndexBinding"] = \
-        Relationship(back_populates="collection", sa_relationship_kwargs={'lazy': 'selectin'})
+    bindings: list["Binding"] = Relationship(back_populates="collection", sa_relationship_kwargs={'lazy': 'selectin'})
 
 
 class CollectionCreate(CollectionBase):

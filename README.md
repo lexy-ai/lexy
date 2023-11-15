@@ -36,15 +36,6 @@ touch .env
 docker-compose up --build -d
 ```
 
-### What now?
-
-Check whether everything boots via docker status checks. If not, try the following:
-
-1. Uncomment code under `@app.on_event("startup")` in `main.py` (remember to comment it back after you're done).
-2. Comment out `index_manager.create_index_models()` in `indexes.py`
-
-The need for these manual operations result from the codebase evolving organically, without us having gotten around to implementing proper migrations. If you feel up for it, you should do so! 
-
 ### Where to find services
 
 | Service      | URL                        | Notes                                |

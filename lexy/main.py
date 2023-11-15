@@ -4,7 +4,6 @@ from lexy.core.celery_app import create_celery
 from lexy.core.config import settings
 from lexy.api.router import lexy_api
 from lexy.db.init_db import init_db
-from lexy.db.session import create_db_and_tables
 
 
 app = FastAPI(
@@ -23,12 +22,8 @@ celery = app.celery_app
 
 @app.on_event("startup")
 def on_startup():
-    print('starting')
+    print('starting app')
+    # this subsequent call to init_db() is only used by the index manager to create
+    # the default index table (default_text_embeddings) if it doesn't exist - we may
+    # be able to remove this call once seed data is added through proper crud endpoints
     init_db()
-
-
-if __name__ == "__main__":
-    @app.on_event("startup")
-    async def on_startup():
-        print('startup')
-        await create_db_and_tables()

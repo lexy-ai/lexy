@@ -1,8 +1,11 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
 
 from sqlalchemy import Column, DateTime, JSON, func, String
 from sqlmodel import SQLModel, Field, Relationship
+
+if TYPE_CHECKING:
+    from lexy.models.binding import Binding
 
 
 def default_index_table_name(context) -> str:
@@ -31,7 +34,7 @@ class Index(IndexBase, table=True):
     updated_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
     )
-    transformer_bindings: list["TransformerIndexBinding"] = Relationship(back_populates="index")
+    bindings: list["Binding"] = Relationship(back_populates="index")
     index_table_name: str = Field(
         regex=r"^[a-z0-9_-]+$",
         sa_column=Column(String, default=default_index_table_name, nullable=False, unique=True),

@@ -1,4 +1,4 @@
-sample_data = {
+default_data = {
     "default_collection": {
         "collection_id": "default",
         "description": "Default collection"
@@ -6,44 +6,6 @@ sample_data = {
     "code_collection": {
         "collection_id": "code",
         "description": "Github code repos"
-    },
-    "document_1": {
-        "content": "This is my first document! It's great!",
-        "collection_id": "default"
-    },
-    "document_2": {
-        "content": "Starlink is a satellite internet constellation operated by American aerospace company SpaceX, "
-                   "providing coverage to over 60 countries.",
-        "collection_id": "default"
-    },
-    "document_3": {
-        "content": "A latent space, also known as a latent feature space or embedding space, is an embedding of a set "
-                   "of items within a manifold in which items resembling each other are positioned closer to one "
-                   "another.",
-        "collection_id": "default"
-    },
-    "document_4": {
-        "content": "import this",
-        "collection_id": "code",
-        "meta": {
-            "filename": "main.py",
-            "file_extension": "py",
-            "language": "python"
-        }
-    },
-    "document_5": {
-        "content": "def multiply(a, b):"
-                   "    return a * b"
-                   ""
-                   ""
-                   "if __name__ == '__main__':"
-                   "    print(multiply(2, 3))",
-        "collection_id": "code",
-        "meta": {
-            "filename": "multiply.py",
-            "file_extension": "py",
-            "language": "python"
-        }
     },
     "transformer_1": {
         "transformer_id": "text.embeddings.minilm",
@@ -133,13 +95,58 @@ sample_data = {
         "collection_id": "default",
         "transformer_id": "text.embeddings.minilm",
         "index_id": "default_text_embeddings",
-        "description": "Default transformer-index binding",
+        "description": "Default binding",
         "execution_params": {},
         "transformer_params": {
             "lexy_index_fields": [
                 "embedding"
             ]
         },
-        "filters": {}
+        "filters": {},
+        "status": "on"
     }
+}
+
+sample_docs = {
+    "default_collection_sample_docs": [
+        {
+            "content": "This is my first document! It's great!",
+            "collection_id": "default"
+        },
+        {
+            "content": "Starlink is a satellite internet constellation operated by American aerospace company SpaceX, "
+                       "providing coverage to over 60 countries.",
+            "collection_id": "default"
+        },
+        {
+            "content": "A latent space is an embedding of a set of items within a manifold in which items resembling "
+                       "each other are positioned closer to one another.",
+            "collection_id": "default"
+        }
+    ],
+    "code_collection_sample_docs": [
+        {
+            "content": "import this",
+            "collection_id": "code",
+            "meta": {
+                "filename": "main.py",
+                "file_extension": "py",
+                "language": "python"
+            }
+        },
+        {
+            "content": "def multiply(a, b):"
+                       "    return a * b"
+                       ""
+                       ""
+                       "if __name__ == '__main__':"
+                       "    print(multiply(2, 3))",
+            "collection_id": "code",
+            "meta": {
+                "filename": "multiply.py",
+                "file_extension": "py",
+                "language": "python"
+            }
+        }
+    ]
 }

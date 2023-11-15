@@ -1,8 +1,11 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy import Column, DateTime, func
 from sqlmodel import SQLModel, Field, Relationship
+
+if TYPE_CHECKING:
+    from lexy.models.binding import Binding
 
 
 class TransformerBase(SQLModel):
@@ -30,7 +33,7 @@ class Transformer(TransformerBase, table=True):
     updated_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
     )
-    index_bindings: list["TransformerIndexBinding"] = Relationship(back_populates="transformer")
+    bindings: list["Binding"] = Relationship(back_populates="transformer")
 
 
 class TransformerCreate(TransformerBase):

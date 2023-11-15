@@ -1,7 +1,7 @@
 import importlib
 import logging
 
-from lexy.models import Document, TransformerIndexBinding
+from lexy.models import Document, Binding
 from lexy.core.celery_tasks import celery, save_records_to_index
 from lexy.indexes import index_manager
 
@@ -24,18 +24,18 @@ async def generate_tasks_for_document(doc: Document) -> list[dict]:
     # initiate list of tasks
     tasks = []
 
-    # loop through transformer bindings for this document
-    for binding in doc.collection.transformer_index_bindings:
+    # loop through bindings for this document
+    for binding in doc.collection.bindings:
 
         # check if binding is enabled
         if binding.status != 'on':
-            logger.info(f"Skipping transformer index binding {binding} because it is not enabled (status: "
+            logger.info(f"Skipping binding {binding} because it is not enabled (status: "
                         f"{binding.status})")
             continue
 
         # check if document matches binding filters
         if binding.filters and not all(f(doc) for f in binding.filters):
-            logger.info(f"Skipping transformer index binding {binding} because document does not match filters")
+            logger.info(f"Skipping binding {binding} because document does not match filters")
             continue
 
         # import the transformer function
@@ -86,9 +86,9 @@ def create_new_index_table(index_id: str):
     index_model.metadata.create_all(index_manager.db.bind.engine)
 
 
-async def process_new_binding(binding: TransformerIndexBinding, create_index_table: bool = False) \
-        -> tuple[TransformerIndexBinding, list[dict]]:
-    """ Process a new transformer index binding.
+async def process_new_binding(binding: Binding, create_index_table: bool = False) \
+        -> tuple[Binding, list[dict]]:
+    """ Process a new binding.
 
     Steps involved:
         1. Create index table if it doesn't exist
@@ -100,14 +100,14 @@ async def process_new_binding(binding: TransformerIndexBinding, create_index_tab
         create_index_table: whether to create the index table if it doesn't exist (default: False)
 
     Returns:
-        tuple[TransformerIndexBinding, list[dict]]: The binding and the tasks that were created
+        tuple[Binding, list[dict]]: The binding and the tasks that were created
     """
     # TODO: update this function to potentially create the index object in the database if it doesn't exist. in this
     #  case, require a value for "lexy_index_fields"
     # TODO: if types are not specified, infer them from the transformer below using
     #  `transformer_func.__wrapped__.__annotations__.get('return')`
 
-    logger.info(f"Processing new transformer index binding {binding}")
+    logger.info(f"Processing new binding {binding}")
 
     # check if binding has a valid transformer
     if binding.transformer is None:
