@@ -12,6 +12,25 @@ lexy = LexyClient()
 lexy.info()
 ```
 
+<div class="result">
+
+``` { .text .no-copy }
+Lexy server <http://localhost:9900/api>
+
+2 Collections
+    - <Collection('default', description='Default collection')>
+    - <Collection('code', description='Github code repos')>
+1 Indexes
+    - <Index('default_text_embeddings', description='Text embeddings for default collection')>
+2 Transformers
+    - <Transformer('text.embeddings.minilm', description='Text embeddings using "sentence-transformers/all-MiniLM-L6-v2"')>
+    - <Transformer('text.counter.word_counter', description='Returns count of words and the longest word')>
+1 Bindings
+    - <Binding(id=1, status=ON, collection='default', transformer='text.embeddings.minilm', index='default_text_embeddings')>
+```
+
+</div>
+
 ## Collections
 
 

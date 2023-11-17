@@ -14,6 +14,7 @@ theme:
     - content.tabs.link
   icon:
     logo: material/wizard-hat
+    repo: material/github
   palette:
     # Palette toggle for light mode
     - scheme: default
@@ -42,7 +43,11 @@ markdown_extensions:
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
 
@@ -60,11 +65,25 @@ plugins:
         md-header__inner: [ nav, class ] #Header
         md-footer__inner: [ nav, class ] #Footer
         md-nav: [ nav, class ] #Menu and toc
+  - mkdocstrings:
+      enabled: !ENV [ENABLE_MKDOCSTRINGS, true]
+      default_handler: python
+      handlers:
+        python:
+          paths:
+            - ../lexy
+            - ../sdk-python
 
 nav:
   - Home: index.md
   - Installation: installation.md
   - Quickstart: quickstart.md
+  - Tutorial: tutorial.md
+  - Lexy API:
+    - Overview: reference/lexy_api/overview.md
+  - Python SDK:
+    - Binding: reference/lexy_py/binding.md
+    - Client: reference/lexy_py/client.md
 
 extra:
   generator: false
