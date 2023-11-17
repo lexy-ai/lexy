@@ -12,9 +12,7 @@ lexy = LexyClient()
 lexy.info()
 ```
 
-<div class="result">
-
-``` { .text .no-copy }
+```{ .text .no-copy .result #code-output }
 Lexy server <http://localhost:9900/api>
 
 2 Collections
@@ -29,7 +27,6 @@ Lexy server <http://localhost:9900/api>
     - <Binding(id=1, status=ON, collection='default', transformer='text.embeddings.minilm', index='default_text_embeddings')>
 ```
 
-</div>
 
 ## Collections
 

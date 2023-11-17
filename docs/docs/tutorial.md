@@ -17,9 +17,9 @@ We can get more information about the Lexy server by calling the `info` method. 
 lexy.info()
 ```
 
-<div class="result">
 
-```{ .text .no-copy }
+
+```{ .text .no-copy .result #code-output }
 Lexy server <http://localhost:9900/api>
 
 2 Collections
@@ -34,7 +34,6 @@ Lexy server <http://localhost:9900/api>
     - <Binding(id=1, status=ON, collection='default', transformer='text.embeddings.minilm', index='default_text_embeddings')>
 ```
 
-</div>
 
 Let's add some documents to our "**default**" collection. We can add them using the `add_documents` method.
 
@@ -47,15 +46,11 @@ lexy.add_documents([
 ])
 ```
 
-<div class="result" >
-
-```{ .text .no-copy }
+```{ .text .no-copy .result #code-output }
 [<Document("This is my first document! It's great!")>,
  <Document("Starlink is a satellite internet constellation operated by American aerospace company SpaceX,...")>,
  <Document("A latent space is an embedding of a set of items within a manifold in which items resembling each...")>]
 ```
-
-</div>
 
 Documents that are added to the "**default**" collection are automatically embedded, and the embeddings are stored in the index "**default_text_embeddings**".
 
@@ -86,9 +81,7 @@ We can query the default index for "_what is deep learning_" and see our documen
 lexy.query_index('what is deep learning')
 ```
 
-<div class="result">
-
-``` { .text .no-copy }
+```{ .text .no-copy .result #code-output }
 [{'document_id': '28dee402-31aa-4622-89e9-ce9ac06a4cf8',
   'custom_id': None,
   'meta': {},
@@ -109,7 +102,6 @@ lexy.query_index('what is deep learning')
   'distance': 1.3894593715667725,}]
 ```
 
-</div>
 
 ## Example: Famous biographies
 
@@ -125,15 +117,10 @@ lexy.collections
 ```
 
 
-
-<div class="result">
-
-``` { .text .no-copy }
+```{ .text .no-copy .result #code-output }
 [<Collection('default', description='Default collection')>,
  <Collection('code', description='Github code repos')>]
 ```
-
-</div>
 
 Let's create a new "**bios**" collection for famous biographies.
 
@@ -144,13 +131,9 @@ bios
 
 
 
-<div class="result">
-
-``` { .text .no-copy }
+```{ .text .no-copy .result #code-output }
 <Collection('bios', description='Famous biographies')>
 ```
-
-</div>
 
 ### Documents
 
@@ -162,13 +145,9 @@ bios.list_documents()
 
 
 
-<div class="result">
-
-``` { .text .no-copy }
+```{ .text .no-copy .result #code-output }
 []
 ```
-
-</div>
 
 
 Let's add a few documents to our new collection.
@@ -182,15 +161,11 @@ bios.add_documents([
 ])
 ```
 
-<div class="result">
-
-``` { .text .no-copy }
+```{ .text .no-copy .result #code-output }
 [<Document("Stephen Curry is an American professional basketball player for the Golden State Warriors.")>,
  <Document("Dwayne 'The Rock' Johnson is a well-known actor, former professional wrestler, and businessman.")>,
  <Document("Taylor Swift is a singer known for her songwriting, musical versatility, and artistic reinventions.")>]
 ```
-
-</div>
 
 
 ### Transformers
@@ -203,14 +178,11 @@ lexy.transformers
 ```
 
 
-<div class="result">
-
-``` { .text .no-copy }
+```{ .text .no-copy .result #code-output }
 [<Transformer('text.embeddings.minilm', description='Text embeddings using "sentence-transformers/all-MiniLM-L6-v2"')>,
  <Transformer('text.counter.word_counter', description='Returns count of words and the longest word')>]
 ```
 
-</div>
 
 For our example, we'll use the "**text.embeddings.minilm**" transformer, which uses the [MiniLM sentence transformer](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) model to generate embeddings for text.
 
@@ -235,13 +207,10 @@ index
 ```
 
 
-<div class="result">
-
-``` { .text .no-copy }
+```{ .text .no-copy .result #code-output }
 <Index('bios_index', description='Biography embeddings')>
 ```
 
-</div>
 
 ### Bindings
 
@@ -276,13 +245,10 @@ binding
 ```
 
 
-<div class="result">
-
-``` { .text .no-copy }
+```{ .text .no-copy .result #code-output }
 <Binding(id=2, status=ON, collection='bios', transformer='text.embeddings.minilm', index='bios_index')>
 ```
 
-</div>
 
 
 Our binding automatically runs asynchronous jobs to process our documents and store the results in our index as embeddings. We can now query our index for "_famous artists_" and see the results ranked by cosine similarity.
@@ -293,9 +259,7 @@ index.query('famous artists', query_field='bio_embedding', k=3)
 ```
 
 
-<div class="result">
-
-``` { .text .no-copy }
+```{ .text .no-copy .result #code-output }
 [{'document_id': 'c1090c0f-5fb4-4e8b-af47-d3fecb1d3e11',
   'custom_id': None,
   'meta': {},
@@ -316,8 +280,6 @@ index.query('famous artists', query_field='bio_embedding', k=3)
   'distance': 1.3264542818069458}]
 ```
 
-</div>
-
 
 Because our binding has status set to "`ON`", any new documents added to our collection will automatically be processed by our transformer and inserted into our index.
  
@@ -330,13 +292,9 @@ bios.add_documents([
 ])
 ```
 
-<div class="result">
-
-``` { .text .no-copy }
+```{ .text .no-copy .result #code-output }
 [<Document("Beyoncé is a singer and songwriter recognized for her boundary-pushing artistry, vocals, and...")>]
 ```
-
-</div>
 
 
 Now let's run the same query again for "_famous artists_". We can see the results have been updated and include our new document.
@@ -347,9 +305,7 @@ index.query('famous artists', query_field='bio_embedding', k=3)
 ```
 
 
-<div class="result">
-
-``` { .text .no-copy }
+```{ .text .no-copy .result #code-output }
 [{'document_id': 'c1090c0f-5fb4-4e8b-af47-d3fecb1d3e11',
   'custom_id': None,
   'meta': {},
@@ -369,8 +325,6 @@ index.query('famous artists', query_field='bio_embedding', k=3)
   'content': "Dwayne 'The Rock' Johnson is a well-known actor, former professional wrestler, and businessman.",
   'distance': 1.2409147024154663}]
 ```
-
-</div>
 
 
 ## Next steps

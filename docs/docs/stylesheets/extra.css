@@ -1,0 +1,16 @@
+/*
+  defining `code-output` here and using it to remove background of code output cells
+
+  in order to apply this to a cell, use the following syntax:
+  ```{ .text .no-copy #code-output }
+  My output code here
+  ```
+*/
+.md-typeset div#code-output > pre > code {
+  background-color: var(--md-primary-bg-color);
+}
+
+/* same thing as above but for dark mode */
+[data-md-color-scheme="slate"] .md-typeset div#code-output > pre > code {
+  background-color: var(--md-default-bg-color);
+}
