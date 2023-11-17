@@ -75,6 +75,8 @@ async def delete_collection(collection_id: str, session: AsyncSession = Depends(
     collection = result.scalars().first()
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
+    # TODO: delete all documents in the collection
+    # TODO: loop through bindings and set status to "detached"
     await session.delete(collection)
     await session.commit()
     return {"Say": "Collection deleted!"}
