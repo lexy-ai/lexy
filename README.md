@@ -38,12 +38,12 @@ docker-compose up --build -d
 
 ### Where to find services
 
-| Service      | URL                        | Notes                                |
-|--------------|----------------------------|--------------------------------------|
-| Lexy API     | http://localhost:9900/docs | Swagger API docs                     |
-| Flower       | http://localhost:5556      | Celery task monitor                  |
-| RabbitMQ     | http://localhost:15672     | Username: `guest`, Password: `guest` |
-| Project docs | http://localhost:8000      | Run `make serve-docs`                |
+| Service      | URL                        | Notes                                                         |
+|--------------|----------------------------|---------------------------------------------------------------|
+| Lexy API     | http://localhost:9900/docs | Swagger API docs                                              |
+| Flower       | http://localhost:5556      | Celery task monitor                                           |
+| RabbitMQ     | http://localhost:15672     | Username: `guest`, Password: `guest`                          |
+| Project docs | http://localhost:8000      | Run `make serve-docs`<br/>Username: `lexy`, Password: `guest` |
 
 
 ### PyCharm issues
