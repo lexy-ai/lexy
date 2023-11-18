@@ -68,7 +68,7 @@ def create_new_index_table(index_id: str):
     Steps involved:
         1. Get the index object from the indexes table
         2. Create (or get) the corresponding index model
-        2. Create associated index table in the database
+        3. Create associated index table in the database
 
     Args:
         index_id (str): The ID of the index to create
@@ -84,6 +84,37 @@ def create_new_index_table(index_id: str):
         logger.warning(f"lexy.core.events: Index table '{index.index_table_name}' already exists")
     logger.debug(f"index_model: {index_model}")
     index_model.metadata.create_all(index_manager.db.bind.engine)
+
+
+def drop_index_table(index_id: str) -> bool:
+    """ Drop the index table for the given index ID.
+
+    Args:
+        index_id (str): The ID of the index to drop
+
+    Returns:
+        bool: True if the index table was dropped, False otherwise
+    """
+    logger.info(f"Dropping index table for {index_id}")
+    index = index_manager.get_index(index_id)
+
+    # pop to remove the index model from the index_models dict
+    index_model = index_manager.index_models.pop(index_id, None)
+
+    # if the table doesn't exist, log a warning and return
+    if not index_manager.table_exists(index.index_table_name):
+        logger.warning(f"lexy.core.events: Index table '{index.index_table_name}' does not exist")
+        return False
+
+    # if the index model doesn't exist, log a warning and return
+    if index_model is None:
+        logger.warning(f"lexy.core.events: Index model for '{index_id}' does not exist")
+        return False
+
+    logger.debug(f"index_model: {index_model}")
+    index_model.metadata.drop_all(index_manager.db.bind.engine, tables=[index_model.__table__])
+    index_model.metadata.remove(index_model.__table__)
+    return True
 
 
 async def process_new_binding(binding: Binding, create_index_table: bool = False) \
