@@ -149,23 +149,25 @@ class IndexClient:
         handle_response(r)
         return Index(**r.json(), client=self._lexy_client)
 
-    def delete_index(self, index_id: str) -> dict:
+    def delete_index(self, index_id: str, drop_table: bool = False) -> dict:
         """ Synchronously delete an index.
 
         Args:
             index_id (str): The ID of the index to delete.
+            drop_table (bool, optional): Whether to drop the index table from the database. Defaults to False.
         """
-        r = self.client.delete(f"/indexes/{index_id}")
+        r = self.client.delete(f"/indexes/{index_id}", params={"drop_table": drop_table})
         handle_response(r)
         return r.json()
 
-    async def adelete_index(self, index_id: str) -> dict:
+    async def adelete_index(self, index_id: str, drop_table: bool = False) -> dict:
         """ Asynchronously delete an index.
 
         Args:
             index_id (str): The ID of the index to delete.
+            drop_table (bool, optional): Whether to drop the index table from the database. Defaults to False.
         """
-        r = await self.aclient.delete(f"/indexes/{index_id}")
+        r = await self.aclient.delete(f"/indexes/{index_id}", params={"drop_table": drop_table})
         handle_response(r)
         return r.json()
 

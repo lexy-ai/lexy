@@ -7,7 +7,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from lexy.db.session import get_session
 from lexy.models.index import Index, IndexCreate, IndexUpdate
-from lexy.core.events import create_new_index_table, restart_celery_worker
+from lexy.core.events import create_new_index_table, drop_index_table, restart_celery_worker
 
 
 logger = logging.getLogger(__name__)
@@ -86,11 +86,23 @@ async def update_index(index_id: str, index: IndexUpdate,
                status_code=status.HTTP_200_OK,
                name="delete_index",
                description="Delete an index")
-async def delete_index(index_id: str, session: AsyncSession = Depends(get_session)) -> dict:
+async def delete_index(index_id: str,
+                       drop_table: bool = False,
+                       session: AsyncSession = Depends(get_session)) -> dict:
     result = await session.execute(select(Index).where(Index.index_id == index_id))
     index = result.scalars().first()
     if not index:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Index not found")
+
+    index_table_name = index.index_table_name
+    dropped = False
+    if drop_table:
+        dropped = drop_index_table(index_id=index_id)
+
     await session.delete(index)
     await session.commit()
-    return {"Say": "Index deleted!"}
+
+    # TODO: restart celery worker here?
+    return {"Say": "Index deleted!",
+            "index_table_name": index_table_name,
+            "table_dropped": dropped}
