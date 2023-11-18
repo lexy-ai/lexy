@@ -1,10 +1,13 @@
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
 from uuid import uuid4, UUID
 
 from sqlalchemy import Column, DateTime, ForeignKey, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import SQLModel, Field, Relationship
+
+if TYPE_CHECKING:
+    from lexy.models.document import Document
 
 
 class IndexRecordBase(SQLModel):

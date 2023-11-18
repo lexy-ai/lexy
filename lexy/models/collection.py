@@ -28,8 +28,14 @@ class Collection(CollectionBase, table=True):
     updated_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
     )
-    documents: list["Document"] = Relationship(back_populates="collection", sa_relationship_kwargs={'lazy': 'subquery'})
-    bindings: list["Binding"] = Relationship(back_populates="collection", sa_relationship_kwargs={'lazy': 'selectin'})
+    documents: list["Document"] = Relationship(
+        back_populates="collection",
+        sa_relationship_kwargs={'lazy': 'subquery'}
+    )
+    bindings: list["Binding"] = Relationship(
+        back_populates="collection",
+        sa_relationship_kwargs={'lazy': 'selectin', 'cascade': 'all, delete-orphan'}
+    )
 
 
 class CollectionCreate(CollectionBase):
