@@ -34,7 +34,10 @@ class Index(IndexBase, table=True):
     updated_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
     )
-    bindings: list["Binding"] = Relationship(back_populates="index")
+    bindings: list["Binding"] = Relationship(
+        back_populates="index",
+        sa_relationship_kwargs={'cascade': 'all, delete-orphan'}
+    )
     index_table_name: str = Field(
         regex=r"^[a-z0-9_-]+$",
         sa_column=Column(String, default=default_index_table_name, nullable=False, unique=True),
