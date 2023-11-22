@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 class IndexModel(BaseModel):
     """ Index model """
-    index_id: str = Field(..., min_length=1)
+    index_id: str = Field(..., min_length=1, description="The ID of the index.")
     description: Optional[str] = None
     index_table_schema: Optional[dict[str, Any]] = Field(default={})
     index_fields: Optional[dict[str, Any]] = Field(default={})

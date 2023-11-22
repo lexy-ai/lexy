@@ -50,7 +50,7 @@ class Collection(CollectionModel):
             docs (Document | list[Document] | dict | list[dict]): The documents to add.
 
         Returns:
-            list[Document]: The added documents.
+            Documents: A list of added documents.
         """
         return self.client.document.add_documents(docs, collection_id=self.collection_id)
 
@@ -59,6 +59,6 @@ class Collection(CollectionModel):
         """ Synchronously get all documents in the collection.
 
         Returns:
-            list[Document]: A list of all documents in the collection.
+            Documents: A list of all documents in the collection.
         """
         return self.client.document.list_documents(self.collection_id)

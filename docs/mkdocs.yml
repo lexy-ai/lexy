@@ -57,7 +57,7 @@ markdown_extensions:
 plugins:
   - search
   - encryptcontent:
-      title_prefix: '🔐 '
+      title_prefix: ''
       password_button: true
       password_button_text: 'ENTER'
       password_inventory:
@@ -79,6 +79,15 @@ plugins:
           paths:
             - ../lexy
             - ../sdk-python
+          options:
+            show_root_heading: true
+            inherited_members: true
+            signature_crossrefs: true
+            filters: ["!^_"]
+            show_if_no_docstring: false
+            show_inherited_class_attributes: true
+            show_inherited_class_methods: true
+            show_inherited_docstrings: true
 
 nav:
   - Home: index.md
@@ -90,6 +99,10 @@ nav:
   - Python SDK:
     - Binding: reference/lexy_py/binding.md
     - Client: reference/lexy_py/client.md
+    - Collection: reference/lexy_py/collection.md
+    - Document: reference/lexy_py/document.md
+    - Index: reference/lexy_py/index.md
+    - Transformer: reference/lexy_py/transformer.md
 
 extra:
   generator: false

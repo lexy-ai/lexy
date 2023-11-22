@@ -86,7 +86,7 @@ class IndexClient:
         Returns:
             Index: The index.
 
-        Example:
+        Examples:
             >>> code_index_fields = {
             ...     "code": {"type": "text"},
             ...     "code_embedding": {"type": "embedding", "extras": {"dims": 384, "distance": "cosine"}},
@@ -125,7 +125,7 @@ class IndexClient:
         Returns:
             Index: The index.
 
-        Example:
+        Examples:
             >>> code_index_fields = {
             ...     "code": {"type": "text"},
             ...     "code_embedding": {"type": "embedding", "extras": {"dims": 384, "distance": "cosine"}},
