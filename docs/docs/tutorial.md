@@ -1,6 +1,6 @@
 # Tutorial
 
-## Defaults
+## Introduction
 
 Let's get started by instantiating the Lexy client. By default, this will connect to the Lexy server running at `http://localhost:9900`.
 
@@ -255,7 +255,7 @@ Our binding automatically runs asynchronous jobs to process our documents and st
 
 
 ```python
-index.query('famous artists', query_field='bio_embedding', k=3)
+index.query(query_string='famous artists', query_field='bio_embedding', k=3)
 ```
 
 
@@ -301,7 +301,7 @@ Now let's run the same query again for "_famous artists_". We can see the result
 
 
 ```python
-index.query('famous artists', query_field='bio_embedding', k=3)
+index.query(query_string='famous artists', query_field='bio_embedding', k=3)
 ```
 
 
