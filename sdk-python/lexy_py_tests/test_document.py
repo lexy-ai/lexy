@@ -63,7 +63,7 @@ class TestDocumentClient:
 
         # delete test collection
         response = lexy.collection.delete_collection("tmp_collection")
-        assert response == {"Say": "Collection deleted!"}
+        assert response.get("Say") == "Collection deleted!"
 
     def test_list_documents(self):
         documents = lexy.document.list_documents(collection_id='code')

@@ -51,6 +51,6 @@ class Index(IndexModel):
             k (int, optional): The number of records to return. Defaults to 5.
 
         Returns:
-            list[dict]: The query results.
+            Results: A list of query results.
         """
         return self.client.index.query_index(query_string, self.index_id, query_field, k)

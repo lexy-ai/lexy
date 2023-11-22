@@ -141,22 +141,25 @@ class CollectionClient:
         handle_response(r)
         return Collection(**r.json(), client=self._lexy_client)
 
-    def delete_collection(self, collection_id: str) -> dict:
+    def delete_collection(self, collection_id: str, delete_documents: bool = False) -> dict:
         """ Synchronously delete a collection.
 
         Args:
             collection_id (str): The ID of the collection to delete.
+            delete_documents (bool, optional): Whether to delete the documents in the collection. Defaults to False.
         """
-        r = self.client.delete(f"/collections/{collection_id}")
+        r = self.client.delete(f"/collections/{collection_id}", params={"delete_documents": delete_documents})
         handle_response(r)
         return r.json()
 
-    async def adelete_collection(self, collection_id: str) -> dict:
+    async def adelete_collection(self, collection_id: str, delete_documents: bool = False) -> dict:
         """ Asynchronously delete a collection.
 
         Args:
             collection_id (str): The ID of the collection to delete.
+            delete_documents (bool, optional): Whether to delete the documents in the collection. Defaults to False.
         """
-        r = await self.aclient.delete(f"/collections/{collection_id}")
+        r = await self.aclient.delete(f"/collections/{collection_id}",
+                                      params={"delete_documents": delete_documents})
         handle_response(r)
         return r.json()
