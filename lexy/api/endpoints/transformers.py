@@ -6,9 +6,9 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from lexy.core.celery_app import get_task_info
-from lexy.core.celery_tasks import save_records_to_index
+from lexy.core.celery_tasks import celery, convert_arrays_to_lists, save_records_to_index
 from lexy.db.session import get_session
-from lexy.models.document import Document
+from lexy.models.document import Document, DocumentCreate
 from lexy.models.transformer import Transformer, TransformerCreate, TransformerUpdate
 from lexy.transformers.counter import count_words
 from lexy.transformers.embeddings import get_chunks, just_split, text_embeddings
@@ -88,6 +88,34 @@ async def delete_transformer(transformer_id: str, session: AsyncSession = Depend
     return {"Say": "Transformer deleted!"}
 
 
+@router.post("/transformers/{transformer_id}",
+             response_model=dict,
+             status_code=status.HTTP_200_OK,
+             name="transform_document",
+             description="Transform a document")
+async def transform_document(transformer_id: str, document: DocumentCreate, transformer_params: dict = None,
+                             content_only: bool = False, session: AsyncSession = Depends(get_session)) -> dict:
+    result = await session.execute(select(Transformer).where(Transformer.transformer_id == transformer_id))
+    transformer = result.scalars().first()
+    if not transformer:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformer not found")
+
+    task_name = 'lexy.transformers.' + transformer.transformer_id
+    if content_only:
+        task_arg = document.content
+    else:
+        task_arg = document
+
+    task = celery.send_task(
+        task_name,
+        args=[task_arg],
+        kwargs=transformer_params,
+    )
+    result = task.get()
+    response = {"task_id": task.id, "result": result}
+    return convert_arrays_to_lists(response)
+
+
 @router.post("/embed/string",
              response_model=dict,
              status_code=status.HTTP_200_OK,
@@ -109,7 +137,7 @@ async def embed_documents(documents: List[Document], index_id: str = "default_te
     tasks = []
     for doc in documents:
         task = text_embeddings.apply_async(
-            args=[doc.content],
+            args=[doc],
             kwargs={"lexy_index_fields": [index_field]},
             link=save_records_to_index.s(document_id=doc.document_id, text=doc.content, index_id=index_id)
         )

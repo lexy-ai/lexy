@@ -1,8 +1,35 @@
+import importlib
 import os
+import pkgutil
+
 from pydantic import BaseConfig
 
 
+def get_transformer_modules(transformer_pkg: str = 'lexy.transformers'):
+    """ Return a list of transformer modules. """
+    lexy_transformer_modules = []
+    transformer_pkg_m = importlib.import_module(transformer_pkg)
+    for m in pkgutil.iter_modules(transformer_pkg_m.__path__,
+                                  prefix=transformer_pkg + '.'):
+        if not m.ispkg:
+            lexy_transformer_modules.append(m.name)
+    return lexy_transformer_modules
+
+
+def expand_transformer_imports(transformer_imports: set[str]) -> set[str]:
+    """ Expand transformer imports to include all submodules. """
+    expanded_imports = set()
+    for imp in transformer_imports:
+        if imp.rsplit('.', 1)[1] == '*':
+            expanded_imports.update(get_transformer_modules(imp.rsplit('.', 1)[0]))
+        else:
+            expanded_imports.add(imp)
+    return expanded_imports
+
+
 class GlobalConfig(BaseConfig):
+
+    # API settings
     title: str = "Lexy Server"
     version: str = "1.0.0"
     description: str = "Lexy Server API"
@@ -12,6 +39,7 @@ class GlobalConfig(BaseConfig):
     openapi_url: str = "/openapi.json"
     api_prefix: str = "/api"
 
+    # Database settings
     postgres_user: str = os.environ.get("POSTGRES_USER", "postgres")
     postgres_password: str = os.environ.get("POSTGRES_PASSWORD", "postgres")
     postgres_host: str = os.environ.get("POSTGRES_HOST", "db_postgres")
@@ -20,6 +48,14 @@ class GlobalConfig(BaseConfig):
     # db_url = os.environ.get("DATABASE_URL")
     db_echo_log: bool = True
 
+    # Celery settings
+    celery_client_transformer_imports = {
+        'lexy.transformers.*'
+    }
+    celery_worker_transformer_imports = {
+        'lexy.transformers.*'
+    }
+
     @property
     def sync_database_url(self) -> str:
         return f"postgresql://{self.postgres_user}:{self.postgres_password}@{self.postgres_host}/{self.postgres_db}"
@@ -27,6 +63,14 @@ class GlobalConfig(BaseConfig):
     @property
     def async_database_url(self) -> str:
         return f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}@{self.postgres_host}/{self.postgres_db}"
+
+    @property
+    def app_transformer_imports(self):
+        return expand_transformer_imports(self.celery_client_transformer_imports)
+
+    @property
+    def worker_transformer_imports(self):
+        return expand_transformer_imports(self.celery_worker_transformer_imports)
 
 
 settings = GlobalConfig()

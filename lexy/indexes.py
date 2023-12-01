@@ -29,6 +29,7 @@ LEXY_INDEX_FIELD_TYPES: Dict = {
 
     'str': str,
     'string': str,
+    'text': str,
     'bytes': bytes,
     'bytearray': bytearray,
 
@@ -284,22 +285,6 @@ class IndexManager(object):
         self.db.refresh(binding)
         logger.info(f"Switched status for binding {binding}: from '{prev_status}' to '{status}'")
         return binding
-
-    # # TODO: this needs to move into an app initialization script
-    # def process_default_binding(self, default_index_table_name: str = 'zzidx__default_text_embeddings'):
-    #     """ Process default binding """
-    #     if not self.table_exists(default_index_table_name):
-    #         raise Exception(f"Cannot process default binding because default index table {default_index_table_name} "
-    #                         f"does not exist")
-    #     # to get default binding
-    #     default_binding = self.get_binding(binding_id=1)
-    #     processed_binding, tasks = await process_new_binding(binding)
-    #     # now commit the binding again and refresh it - status should be updated
-    #     self.db.add(processed_binding)
-    #     self.db.commit()
-    #     self.db.refresh(processed_binding)
-    #     response = {"binding": processed_binding, "tasks": tasks}
-    #     return response
 
     @staticmethod
     def table_exists(index_table_name: str) -> bool:

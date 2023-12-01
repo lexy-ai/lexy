@@ -1,8 +1,13 @@
+import logging
+import time
+
 from fastapi import APIRouter, status
 
-from lexy.core.events import celery
+from lexy.core.events import celery, restart_celery_worker
 
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 router = APIRouter()
 
 
@@ -47,3 +52,13 @@ async def celery_registered_tasks():
             name="Celery Active")
 async def celery_active():
     return {"Celery active": celery.control.inspect().active()}
+
+
+@router.get("/celery-restart-worker",
+            status_code=status.HTTP_200_OK,
+            name="Celery Restart Worker")
+async def celery_restart_worker(worker_name: str = 'celery@celeryworker'):
+    celery_restart_response = restart_celery_worker(worker_name)
+    logger.info(f"Response: {celery_restart_response}")
+    time.sleep(0.5)
+    return {"Celery restart worker": celery_restart_response}

@@ -1,12 +1,13 @@
 # source: https://medium.com/cuddle-ai/async-architecture-with-fastapi-celery-and-rabbitmq-c7d029030377
-from celery import current_app as current_celery_app
+from celery import Celery
 from celery.result import AsyncResult
 
+from .config import settings as lexy_settings
 from .celery_config import settings
 
 
 def create_celery():
-    celery_app = current_celery_app
+    celery_app = Celery()
     celery_app.config_from_object(settings, namespace='CELERY')
     celery_app.conf.update(task_track_started=True)
     celery_app.conf.update(worker_pool_restarts=True)
@@ -15,6 +16,8 @@ def create_celery():
     # celery_app.conf.update(imports=(
     #     'myapp.tasks',
     # ))
+    celery_app.conf.update(imports=list(lexy_settings.worker_transformer_imports))
+    celery_app.conf.update(include=lexy_settings.worker_transformer_imports)
 
     # serialization settings
     celery_app.conf.update(task_serializer='pickle')

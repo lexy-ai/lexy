@@ -1,7 +1,8 @@
 import importlib
 import logging
 
-from lexy.models import Document, Binding
+from lexy.core.config import settings
+from lexy.models import Binding, Document
 from lexy.core.celery_tasks import celery, save_records_to_index
 from lexy.indexes import index_manager
 
@@ -38,20 +39,32 @@ async def generate_tasks_for_document(doc: Document) -> list[dict]:
             logger.info(f"Skipping binding {binding} because document does not match filters")
             continue
 
-        # import the transformer function
-        # TODO: just import the function from celery?
-        tfr_mod_name, tfr_func_name = binding.transformer.path.rsplit('.', 1)
-        tfr_module = importlib.import_module(tfr_mod_name)
-        transformer_func = getattr(tfr_module, tfr_func_name)
-
         # generate the task
-        task = transformer_func.apply_async(
-            args=[doc.content],
+
+        #   option 1: use transformer_func.apply_async
+        # tfr_mod_name, tfr_func_name = binding.transformer.path.rsplit('.', 1)
+        # tfr_module = importlib.import_module(tfr_mod_name)
+        # transformer_func = getattr(tfr_module, tfr_func_name)
+        # task = transformer_func.apply_async(
+        #     # args=[doc.content],
+        #     args=[doc],
+        #     kwargs=binding.transformer_params,
+        #     link=save_records_to_index.s(document_id=doc.document_id,
+        #                                  text=doc.content,
+        #                                  index_id=binding.index_id)
+        # )
+
+        #   option 2: use celery.send_task
+        task_name = 'lexy.transformers.' + binding.transformer.transformer_id
+        task = celery.send_task(
+            task_name,
+            args=[doc],
             kwargs=binding.transformer_params,
             link=save_records_to_index.s(document_id=doc.document_id,
                                          text=doc.content,
                                          index_id=binding.index_id)
         )
+
         tasks.append({"task_id": task.id, "document_id": doc.document_id})
 
     logger.info(f"Created {len(tasks)} tasks for document {doc.document_id}: "
@@ -146,12 +159,6 @@ async def process_new_binding(binding: Binding, create_index_table: bool = False
     if binding.transformer.path is None:
         raise Exception(f"Binding {binding} does not have a valid transformer path associated with it")
 
-    # import the transformer function
-    # TODO: just import the function from celery?
-    tfr_mod_name, tfr_func_name = binding.transformer.path.rsplit('.', 1)
-    tfr_module = importlib.import_module(tfr_mod_name)
-    transformer_func = getattr(tfr_module, tfr_func_name)
-
     # check if binding has a valid index
     if binding.index is None:
         logger.info(f"Binding {binding} does not have an index associated with it")
@@ -193,9 +200,27 @@ async def process_new_binding(binding: Binding, create_index_table: bool = False
 
     # generate tasks for documents
     # TODO: should this be done as a celery group?
+
+    #   option 1: use transformer_func.apply_async
+    # tfr_mod_name, tfr_func_name = binding.transformer.path.rsplit('.', 1)
+    # tfr_module = importlib.import_module(tfr_mod_name)
+    # transformer_func = getattr(tfr_module, tfr_func_name)
+    # for doc in documents:
+    #     task = transformer_func.apply_async(
+    #         args=[doc],
+    #         kwargs=binding.transformer_params,
+    #         link=save_records_to_index.s(document_id=doc.document_id,
+    #                                      text=doc.content,
+    #                                      index_id=binding.index_id)
+    #     )
+    #     tasks.append({"task_id": task.id, "document_id": doc.document_id})
+
+    #   option 2: use celery.send_task
+    task_name = 'lexy.transformers.' + binding.transformer.transformer_id
     for doc in documents:
-        task = transformer_func.apply_async(
-            args=[doc.content],
+        task = celery.send_task(
+            task_name,
+            args=[doc],
             kwargs=binding.transformer_params,
             link=save_records_to_index.s(document_id=doc.document_id,
                                          text=doc.content,
@@ -224,13 +249,19 @@ def restart_celery_worker(workername: str) -> dict:
         dict: The response from the worker
     """
     logger.debug(f"Broadcasting signal 'pool_restart' to celery worker {workername}")
+
+    reload_modules = [
+        "lexy.indexes",
+        "lexy.core.celery_tasks"
+    ]
+    transformer_modules = list(settings.worker_transformer_imports)
+    reload_modules.extend(transformer_modules)
+    print("reload_modules:", reload_modules)
+
     response = celery.control.broadcast("pool_restart",
                                         arguments={
                                             "reload": True,
-                                            "modules": [
-                                                "lexy.indexes",
-                                                "lexy.core.celery_tasks"
-                                            ]
+                                            "modules": reload_modules
                                         },
                                         destination=[workername],
                                         reply=True,

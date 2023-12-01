@@ -54,3 +54,14 @@ class Index(IndexModel):
             Results: A list of query results.
         """
         return self.client.index.query_index(query_string, self.index_id, query_field, k)
+
+    def list_records(self, document_id: Optional[str] = None) -> list[dict]:
+        """ Synchronously list all records in the index.
+
+        Args:
+            document_id (str, optional): The document ID to filter by. Defaults to None.
+
+        Returns:
+            list[dict]: A list of records.
+        """
+        return self.client.index.list_index_records(self.index_id, document_id=document_id)

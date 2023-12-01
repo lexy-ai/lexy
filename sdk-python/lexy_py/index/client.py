@@ -217,29 +217,37 @@ class IndexClient:
         handle_response(r)
         return Index(**r.json(), client=self._lexy_client)
 
-    def list_index_records(self, index_id: str) -> list[dict]:
+    def list_index_records(self, index_id: str, document_id: Optional[str] = None) -> list[dict]:
         """ Synchronously get a list of all index records for an index.
 
         Args:
             index_id (str): The ID of the index to get records for.
+            document_id (str, optional): The ID of a document to get records for.
 
         Returns:
             list[dict]: A list of all index records for an index.
         """
-        r = self.client.get(f"/indexes/{index_id}/records")
+        params = {}
+        if document_id:
+            params["document_id"] = document_id
+        r = self.client.get(f"/indexes/{index_id}/records", params=params)
         handle_response(r)
         return r.json()
 
-    async def alist_index_records(self, index_id: str) -> list[dict]:
+    async def alist_index_records(self, index_id: str, document_id: Optional[str] = None) -> list[dict]:
         """ Asynchronously get a list of all index records for an index.
 
         Args:
             index_id (str): The ID of the index to get records for.
+            document_id (str, optional): The ID of a document to get records for.
 
         Returns:
             list[dict]: A list of all index records for an index.
         """
-        r = await self.aclient.get(f"/indexes/{index_id}/records")
+        params = {}
+        if document_id:
+            params["document_id"] = document_id
+        r = await self.aclient.get(f"/indexes/{index_id}/records", params=params)
         handle_response(r)
         return r.json()
 

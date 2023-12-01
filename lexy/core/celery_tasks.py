@@ -95,26 +95,31 @@ class DatabaseTask(Task):
             super().on_failure(exc, task_id, args, kwargs, einfo)
 
 
-def convert_arrays_to_lists(d: dict) -> dict:
-    """ Convert numpy arrays to lists in a dictionary.
+def convert_arrays_to_lists(obj):
+    """ Convert numpy arrays to lists in a dictionary or list of dictionaries.
 
     Args:
-        d: dictionary to convert
+        obj: dictionary or list of dictionaries to convert
 
     Returns:
-        dict: dictionary with numpy arrays converted to lists
+        Same type as obj: dictionary or list of dictionaries with numpy arrays converted to lists
 
     Examples:
         >>> convert_arrays_to_lists({"a": np.array([1, 2, 3]), "b": {"c": np.array([4, 5, 6])}})
         {'a': [1, 2, 3], 'b': {'c': [4, 5, 6]}}
 
+        >>> convert_arrays_to_lists([{"a": np.array([1, 2, 3])}, {"b": np.array([4, 5, 6])}])
+        [{'a': [1, 2, 3]}, {'b': [4, 5, 6]}]
     """
-    for key, value in d.items():
-        if isinstance(value, np.ndarray):
-            d[key] = value.tolist()
-        elif isinstance(value, dict):
-            d[key] = convert_arrays_to_lists(value)
-    return d
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            if isinstance(value, np.ndarray):
+                obj[key] = value.tolist()
+            elif isinstance(value, (dict, list)):
+                obj[key] = convert_arrays_to_lists(value)
+    elif isinstance(obj, list):
+        return [convert_arrays_to_lists(item) for item in obj]
+    return obj
 
 
 @celery.task(base=DatabaseTask, bind=True, name="lexy.db.save_result_to_index")
