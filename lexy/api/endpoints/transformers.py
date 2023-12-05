@@ -100,7 +100,7 @@ async def transform_document(transformer_id: str, document: DocumentCreate, tran
     if not transformer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformer not found")
 
-    task_name = 'lexy.transformers.' + transformer.transformer_id
+    task_name = transformer.celery_task_name
     if content_only:
         task_arg = document.content
     else:

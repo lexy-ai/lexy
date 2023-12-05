@@ -149,7 +149,12 @@ def save_result_to_index(self, res, document_id, text, index_id):
 
 
 @celery.task(base=DatabaseTask, bind=True, name="lexy.db.save_records_to_index")
-def save_records_to_index(self, records: list[dict[str, Any]], document_id: UUID, text: str, index_id: str):
+def save_records_to_index(self,
+                          records: list[dict[str, Any]],
+                          document_id: UUID,
+                          text: str,
+                          index_id: str,
+                          binding_id: int = None):
     """ Save the output of a transformer to an index. """
     task_logger.debug(f"Starting DB task 'save_records_to_index' for index {index_id} "
                       f"with task ID {self.request.id} and parent task ID {self.request.parent_id}")
@@ -166,7 +171,13 @@ def save_records_to_index(self, records: list[dict[str, Any]], document_id: UUID
     for record in records:
         record = convert_arrays_to_lists(record)
         self.db.add(
-            IndexClass(document_id=document_id, text=text, task_id=self.request.parent_id, **record)
+            IndexClass(
+                document_id=document_id,
+                text=text,
+                task_id=self.request.parent_id,
+                binding_id=binding_id,
+                **record
+            )
         )
     try:
         self.db.commit()

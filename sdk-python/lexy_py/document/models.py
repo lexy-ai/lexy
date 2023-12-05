@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 class DocumentModel(BaseModel):
     """ Document model """
     document_id: Optional[str] = None
-    content: str = Field(..., min_length=1)
+    content: str = Field(...)
     meta: Optional[dict[Any, Any]] = Field(default={})
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
@@ -26,7 +26,7 @@ class DocumentModel(BaseModel):
 
 class DocumentCreate(BaseModel):
     """ Document create model """
-    content: str = Field(..., min_length=1)
+    content: str = Field(...)
     meta: Optional[dict[Any, Any]] = Field(default={})
 
 

@@ -1,5 +1,6 @@
 """ Client for interacting with the Document API. """
 
+import json
 from typing import Optional, TYPE_CHECKING
 
 import httpx
@@ -214,10 +215,12 @@ class DocumentClient:
 
         for doc in docs:
             if isinstance(doc, Document):
-                processed_docs.append(doc.dict())
+                # TODO: use doc.model_dump(mode='json') after updating to Pydantic 2.0
+                processed_docs.append(json.loads(doc.json()))
             elif isinstance(doc, dict):
                 doc = Document(**doc)
-                processed_docs.append(doc.dict())
+                # TODO: use doc.model_dump(mode='json') after updating to Pydantic 2.0
+                processed_docs.append(json.loads(doc.json()))
             else:
                 raise TypeError(f"Invalid type for doc item: {type(doc)} - must be Document or dict")
 

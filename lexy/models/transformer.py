@@ -1,11 +1,16 @@
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 
-from sqlalchemy import Column, DateTime, func
+from sqlalchemy import Column, DateTime, func, String
 from sqlmodel import SQLModel, Field, Relationship
 
 if TYPE_CHECKING:
     from lexy.models.binding import Binding
+
+
+def default_celery_task_name(context) -> str:
+    transformer_id = context.get_current_parameters()["transformer_id"]
+    return f"lexy.transformers.{transformer_id}"
 
 
 class TransformerBase(SQLModel):
@@ -34,6 +39,9 @@ class Transformer(TransformerBase, table=True):
         sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
     )
     bindings: list["Binding"] = Relationship(back_populates="transformer")
+    celery_task_name: Optional[str] = Field(
+        sa_column=Column(String, default=default_celery_task_name, nullable=True, unique=True)
+    )
 
 
 class TransformerCreate(TransformerBase):

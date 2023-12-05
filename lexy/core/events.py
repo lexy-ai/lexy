@@ -51,18 +51,20 @@ async def generate_tasks_for_document(doc: Document) -> list[dict]:
         #     kwargs=binding.transformer_params,
         #     link=save_records_to_index.s(document_id=doc.document_id,
         #                                  text=doc.content,
-        #                                  index_id=binding.index_id)
+        #                                  index_id=binding.index_id,
+        #                                  binding_id=binding.binding_id)
         # )
 
         #   option 2: use celery.send_task
-        task_name = 'lexy.transformers.' + binding.transformer.transformer_id
+        task_name = binding.transformer.celery_task_name
         task = celery.send_task(
             task_name,
             args=[doc],
             kwargs=binding.transformer_params,
             link=save_records_to_index.s(document_id=doc.document_id,
                                          text=doc.content,
-                                         index_id=binding.index_id)
+                                         index_id=binding.index_id,
+                                         binding_id=binding.binding_id)
         )
 
         tasks.append({"task_id": task.id, "document_id": doc.document_id})
@@ -211,12 +213,13 @@ async def process_new_binding(binding: Binding, create_index_table: bool = False
     #         kwargs=binding.transformer_params,
     #         link=save_records_to_index.s(document_id=doc.document_id,
     #                                      text=doc.content,
-    #                                      index_id=binding.index_id)
+    #                                      index_id=binding.index_id,
+    #                                      binding_id=binding.binding_id)
     #     )
     #     tasks.append({"task_id": task.id, "document_id": doc.document_id})
 
     #   option 2: use celery.send_task
-    task_name = 'lexy.transformers.' + binding.transformer.transformer_id
+    task_name = binding.transformer.celery_task_name
     for doc in documents:
         task = celery.send_task(
             task_name,
@@ -224,7 +227,8 @@ async def process_new_binding(binding: Binding, create_index_table: bool = False
             kwargs=binding.transformer_params,
             link=save_records_to_index.s(document_id=doc.document_id,
                                          text=doc.content,
-                                         index_id=binding.index_id)
+                                         index_id=binding.index_id,
+                                         binding_id=binding.binding_id)
         )
         tasks.append({"task_id": task.id, "document_id": doc.document_id})
 
