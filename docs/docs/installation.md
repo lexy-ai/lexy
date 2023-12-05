@@ -52,6 +52,7 @@ The server will be running at http://localhost:9900. In addition, you can find t
 | Lexy API     | http://localhost:9900/docs | Swagger API docs                                              |
 | Flower       | http://localhost:5556      | Celery task monitor                                           |
 | RabbitMQ     | http://localhost:15672     | Username: `guest`, Password: `guest`                          |
+| Postgres     | http://localhost:5432      | Database: `lexy`, Username: `postgres`, Password: `postgres`  |
 | Project docs | http://localhost:8000      | Run `make serve-docs`<br/>Username: `lexy`, Password: `guest` |
 
 

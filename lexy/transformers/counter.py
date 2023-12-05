@@ -1,3 +1,4 @@
+from lexy.models.document import DocumentBase
 from lexy.transformers import lexy_transformer
 
 
@@ -25,9 +26,11 @@ def count_words(text: str) -> dict[str, int]:
     return counts
 
 
-@lexy_transformer(name="counter.word_counter")
+@lexy_transformer(name="text.counter.word_counter")
 def word_counter(text: str) -> tuple[int, str]:
     """ Testing a transformer. """
+    if isinstance(text, DocumentBase):
+        text = text.content
     words = text.split()
     word_count = len(words)
     longest_word = max(words, key=len)

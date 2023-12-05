@@ -2,6 +2,8 @@
 
 ::: lexy_py.binding.models.Binding
 
+::: lexy_py.binding.models.BindingModel
+
 ::: lexy_py.binding.client.BindingClient
     options:
         members:

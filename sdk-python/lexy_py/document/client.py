@@ -1,5 +1,6 @@
 """ Client for interacting with the Document API. """
 
+import json
 from typing import Optional, TYPE_CHECKING
 
 import httpx
@@ -51,12 +52,12 @@ class DocumentClient:
         handle_response(r)
         return [Document(**document, client=self._lexy_client) for document in r.json()]
 
-    def add_documents(self, docs: Document | list[Document] | dict | list[dict],
+    def add_documents(self, docs: Document | dict | list[Document | dict],
                       collection_id: str = "default") -> list[Document]:
         """ Synchronously add documents to a collection.
 
         Args:
-            docs (Document | list[Document] | dict | list[dict]): The documents to add.
+            docs (Document | dict | list[Document | dict]): The documents to add.
             collection_id (str): The ID of the collection to add the documents to. Defaults to "default".
 
         Returns:
@@ -76,12 +77,12 @@ class DocumentClient:
         handle_response(r)
         return [Document(**document['document'], client=self._lexy_client) for document in r.json()]
 
-    async def aadd_documents(self, docs: Document | list[Document] | dict | list[dict],
+    async def aadd_documents(self, docs: Document | dict | list[Document | dict],
                              collection_id: str = "default") -> list[Document]:
         """ Asynchronously add documents to a collection.
 
         Args:
-            docs (Document | list[Document] | dict | list[dict]): The documents to add.
+            docs (Document | dict | list[Document | dict]): The documents to add.
             collection_id (str): The ID of the collection to add the documents to. Defaults to "default".
 
         Returns:
@@ -205,7 +206,7 @@ class DocumentClient:
         return r.json()
 
     @staticmethod
-    def _process_docs(docs: Document | list[Document] | dict | list[dict]) -> list[dict]:
+    def _process_docs(docs: Document | dict | list[Document | dict]) -> list[dict]:
         """ Process documents into a list of dictionaries. """
         processed_docs = []
 
@@ -214,10 +215,12 @@ class DocumentClient:
 
         for doc in docs:
             if isinstance(doc, Document):
-                processed_docs.append(doc.dict())
+                # TODO: use doc.model_dump(mode='json') after updating to Pydantic 2.0
+                processed_docs.append(json.loads(doc.json()))
             elif isinstance(doc, dict):
                 doc = Document(**doc)
-                processed_docs.append(doc.dict())
+                # TODO: use doc.model_dump(mode='json') after updating to Pydantic 2.0
+                processed_docs.append(json.loads(doc.json()))
             else:
                 raise TypeError(f"Invalid type for doc item: {type(doc)} - must be Document or dict")
 

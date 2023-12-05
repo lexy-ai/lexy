@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import select
+from sqlmodel import delete, exists, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from lexy.db.session import get_session
 from lexy.models.collection import Collection, CollectionCreate, CollectionUpdate
+from lexy.models.document import Document
 
 
 router = APIRouter()
@@ -70,13 +71,31 @@ async def update_collection(collection_id: str, collection: CollectionUpdate,
                status_code=status.HTTP_200_OK,
                name="delete_collection",
                description="Delete a collection")
-async def delete_collection(collection_id: str, session: AsyncSession = Depends(get_session)) -> dict:
-    result = await session.execute(select(Collection).where(Collection.collection_id == collection_id))
-    collection = result.scalars().first()
+async def delete_collection(collection_id: str,
+                            delete_documents: bool = False,
+                            session: AsyncSession = Depends(get_session)) -> dict:
+    result = await session.exec(select(Collection).where(Collection.collection_id == collection_id))
+    collection = result.first()
+
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
-    # TODO: delete all documents in the collection
-    # TODO: loop through bindings and set status to "detached"
+
+    # delete any documents in the collection
+    deleted_count = 0
+    if delete_documents is True:
+        statement = delete(Document).where(Document.collection_id == collection_id)
+        result = await session.execute(statement)
+        deleted_count = result.rowcount
+    else:
+        # check if there are any related documents
+        statement = select(exists().where(Document.collection_id == collection_id)).select_from(Document)
+        result = await session.execute(statement)
+        has_documents = result.scalar()
+        if has_documents:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                detail="There are still documents in this collection. "
+                                       "Set delete_documents=True to delete them.")
+
     await session.delete(collection)
     await session.commit()
-    return {"Say": "Collection deleted!"}
+    return {"Say": "Collection deleted!", "collection_id": collection_id, "documents_deleted": deleted_count}

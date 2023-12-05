@@ -10,6 +10,7 @@ repo_name: lexy-ai/lexy
 theme:
   name: material
   features:
+    - content.code.annotate
     - content.code.copy
     - content.tabs.link
   icon:

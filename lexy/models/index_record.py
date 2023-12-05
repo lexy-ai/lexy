@@ -44,4 +44,8 @@ class IndexRecordBaseTable(IndexRecordBase):
     )
     document: "Document" = Relationship(back_populates="index_records")
     task_id: Optional[UUID] = Field(default=None)
-
+    binding_id: Optional[int] = Field(
+        sa_column_args=(ForeignKey('bindings.binding_id', ondelete='CASCADE'),),
+        index=True,
+        nullable=True
+    )

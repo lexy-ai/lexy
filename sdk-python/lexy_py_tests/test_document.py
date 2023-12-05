@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 
 from lexy_py.client import LexyClient
@@ -25,7 +27,7 @@ class TestDocumentClient:
         # add documents to the test collection
         docs_added = lexy.document.add_documents(docs=[
             {"content": "Test Document 1 Content"},
-            {"content": "Test Document 2 Content"}
+            {"content": "Test Document 2 Content", "meta": {"my_date": datetime.now()}}
         ], collection_id="tmp_collection")
         assert len(docs_added) == 2
         assert docs_added[0].content == "Test Document 1 Content"
@@ -63,7 +65,7 @@ class TestDocumentClient:
 
         # delete test collection
         response = lexy.collection.delete_collection("tmp_collection")
-        assert response == {"Say": "Collection deleted!"}
+        assert response.get("Say") == "Collection deleted!"
 
     def test_list_documents(self):
         documents = lexy.document.list_documents(collection_id='code')

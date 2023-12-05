@@ -2,6 +2,8 @@
 
 ::: lexy_py.document.models.Document
 
+::: lexy_py.document.models.DocumentModel
+
 ::: lexy_py.document.client.DocumentClient
     options:
         members:

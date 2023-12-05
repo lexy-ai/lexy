@@ -1,12 +1,12 @@
 version: "3.11"
 
 services:
-  fastapi_service:
+  lexyserver:
     build:
       context: ./
       dockerfile: docker/server/Dockerfile
-    hostname: fastapi_service
-    container_name: fastapi_service
+    hostname: lexy_server
+    container_name: lexy-server
     depends_on:
       - db_postgres
     ports:
@@ -14,19 +14,16 @@ services:
     env_file:
       - .env
     environment:
-#      - DATABASE_URL=postgres://postgres:postgres@db_postgres/lexy
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=lexy
       - POSTGRES_HOST=db_postgres
       - CELERY_BROKER_URL=amqp://guest:guest@queue:5672//
-#      - CELERY_RESULT_BACKEND=rpc://
       - CELERY_RESULT_BACKEND=db+postgresql://postgres:postgres@db_postgres/lexy
-#      - TOKENIZERS_PARALLELISM=false
     volumes:
       - ./:/home/app
     networks:
-      - my-net
+      - lexy-net
 
   db_postgres:
     hostname: db_postgres
@@ -38,14 +35,14 @@ services:
       - POSTGRES_DB=lexy
       - POSTGRES_TEST_DB=lexy_tests
     ports:
-      - "6543:5432"
+      - "5432:5432"
     build:
         context: ./
         dockerfile: docker/postgres/Dockerfile
     volumes:
       - db-postgres:/var/lib/postgresql/data
     networks:
-      - my-net
+      - lexy-net
 
   queue:
     image: rabbitmq:3.9.10-management
@@ -56,7 +53,7 @@ services:
       - "5672:5672"
       - "15672:15672"
     networks:
-      - my-net
+      - lexy-net
 
   flower:
     image: mher/flower
@@ -67,20 +64,19 @@ services:
       - "5556:5555"
     command: celery --broker=amqp://guest:guest@queue:5672// flower -A lexy.main.celery --broker_api=http://guest:guest@queue:15672/api/vhost
     depends_on:
-      - fastapi_service
+      - lexyserver
       - queue
-      - celeryworker
+      - lexyworker
     environment:
       - CELERY_BROKER_URL=amqp://guest:guest@queue:5672//
-#      - CELERY_RESULT_BACKEND=rpc://
       - CELERY_RESULT_BACKEND=db+postgresql://postgres:postgres@db_postgres/lexy
       - CELERY_BROKER_API_URL=http://guest:guest@queue:15672/api/vhost
       - C_FORCE_ROOT=true
       - FLOWER_UNAUTHENTICATED_API=true
     networks:
-      - my-net
+      - lexy-net
 
-  celeryworker:
+  lexyworker:
     build:
       context: ./
       dockerfile: docker/worker/Dockerfile
@@ -88,7 +84,7 @@ services:
     container_name: lexy-celeryworker
     command: celery -A lexy.main.celery worker --loglevel=info -Q celery -c 4
     depends_on:
-      - fastapi_service
+      - lexyserver
       - queue
     restart: always
     env_file:
@@ -96,10 +92,8 @@ services:
     environment:
       - CELERY_BROKER_URL=amqp://guest:guest@queue:5672//
       - CELERY_BROKER_API_URL=http://guest:guest@queue:15672/api/vhost
-#      - CELERY_RESULT_BACKEND=rpc://
       - CELERY_RESULT_BACKEND=db+postgresql://postgres:postgres@db_postgres/lexy
       - C_FORCE_ROOT=true
-#      - TOKENIZERS_PARALLELISM=false
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=lexy
@@ -107,7 +101,7 @@ services:
     volumes:
       - ./:/home/app
     networks:
-      - my-net
+      - lexy-net
 
 
 volumes:
@@ -115,5 +109,5 @@ volumes:
     driver: local
 
 networks:
-  my-net:
+  lexy-net:
     external: false

@@ -2,6 +2,8 @@
 
 ::: lexy_py.transformer.models.Transformer
 
+::: lexy_py.transformer.models.TransformerModel
+
 ::: lexy_py.transformer.client.TransformerClient
     options:
         members:
