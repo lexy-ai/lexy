@@ -25,7 +25,7 @@ base_url = "http://localhost:9900"
 #     yield TestSession()
 
 # async_engine = AsyncEngine(create_engine(
-#     url="postgresql+asyncpg://postgres:postgres@localhost:6543/lexy_tests",
+#     url="postgresql+asyncpg://postgres:postgres@localhost:5432/lexy_tests",
 #     echo=False,
 #     future=True
 # ))
@@ -56,7 +56,7 @@ async def async_client():
 @pytest.fixture(scope="session")
 def async_engine():
     return AsyncEngine(create_engine(
-        url="postgresql+asyncpg://postgres:postgres@localhost:6543/lexy_tests",
+        url="postgresql+asyncpg://postgres:postgres@localhost:5432/lexy_tests",
         echo=True,
         future=True
     ))

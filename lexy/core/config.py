@@ -49,11 +49,15 @@ class GlobalConfig(BaseConfig):
     db_echo_log: bool = True
 
     # Celery settings
-    celery_client_transformer_imports = {
-        'lexy.transformers.*'
+    lexy_server_transformer_imports = {
+        # 'lexy.transformers.*'
+        'lexy.transformers.counter',
+        'lexy.transformers.embeddings',
     }
-    celery_worker_transformer_imports = {
-        'lexy.transformers.*'
+    lexy_worker_transformer_imports = {
+        # 'lexy.transformers.*'
+        'lexy.transformers.counter',
+        'lexy.transformers.embeddings',
     }
 
     @property
@@ -66,11 +70,11 @@ class GlobalConfig(BaseConfig):
 
     @property
     def app_transformer_imports(self):
-        return expand_transformer_imports(self.celery_client_transformer_imports)
+        return expand_transformer_imports(self.lexy_server_transformer_imports)
 
     @property
     def worker_transformer_imports(self):
-        return expand_transformer_imports(self.celery_worker_transformer_imports)
+        return expand_transformer_imports(self.lexy_worker_transformer_imports)
 
 
 settings = GlobalConfig()

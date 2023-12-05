@@ -43,11 +43,11 @@ class Collection(CollectionModel):
             raise ValueError("API client has not been set.")
         return self._client
 
-    def add_documents(self, docs: Document | list[Document] | dict | list[dict]) -> list[Document]:
+    def add_documents(self, docs: Document | dict | list[Document | dict]) -> list[Document]:
         """ Synchronously add documents to the collection.
 
         Args:
-            docs (Document | list[Document] | dict | list[dict]): The documents to add.
+            docs (Document | dict | list[Document | dict]): The documents to add.
 
         Returns:
             Documents: A list of added documents.

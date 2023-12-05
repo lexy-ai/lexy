@@ -43,6 +43,7 @@ docker-compose up --build -d
 | Lexy API     | http://localhost:9900/docs | Swagger API docs                                              |
 | Flower       | http://localhost:5556      | Celery task monitor                                           |
 | RabbitMQ     | http://localhost:15672     | Username: `guest`, Password: `guest`                          |
+| Postgres     | http://localhost:5432      | Database: `lexy`, Username: `postgres`, Password: `postgres`  |
 | Project docs | http://localhost:8000      | Run `make serve-docs`<br/>Username: `lexy`, Password: `guest` |
 
 

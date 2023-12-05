@@ -15,7 +15,7 @@ def route_task(name, args, kwargs, options, task=None, **kw):
 class BaseConfig:
     CELERY_BROKER_URL: str = os.environ.get("CELERY_BROKER_URL", "amqp://guest:guest@localhost:5672//")
     CELERY_RESULT_BACKEND: str = os.environ.get("CELERY_RESULT_BACKEND",
-                                                "db+postgresql://postgres:postgres@localhost:6543/lexy")
+                                                "db+postgresql://postgres:postgres@localhost:5432/lexy")
 
     CELERY_TASK_QUEUES: list = (
         # default queue

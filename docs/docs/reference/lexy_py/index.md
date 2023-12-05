@@ -2,6 +2,8 @@
 
 ::: lexy_py.index.models.Index
 
+::: lexy_py.index.models.IndexModel
+
 ::: lexy_py.index.client.IndexClient
     options:
         members:

@@ -2,6 +2,8 @@
 
 ::: lexy_py.collection.models.Collection
 
+::: lexy_py.collection.models.CollectionModel
+
 ::: lexy_py.collection.client.CollectionClient
     options:
         members:
