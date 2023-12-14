@@ -251,8 +251,13 @@ class IndexClient:
         handle_response(r)
         return r.json()
 
-    def query_index(self, query_string: str, index_id: str = "default_text_embeddings", query_field: str = "embedding",
-                    k: int = 5) -> list[dict]:
+    def query_index(self,
+                    query_string: str,
+                    index_id: str = "default_text_embeddings",
+                    query_field: str = "embedding",
+                    k: int = 5,
+                    return_fields: list[str] = None,
+                    return_doc_content: bool = False) -> list[dict]:
         """ Synchronously query an index.
 
         Args:
@@ -260,22 +265,32 @@ class IndexClient:
             index_id (str): The ID of the index to query. Defaults to "default_text_embeddings".
             query_field (str, optional): The field to query. Defaults to "embedding".
             k (int, optional): The number of records to return. Defaults to 5.
+            return_fields (list[str], optional): The fields to return. Defaults to None, which returns all fields.
+            return_doc_content (bool, optional): Whether to return the document content. Defaults to False.
 
         Returns:
             list[dict]: The query results.
         """
+        if return_fields is None:
+            return_fields = []
         params = {
             "query_string": query_string,
             "query_field": query_field,
-            "k": k
+            "k": k,
+            "return_fields": return_fields,
+            "return_doc_content": return_doc_content
         }
         r = self.client.get(f"/indexes/{index_id}/records/query", params=params)
         handle_response(r)
         return r.json()["search_results"]
 
-    async def aquery_index(self, query_string: str, index_id: str = "default_text_embeddings",
-                           query_field: str = "embedding", k: int = 5) \
-            -> list[dict]:
+    async def aquery_index(self,
+                           query_string: str,
+                           index_id: str = "default_text_embeddings",
+                           query_field: str = "embedding",
+                           k: int = 5,
+                           return_fields: list[str] = None,
+                           return_doc_content: bool = False) -> list[dict]:
         """ Asynchronously query an index.
 
         Args:
@@ -283,14 +298,20 @@ class IndexClient:
             index_id (str): The ID of the index to query. Defaults to "default_text_embeddings".
             query_field (str, optional): The field to query. Defaults to "embedding".
             k (int, optional): The number of records to return. Defaults to 5.
+            return_fields (list[str], optional): The fields to return. Defaults to None, which returns all fields.
+            return_doc_content (bool, optional): Whether to return the document content. Defaults to False.
 
         Returns:
             list[dict]: The query results.
         """
+        if return_fields is None:
+            return_fields = []
         params = {
             "query_string": query_string,
             "query_field": query_field,
-            "k": k
+            "k": k,
+            "return_fields": return_fields,
+            "return_doc_content": return_doc_content
         }
         r = await self.aclient.get(f"/indexes/{index_id}/records/query", params=params)
         handle_response(r)

@@ -132,7 +132,8 @@ def drop_index_table(index_id: str) -> bool:
     return True
 
 
-async def process_new_binding(binding: Binding, create_index_table: bool = False) \
+# TODO: remove session arg and run async after update to SQLAlchemy 2.0
+def process_new_binding(session, binding: Binding, create_index_table: bool = False) \
         -> tuple[Binding, list[dict]]:
     """ Process a new binding.
 

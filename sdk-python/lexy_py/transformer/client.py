@@ -6,6 +6,7 @@ import httpx
 
 from lexy_py.exceptions import handle_response
 from .models import Transformer, TransformerUpdate
+from lexy_py.document.models import Document
 
 if TYPE_CHECKING:
     from lexy_py.client import LexyClient
@@ -158,5 +159,39 @@ class TransformerClient:
             transformer_id (str): The ID of the transformer to delete.
         """
         r = await self.aclient.delete(f"/transformers/{transformer_id}")
+        handle_response(r)
+        return r.json()
+
+    def transform_document(self,
+                           transformer_id: str,
+                           document: Document | dict,
+                           transformer_params: dict = None,
+                           content_only: bool = False) -> dict:
+        """ Synchronously transform a document.
+
+        Args:
+            transformer_id (str): The ID of the transformer to use.
+            document (Document | dict): The document to transform.
+            transformer_params (dict, optional): The transformer parameters. Defaults to None.
+            content_only (bool, optional): Whether to submit only the document content and not the document itself.
+                Use this option when the transformer doesn't accept Document objects as inputs. Defaults to False.
+
+        Returns:
+            dict: A dictionary containing the generated task ID and the result of the transformer.
+
+        Examples:
+            >>> from lexy_py import LexyClient
+            >>> lexy = LexyClient()
+            >>> lexy.transformer.transform_document("text.counter.word_counter", {"content": "Hello world!"})
+            {'task_id': '65ecd2f7-bac4-4747-9e65-a6d21a72f585', 'result': [2, 'world!']}
+        """
+        if isinstance(document, dict):
+            document = Document(**document)
+        data = {"document": document.dict()}
+        if transformer_params:
+            data["transformer_params"] = transformer_params
+        if content_only:
+            data["content_only"] = content_only
+        r = self.client.post(f"/transformers/{transformer_id}", json=data)
         handle_response(r)
         return r.json()

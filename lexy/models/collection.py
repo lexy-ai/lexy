@@ -30,7 +30,7 @@ class Collection(CollectionBase, table=True):
     )
     documents: list["Document"] = Relationship(
         back_populates="collection",
-        sa_relationship_kwargs={'lazy': 'subquery'}
+        sa_relationship_kwargs={'lazy': 'select'}
     )
     bindings: list["Binding"] = Relationship(
         back_populates="collection",

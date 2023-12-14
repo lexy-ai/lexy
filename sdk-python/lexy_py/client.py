@@ -88,6 +88,7 @@ class LexyClient:
         self.get_transformer = self.transformer.get_transformer
         self.list_transformers = self.transformer.list_transformers
         self.update_transformer = self.transformer.update_transformer
+        self.transform_document = self.transformer.transform_document
 
     async def __aenter__(self) -> "LexyClient":
         """ Async context manager entry point. """
