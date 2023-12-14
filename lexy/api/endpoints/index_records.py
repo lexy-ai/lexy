@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import asc, func, select
 from sqlalchemy.orm import aliased
 from sqlmodel import SQLModel
@@ -40,10 +40,13 @@ async def get_records(index_id: str = "default_text_embeddings", document_id: st
             status_code=status.HTTP_200_OK,
             name="query_records",
             description="Query all records for an index")
-async def query_records(query_string: str, k: int = 5, query_field: str = "embedding",
-                        index_id: str = "default_text_embeddings", session: AsyncSession = Depends(get_session)) \
-        -> dict:
-
+async def query_records(query_string: str,
+                        k: int = 5,
+                        query_field: str = "embedding",
+                        index_id: str = "default_text_embeddings",
+                        return_fields: list[str] = Query(None),
+                        return_doc_content: bool = False,
+                        session: AsyncSession = Depends(get_session)) -> dict:
     # get embedding for query string
     task = text_embeddings.apply_async(args=[query_string], priority=10)
     result = task.get()
@@ -61,7 +64,14 @@ async def query_records(query_string: str, k: int = 5, query_field: str = "embed
     if query_column is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Field '{query_field}' not found in index '{index_id}'")
-    return_index_fields = [index_tbl.c[k] for k, v in index.index_fields.items() if v["type"] != "embedding"]
+    if return_fields:
+        return_index_fields = [index_tbl.c[k] for k in return_fields]
+    else:
+        return_index_fields = [index_tbl.c[k] for k, v in index.index_fields.items() if v["type"] != "embedding"]
+    # optionally return document content
+    # TODO: remove "len(return_index_fields) == 0" condition once we have auto-embed option
+    if (return_doc_content is True) or (len(return_index_fields) == 0):
+        return_index_fields.append(document_tbl.content.label("document_content"))
 
     # query index table
     search_result = await session.execute(
@@ -69,7 +79,6 @@ async def query_records(query_string: str, k: int = 5, query_field: str = "embed
                index_tbl.c.custom_id,
                index_tbl.c.meta,
                index_tbl.c.index_record_id,
-               document_tbl.content.label("document_content"),
                func.abs(query_column.op("<->")(query_embedding)).label("abs_distance"),
                # not adding a function here causes the query to fail for some reason
                func.pow(query_column.op("<->")(query_embedding), 1).label("distance"),

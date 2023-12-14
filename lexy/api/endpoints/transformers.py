@@ -93,8 +93,11 @@ async def delete_transformer(transformer_id: str, session: AsyncSession = Depend
              status_code=status.HTTP_200_OK,
              name="transform_document",
              description="Transform a document")
-async def transform_document(transformer_id: str, document: DocumentCreate, transformer_params: dict = None,
-                             content_only: bool = False, session: AsyncSession = Depends(get_session)) -> dict:
+async def transform_document(transformer_id: str,
+                             document: DocumentCreate,
+                             transformer_params: dict = None,
+                             content_only: bool = False,
+                             session: AsyncSession = Depends(get_session)) -> dict:
     result = await session.execute(select(Transformer).where(Transformer.transformer_id == transformer_id))
     transformer = result.scalars().first()
     if not transformer:

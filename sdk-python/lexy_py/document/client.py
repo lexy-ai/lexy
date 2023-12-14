@@ -26,29 +26,49 @@ class DocumentClient:
         self.aclient = self._lexy_client.aclient
         self.client = self._lexy_client.client
 
-    def list_documents(self, collection_id: str = "default") -> list[Document]:
-        """ Synchronously get a list of all documents in a collection.
+    def list_documents(self,
+                       collection_id: str = "default",
+                       limit: int = 100,
+                       offset: int = 0) -> list[Document]:
+        """ Synchronously get a list of documents in a collection.
 
         Args:
             collection_id (str): The ID of the collection to get documents from. Defaults to "default".
+            limit (int): The maximum number of documents to return. Defaults to 100. Maximum allowed is 1000.
+            offset (int): The offset to start from. Defaults to 0.
 
         Returns:
-            list[Document]: A list of all documents in a collection.
+            list[Document]: A list of documents in a collection.
         """
-        r = self.client.get("/documents", params={"collection_id": collection_id})
+        r = self.client.get("/documents",
+                            params={
+                                "collection_id": collection_id,
+                                "limit": limit,
+                                "offset": offset
+                            })
         handle_response(r)
         return [Document(**document, client=self._lexy_client) for document in r.json()]
 
-    async def alist_documents(self, collection_id: str = "default") -> list[Document]:
-        """ Asynchronously get a list of all documents in a collection.
+    async def alist_documents(self,
+                              collection_id: str = "default",
+                              limit: int = 100,
+                              offset: int = 0) -> list[Document]:
+        """ Asynchronously get a list of documents in a collection.
 
         Args:
             collection_id (str): The ID of the collection to get documents from. Defaults to "default".
+            limit (int): The maximum number of documents to return. Defaults to 100. Maximum allowed is 1000.
+            offset (int): The offset to start from. Defaults to 0.
 
         Returns:
-            list[Document]: A list of all documents in a collection.
+            list[Document]: A list of documents in a collection.
         """
-        r = await self.aclient.get("/documents", params={"collection_id": collection_id})
+        r = await self.aclient.get("/documents",
+                                   params={
+                                       "collection_id": collection_id,
+                                       "limit": limit,
+                                       "offset": offset
+                                   })
         handle_response(r)
         return [Document(**document, client=self._lexy_client) for document in r.json()]
 
@@ -202,6 +222,16 @@ class DocumentClient:
             document_id (str): The ID of the document to delete.
         """
         r = await self.aclient.delete(f"/documents/{document_id}")
+        handle_response(r)
+        return r.json()
+
+    def bulk_delete_documents(self, collection_id: str) -> dict:
+        """ Synchronously delete all documents from a collection.
+
+        Args:
+            collection_id (str): The ID of the collection to delete documents from.
+        """
+        r = self.client.delete("/documents", params={"collection_id": collection_id})
         handle_response(r)
         return r.json()
 

@@ -21,6 +21,7 @@ async def get_bindings(session: AsyncSession = Depends(get_session)) -> list[Bin
     return bindings
 
 
+# TODO: change to the following after SQLAlchemy 2.0: https://stackoverflow.com/a/75947988
 @router.post("/bindings",
              response_model=dict[str, BindingRead | list[dict]],
              status_code=status.HTTP_201_CREATED,
@@ -32,7 +33,8 @@ async def add_binding(binding: BindingCreate, session: AsyncSession = Depends(ge
     session.add(binding)
     await session.commit()
     await session.refresh(binding)
-    processed_binding, tasks = await process_new_binding(binding)
+    # process the binding and generate document tasks
+    processed_binding, tasks = await session.run_sync(process_new_binding, binding)
     # now commit the binding again and refresh it - status should be updated
     session.add(processed_binding)
     await session.commit()
@@ -81,7 +83,7 @@ async def update_binding(binding_id: int, binding: BindingUpdate,
         # TODO: this portion needs to be updated to reflect time stamps of tasks
         #  or to simply become part of an init script
         print(f"Binding status changed from '{old_status}' to 'on' - processing binding")
-        processed_binding, tasks = await process_new_binding(db_binding)
+        processed_binding, tasks = process_new_binding(db_binding)
         # now commit the binding again and refresh it - status should be updated
         session.add(processed_binding)
         await session.commit()

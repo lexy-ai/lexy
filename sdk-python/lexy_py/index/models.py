@@ -42,18 +42,30 @@ class Index(IndexModel):
             raise ValueError("API client has not been set.")
         return self._client
 
-    def query(self, query_string: str, query_field: str = "embedding", k: int = 5) -> list[dict]:
+    def query(self,
+              query_string: str,
+              query_field: str = "embedding",
+              k: int = 5,
+              return_fields: list[str] = None,
+              return_doc_content: bool = False) -> list[dict]:
         """ Synchronously query an index.
 
         Args:
             query_string (str): The query string.
             query_field (str, optional): The field to query. Defaults to "embedding".
             k (int, optional): The number of records to return. Defaults to 5.
+            return_fields (list[str], optional): The fields to return. Defaults to None, which returns all fields.
+            return_doc_content (bool, optional): Whether to return the document content. Defaults to False.
 
         Returns:
             Results: A list of query results.
         """
-        return self.client.index.query_index(query_string, self.index_id, query_field, k)
+        return self.client.index.query_index(query_string=query_string,
+                                             index_id=self.index_id,
+                                             query_field=query_field,
+                                             k=k,
+                                             return_fields=return_fields,
+                                             return_doc_content=return_doc_content)
 
     def list_records(self, document_id: Optional[str] = None) -> list[dict]:
         """ Synchronously list all records in the index.

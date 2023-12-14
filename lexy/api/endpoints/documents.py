@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import select
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlmodel import delete, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from lexy.db.session import get_session
@@ -16,8 +16,13 @@ router = APIRouter()
             name="get_documents",
             description="Get all documents in a collection")
 async def get_documents(collection_id: str | None = "default",
+                        limit: int = Query(100, gt=0, le=1000),
+                        offset: int = 0,
                         session: AsyncSession = Depends(get_session)) -> list[Document]:
-    result = await session.execute(select(Document).where(Document.collection_id == collection_id))
+    result = await session.execute(select(Document)
+                                   .where(Document.collection_id == collection_id)
+                                   .limit(limit)
+                                   .offset(offset))
     documents = result.scalars().all()
     return documents
 
@@ -39,6 +44,18 @@ async def add_documents(documents: list[DocumentCreate], collection_id: str | No
             {"document": document, "tasks": tasks}
         )
     return docs_added
+
+
+@router.delete("/documents",
+               status_code=status.HTTP_200_OK,
+               name="bulk_delete_documents",
+               description="Bulk delete all documents in a collection")
+async def bulk_delete_documents(collection_id: str, session: AsyncSession = Depends(get_session)) -> dict:
+    statement = delete(Document).where(Document.collection_id == collection_id)
+    result = await session.execute(statement)
+    deleted_count = result.rowcount
+    await session.commit()
+    return {"Say": "Documents deleted!", "deleted_count": deleted_count}
 
 
 @router.get("/documents/{document_id}",

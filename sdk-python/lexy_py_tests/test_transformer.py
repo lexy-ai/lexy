@@ -48,3 +48,10 @@ class TestTransformerClient:
     async def test_alist_transformers(self):
         transformers = await lexy.transformer.alist_transformers()
         assert len(transformers) > 0
+
+    def test_transform_document(self):
+        transformer = lexy.transformer.get_transformer("text.embeddings.minilm")
+        response = transformer.transform_document({"content": "Hello, world!"})
+        assert 'task_id' in response
+        assert isinstance(response["result"], list)
+        assert all(isinstance(elem, float) for elem in response["result"])

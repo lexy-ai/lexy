@@ -55,10 +55,14 @@ class Collection(CollectionModel):
         return self.client.document.add_documents(docs, collection_id=self.collection_id)
 
     # TODO: add pagination
-    def list_documents(self) -> list[Document]:
-        """ Synchronously get all documents in the collection.
+    def list_documents(self, limit: int = 100, offset: int = 0) -> list[Document]:
+        """ Synchronously get a list of documents in the collection.
+
+        Args:
+            limit (int): The maximum number of documents to return. Defaults to 100. Maximum allowed is 1000.
+            offset (int): The offset to start from. Defaults to 0.
 
         Returns:
-            Documents: A list of all documents in the collection.
+            Documents: A list of documents in the collection.
         """
-        return self.client.document.list_documents(self.collection_id)
+        return self.client.document.list_documents(self.collection_id, limit=limit, offset=offset)
