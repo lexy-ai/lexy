@@ -11,6 +11,7 @@
             - delete_transformer
             - get_transformer
             - list_transformers
+            - transform_document
             - update_transformer
             - aadd_transformer
             - adelete_transformer

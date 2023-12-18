@@ -14,6 +14,7 @@ from typing import Any
 from uuid import UUID
 
 import numpy as np
+import torch
 from celery import current_app as celery, Task
 from celery.utils.log import get_logger, get_task_logger
 from sqlalchemy.orm import sessionmaker
@@ -96,24 +97,24 @@ class DatabaseTask(Task):
 
 
 def convert_arrays_to_lists(obj):
-    """ Convert numpy arrays to lists in a dictionary or list of dictionaries.
+    """ Convert numpy arrays and PyTorch tensors to lists in a dictionary or list of dictionaries.
 
     Args:
         obj: dictionary or list of dictionaries to convert
 
     Returns:
-        Same type as obj: dictionary or list of dictionaries with numpy arrays converted to lists
+        Same type as obj: dictionary or list of dictionaries with numpy arrays and PyTorch tensors converted to lists
 
     Examples:
-        >>> convert_arrays_to_lists({"a": np.array([1, 2, 3]), "b": {"c": np.array([4, 5, 6])}})
+        >>> convert_arrays_to_lists({"a": np.array([1, 2, 3]), "b": {"c": torch.tensor([4, 5, 6])}})
         {'a': [1, 2, 3], 'b': {'c': [4, 5, 6]}}
 
-        >>> convert_arrays_to_lists([{"a": np.array([1, 2, 3])}, {"b": np.array([4, 5, 6])}])
+        >>> convert_arrays_to_lists([{"a": torch.tensor([1, 2, 3])}, {"b": np.array([4, 5, 6])}])
         [{'a': [1, 2, 3]}, {'b': [4, 5, 6]}]
     """
     if isinstance(obj, dict):
         for key, value in obj.items():
-            if isinstance(value, np.ndarray):
+            if isinstance(value, (np.ndarray, torch.Tensor)):
                 obj[key] = value.tolist()
             elif isinstance(value, (dict, list)):
                 obj[key] = convert_arrays_to_lists(value)

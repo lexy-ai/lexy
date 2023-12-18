@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Any, Optional, TYPE_CHECKING
 
+from PIL import Image
 from pydantic import BaseModel, Field, PrivateAttr
 
 if TYPE_CHECKING:
@@ -43,29 +44,36 @@ class Index(IndexModel):
         return self._client
 
     def query(self,
-              query_string: str,
+              query_text: str = None,
+              query_image: Image.Image | str = None,
               query_field: str = "embedding",
               k: int = 5,
               return_fields: list[str] = None,
-              return_doc_content: bool = False) -> list[dict]:
+              return_doc_content: bool = False,
+              embedding_model: str = None) -> list[dict]:
         """ Synchronously query an index.
 
         Args:
-            query_string (str): The query string.
+            query_text (str): The query text.
+            query_image (Image.Image | str): The query image. Can be a PIL Image object or a path to an image.
             query_field (str, optional): The field to query. Defaults to "embedding".
             k (int, optional): The number of records to return. Defaults to 5.
             return_fields (list[str], optional): The fields to return. Defaults to None, which returns all fields.
             return_doc_content (bool, optional): Whether to return the document content. Defaults to False.
+            embedding_model (str, optional): The name of the embedding model to use. Defaults to None, which uses the
+                embedding model associated with `index_id.query_field`.
 
         Returns:
             Results: A list of query results.
         """
-        return self.client.index.query_index(query_string=query_string,
+        return self.client.index.query_index(query_text=query_text,
+                                             query_image=query_image,
                                              index_id=self.index_id,
                                              query_field=query_field,
                                              k=k,
                                              return_fields=return_fields,
-                                             return_doc_content=return_doc_content)
+                                             return_doc_content=return_doc_content,
+                                             embedding_model=embedding_model)
 
     def list_records(self, document_id: Optional[str] = None) -> list[dict]:
         """ Synchronously list all records in the index.

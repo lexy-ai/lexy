@@ -15,6 +15,7 @@ asyncpg = "^0.28.0"
 uvicorn = "^0.23.2"
 flower = "^2.0.1"
 celery = "^5.3.4"
+python-multipart = "^0.0.6"
 
 # optional dependencies
 transformers = { version = "^4.33.1", extras = ["torch"], optional = true}

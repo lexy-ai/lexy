@@ -69,7 +69,7 @@ LEXY_INDEX_FIELD_TYPES: Dict = {
 #
 # class EmbeddingField(IndexField):
 #     dims: int = 384
-#     distance: str = 'cos'
+#     model: str = 'text.embeddings.minilm'
 #
 #     @validator('field_type')
 #     def type_must_be_valid(self, v):
@@ -212,7 +212,7 @@ class IndexManager(object):
 
         Examples:
             >>> sample_fields_as_dict = {
-            >>>      "embedding": {"type": "embedding", "extras": {"dims": 384, "distance": "cos"}},
+            >>>      "embedding": {"type": "embedding", "extras": {"dims": 384, "model": "text.embeddings.minilm"}},
             >>>      "text": {"type": "string", "optional": True},
             >>> }
             >>> IndexManager.get_field_definitions(sample_fields_as_dict)
@@ -250,7 +250,7 @@ class IndexManager(object):
 
         Examples:
             >>> index_fields_as_dict = {
-            >>>      "embedding": {"type": "embedding", "extras": {"dims": 384, "distance": "cos"}},
+            >>>      "embedding": {"type": "embedding", "extras": {"dims": 384, "model": "text.embeddings.minilm"}},
             >>>      "text": {"type": "string", "optional": True},
             >>> }
             >>> IndexManager.get_ddl_for_embedding_fields(index_fields_as_dict, 'my_index_table')
