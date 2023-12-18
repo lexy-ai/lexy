@@ -1,10 +1,14 @@
 """ Client for interacting with the Indexes API. """
 
+import io
+import os
+import mimetypes
 from typing import Any, Optional, TYPE_CHECKING
 
 import httpx
+from PIL import Image
 
-from lexy_py.exceptions import handle_response
+from lexy_py.exceptions import handle_response, LexyClientError
 from .models import Index, IndexUpdate
 
 if TYPE_CHECKING:
@@ -89,7 +93,7 @@ class IndexClient:
         Examples:
             >>> code_index_fields = {
             ...     "code": {"type": "text"},
-            ...     "code_embedding": {"type": "embedding", "extras": {"dims": 384, "distance": "cosine"}},
+            ...     "code_embedding": {"type": "embedding", "extras": {"dims": 384, "model": "text.embeddings.minilm"}},
             ...     "n_lines": {"type": "int"},
             ... }
             >>> index = lexy.index.add_index(index_id="code_index",
@@ -128,7 +132,7 @@ class IndexClient:
         Examples:
             >>> code_index_fields = {
             ...     "code": {"type": "text"},
-            ...     "code_embedding": {"type": "embedding", "extras": {"dims": 384, "distance": "cosine"}},
+            ...     "code_embedding": {"type": "embedding", "extras": {"dims": 384, "model": "text.embeddings.minilm"}},
             ...     "n_lines": {"type": "int"},
             ... }
             >>> index = await lexy.index.aadd_index(index_id="code_index",
@@ -252,67 +256,131 @@ class IndexClient:
         return r.json()
 
     def query_index(self,
-                    query_string: str,
+                    query_text: str = None,
+                    query_image: Image.Image | str = None,
                     index_id: str = "default_text_embeddings",
                     query_field: str = "embedding",
                     k: int = 5,
                     return_fields: list[str] = None,
-                    return_doc_content: bool = False) -> list[dict]:
+                    return_doc_content: bool = False,
+                    embedding_model: str = None) -> list[dict]:
         """ Synchronously query an index.
 
         Args:
-            query_string (str): The query string.
+            query_text (str): The query text.
+            query_image (Image.Image | str): The query image. Can be a PIL Image object or a path to an image.
             index_id (str): The ID of the index to query. Defaults to "default_text_embeddings".
             query_field (str, optional): The field to query. Defaults to "embedding".
             k (int, optional): The number of records to return. Defaults to 5.
             return_fields (list[str], optional): The fields to return. Defaults to None, which returns all fields.
             return_doc_content (bool, optional): Whether to return the document content. Defaults to False.
+            embedding_model (str, optional): The name of the embedding model to use. Defaults to None, which uses the
+                embedding model associated with `index_id.query_field`.
 
         Returns:
             list[dict]: The query results.
+
+        Examples:
+            >>> from lexy_py import LexyClient
+            >>> lexy = LexyClient()
+            >>> lexy.query_index(query_text="Test Query")
+
+            >>> lexy.query_index(query_image="test_image.jpg", index_id="my_image_index")
+
+            >>> import httpx
+            >>> from PIL import Image
+            >>> img_url = 'https://getlexy.com/assets/images/dalle-agi.jpeg'
+            >>> image = Image.open(httpx.get(img_url))
+            >>> lexy.query_index(query_image=image, index_id="my_image_index", k=3)
         """
-        if return_fields is None:
-            return_fields = []
-        params = {
-            "query_string": query_string,
-            "query_field": query_field,
-            "k": k,
-            "return_fields": return_fields,
-            "return_doc_content": return_doc_content
-        }
-        r = self.client.get(f"/indexes/{index_id}/records/query", params=params)
+        files, params = self._process_query_params(query_text=query_text,
+                                                   query_image=query_image,
+                                                   query_field=query_field,
+                                                   k=k,
+                                                   return_fields=return_fields,
+                                                   return_doc_content=return_doc_content,
+                                                   embedding_model=embedding_model)
+
+        r = self.client.post(f"/indexes/{index_id}/records/query", files=files, params=params)
         handle_response(r)
         return r.json()["search_results"]
 
     async def aquery_index(self,
-                           query_string: str,
+                           query_text: str = None,
+                           query_image: Image.Image | str = None,
                            index_id: str = "default_text_embeddings",
                            query_field: str = "embedding",
                            k: int = 5,
                            return_fields: list[str] = None,
-                           return_doc_content: bool = False) -> list[dict]:
+                           return_doc_content: bool = False,
+                           embedding_model: str = None) -> list[dict]:
         """ Asynchronously query an index.
 
         Args:
-            query_string (str): The query string.
+            query_text (str): The query text.
+            query_image (Image.Image | str): The query image. Can be a PIL Image object or a path to an image.
             index_id (str): The ID of the index to query. Defaults to "default_text_embeddings".
             query_field (str, optional): The field to query. Defaults to "embedding".
             k (int, optional): The number of records to return. Defaults to 5.
             return_fields (list[str], optional): The fields to return. Defaults to None, which returns all fields.
             return_doc_content (bool, optional): Whether to return the document content. Defaults to False.
+            embedding_model (str, optional): The name of the embedding model to use. Defaults to None, which uses the
+                embedding model associated with `index_id.query_field`.
 
         Returns:
             list[dict]: The query results.
         """
+        files, params = self._process_query_params(query_text=query_text,
+                                                   query_image=query_image,
+                                                   query_field=query_field,
+                                                   k=k,
+                                                   return_fields=return_fields,
+                                                   return_doc_content=return_doc_content,
+                                                   embedding_model=embedding_model)
+
+        r = await self.aclient.post(f"/indexes/{index_id}/records/query", files=files, params=params)
+        handle_response(r)
+        return r.json()["search_results"]
+
+    @staticmethod
+    def _process_query_params(query_text: str,
+                              query_image: Image.Image | str,
+                              query_field: str,
+                              k: int,
+                              return_fields: list[str],
+                              return_doc_content: bool,
+                              embedding_model: str) -> tuple[dict, dict]:
+        files = {}
+
+        if query_text and query_image:
+            raise LexyClientError("Please submit either 'query_text' or 'query_image', not both.")
+        elif query_text:
+            files["query_text"] = (None, query_text)
+        elif query_image:
+            if isinstance(query_image, str):
+                image = Image.open(query_image)
+                filename = os.path.basename(query_image)
+            else:
+                image = query_image
+                filename = f'image.{image.format.lower()}' if image.format else 'image.jpg'
+            buffer = io.BytesIO()
+            image_format = image.format or "jpg"
+            image.save(buffer, format=image_format)
+            buffer.seek(0)
+            mime_type = mimetypes.types_map.get(f".{image_format.lower()}", "application/octet-stream")
+            files["query_image"] = (filename, buffer, mime_type)
+        else:
+            raise LexyClientError("Please submit either 'query_text' or 'query_image'.")
+
         if return_fields is None:
             return_fields = []
         params = {
-            "query_string": query_string,
             "query_field": query_field,
             "k": k,
             "return_fields": return_fields,
             "return_doc_content": return_doc_content
         }
-        r = await self.aclient.get(f"/indexes/{index_id}/records/query", params=params)
-        handle_response(r)
-        return r.json()["search_results"]
+        if embedding_model:
+            params["embedding_model"] = embedding_model
+
+        return files, params

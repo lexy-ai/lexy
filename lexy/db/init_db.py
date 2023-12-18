@@ -23,30 +23,32 @@ def add_default_data_to_db(session=db):
     if session.query(models.Collection).count() > 0:
         logger.warning("Collection data already exists - skipping collection data")
     else:
-        session.add(models.Collection(**default_data["default_collection"]))
-        session.add(models.Collection(**default_data["code_collection"]))
+        for c in default_data["collections"]:
+            session.add(models.Collection(**c))
         session.commit()
 
     logger.info("Adding default transformers")
     if session.query(models.Transformer).count() > 0:
         logger.warning("Transformer data already exists - skipping transformer data")
     else:
-        session.add(models.Transformer(**default_data["transformer_1"]))
-        session.add(models.Transformer(**default_data["transformer_2"]))
+        for t in default_data["transformers"]:
+            session.add(models.Transformer(**t))
         session.commit()
 
     logger.info("Adding default indexes")
     if session.query(models.Index).count() > 0:
         logger.warning("Index data already exists - skipping index data")
     else:
-        session.add(models.Index(**default_data["index_1"]))
+        for i in default_data["indexes"]:
+            session.add(models.Index(**i))
         session.commit()
 
     logger.info("Adding default bindings")
     if session.query(models.Binding).count() > 0:
         logger.warning("Binding data already exists - skipping binding data")
     else:
-        session.add(models.Binding(**default_data["binding_1"]))
+        for b in default_data["bindings"]:
+            session.add(models.Binding(**b))
         session.commit()
 
 

@@ -1,13 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+import io
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, status, UploadFile
+from PIL import Image
 from sqlalchemy import asc, func, select
 from sqlalchemy.orm import aliased
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from lexy.core.events import celery
 from lexy.db.session import get_session
 from lexy.models.document import Document
 from lexy.models.index import Index
-from lexy.transformers.embeddings import text_embeddings
+from lexy.models.transformer import Transformer
 
 
 router = APIRouter()
@@ -35,35 +39,69 @@ async def get_records(index_id: str = "default_text_embeddings", document_id: st
     return index_records  # type: ignore
 
 
-@router.get("/indexes/{index_id}/records/query",
-            response_model=dict,
-            status_code=status.HTTP_200_OK,
-            name="query_records",
-            description="Query all records for an index")
-async def query_records(query_string: str,
+@router.post("/indexes/{index_id}/records/query",
+             response_model=dict,
+             status_code=status.HTTP_200_OK,
+             name="query_records",
+             description="Query all records for an index")
+async def query_records(query_text: str = Form(None),
+                        query_image: UploadFile = File(None),
                         k: int = 5,
                         query_field: str = "embedding",
                         index_id: str = "default_text_embeddings",
                         return_fields: list[str] = Query(None),
                         return_doc_content: bool = False,
+                        embedding_model: str = None,
                         session: AsyncSession = Depends(get_session)) -> dict:
-    # get embedding for query string
-    task = text_embeddings.apply_async(args=[query_string], priority=10)
-    result = task.get()
-    query_embedding = result.tolist()
+    if query_text and query_image:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Please submit either 'query_text' or 'query_image', not both.")
+    elif query_text:
+        query = query_text
+    elif query_image:
+        file_content = await query_image.read()
+        query = Image.open(io.BytesIO(file_content))
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Please submit either 'query_text' or 'query_image'.")
 
-    # get index table
+    # get index table and query column
     result = await session.execute(select(Index).where(Index.index_id == index_id))
     index = result.scalars().first()
     if not index:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Index '{index_id}' not found")
     index_tbl = SQLModel.metadata.tables.get(index.index_table_name)
-
-    # get query column and index fields to return
     query_column = index_tbl.c.get(query_field, None)
     if query_column is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Field '{query_field}' not found in index '{index_id}'")
+
+    # get embedding model using index_fields
+    if embedding_model is None:
+        try:
+            embedding_model: str = index.index_fields[query_field]["extras"]["model"]
+        except KeyError:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                detail=f"Index field '{query_field}' does not have an embedding model. You can "
+                                       f"specify one using the 'embedding_model' parameter.")
+    # if multimodal, assign model based on query type
+    if '*' in embedding_model:
+        if isinstance(query, Image.Image):
+            embedding_model = embedding_model.replace("*", "image")
+        else:
+            embedding_model = embedding_model.replace("*", "text")
+
+    # get embedding for query string
+    transformer = await session.execute(select(Transformer).where(Transformer.transformer_id == embedding_model))
+    transformer = transformer.scalars().first()
+    if not transformer:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Transformer '{embedding_model}' not found")
+    task = celery.send_task(transformer.celery_task_name, args=[query], priority=10)
+    result = task.get()
+    query_embedding = result.tolist()
+
+    # get index fields to return
     if return_fields:
         return_index_fields = [index_tbl.c[k] for k in return_fields]
     else:

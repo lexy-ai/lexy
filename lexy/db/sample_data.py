@@ -1,110 +1,128 @@
 default_data = {
-    "default_collection": {
-        "collection_id": "default",
-        "description": "Default collection"
-    },
-    "code_collection": {
-        "collection_id": "code",
-        "description": "Github code repos"
-    },
-    "transformer_1": {
-        "transformer_id": "text.embeddings.minilm",
-        "path": "lexy.transformers.embeddings.text_embeddings",
-        "description": "Text embeddings using \"sentence-transformers/all-MiniLM-L6-v2\""
-    },
-    "transformer_2": {
-        "transformer_id": "text.counter.word_counter",
-        "path": "lexy.transformers.counter.word_counter",
-        "description": "Returns count of words and the longest word"
-    },
-    "index_1": {
-        "index_id": "default_text_embeddings",
-        "description": "Text embeddings for default collection",
-        "index_table_schema": {
-            "title": "DefaultTextEmbeddings",
-            "type": "object",
-            "properties": {
-                "document_id": {
-                    "title": "Document Id",
-                    "type": "string",
-                    "format": "uuid"
+    "collections": [
+        {
+            "collection_id": "default",
+            "description": "Default collection"
+        },
+        {
+            "collection_id": "code",
+            "description": "Github code repos"
+        }
+    ],
+    "transformers": [
+        {
+            "transformer_id": "text.embeddings.minilm",
+            "path": "lexy.transformers.embeddings.text_embeddings",
+            "description": "Text embeddings using \"sentence-transformers/all-MiniLM-L6-v2\""
+        },
+        {
+            "transformer_id": "text.embeddings.clip",
+            "path": "lexy.transformers.multimodal.text_embeddings_clip",
+            "description": "Text embeddings using \"openai/clip-vit-base-patch32\""
+        },
+        {
+            "transformer_id": "image.embeddings.clip",
+            "path": "lexy.transformers.multimodal.image_embeddings_clip",
+            "description": "Image embeddings using \"openai/clip-vit-base-patch32\""
+        },
+        {
+            "transformer_id": "text.counter.word_counter",
+            "path": "lexy.transformers.counter.word_counter",
+            "description": "Returns count of words and the longest word"
+        }
+    ],
+    "indexes": [
+        {
+            "index_id": "default_text_embeddings",
+            "description": "Text embeddings for default collection",
+            "index_table_schema": {
+                "title": "DefaultTextEmbeddings",
+                "type": "object",
+                "properties": {
+                    "document_id": {
+                        "title": "Document Id",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "embedding": {
+                        "title": "Embedding",
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        }
+                    },
+                    "text": {
+                        "title": "Text",
+                        "type": "string"
+                    },
+                    "meta": {
+                        "title": "Meta",
+                        "default": {},
+                        "type": "object"
+                    },
+                    "custom_id": {
+                        "title": "Custom Id",
+                        "type": "string"
+                    },
+                    "embedding_id": {
+                        "title": "Embedding Id",
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "created_at": {
+                        "title": "Created At",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "title": "Updated At",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "task_id": {
+                        "title": "Task Id",
+                        "type": "string",
+                        "format": "uuid"
+                    }
                 },
+                "required": [
+                    "document_id",
+                    "embedding",
+                    "created_at",
+                    "updated_at"
+                ]
+            },
+            "index_fields": {
                 "embedding": {
-                    "title": "Embedding",
-                    "type": "array",
-                    "items": {
-                        "type": "number"
+                    "type": "embedding",
+                    "extras": {
+                        "dims": 384,
+                        "model": "text.embeddings.minilm"
                     }
                 },
                 "text": {
-                    "title": "Text",
-                    "type": "string"
-                },
-                "meta": {
-                    "title": "Meta",
-                    "default": {},
-                    "type": "object"
-                },
-                "custom_id": {
-                    "title": "Custom Id",
-                    "type": "string"
-                },
-                "embedding_id": {
-                    "title": "Embedding Id",
                     "type": "string",
-                    "format": "uuid"
-                },
-                "created_at": {
-                    "title": "Created At",
-                    "type": "string",
-                    "format": "date-time"
-                },
-                "updated_at": {
-                    "title": "Updated At",
-                    "type": "string",
-                    "format": "date-time"
-                },
-                "task_id": {
-                    "title": "Task Id",
-                    "type": "string",
-                    "format": "uuid"
+                    "optional": True
                 }
-            },
-            "required": [
-                "document_id",
-                "embedding",
-                "created_at",
-                "updated_at"
-            ]
-        },
-        "index_fields": {
-            "embedding": {
-                "type": "embedding",
-                "extras": {
-                    "dims": 384,
-                    "distance": "cos"
-                }
-            },
-            "text": {
-                "type": "string",
-                "optional": True
             }
         }
-    },
-    "binding_1": {
-        "collection_id": "default",
-        "transformer_id": "text.embeddings.minilm",
-        "index_id": "default_text_embeddings",
-        "description": "Default binding",
-        "execution_params": {},
-        "transformer_params": {
-            "lexy_index_fields": [
-                "embedding"
-            ]
-        },
-        "filters": {},
-        "status": "on"
-    }
+    ],
+    "bindings": [
+        {
+            "collection_id": "default",
+            "transformer_id": "text.embeddings.minilm",
+            "index_id": "default_text_embeddings",
+            "description": "Default binding",
+            "execution_params": {},
+            "transformer_params": {
+                "lexy_index_fields": [
+                    "embedding"
+                ]
+            },
+            "filters": {},
+            "status": "on"
+        }
+    ]
 }
 
 sample_docs = {

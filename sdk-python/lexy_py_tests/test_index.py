@@ -50,12 +50,12 @@ class TestIndexClient:
         assert len(indexes) > 0
 
     def test_query_index(self):
-        results = lexy.index.query_index("Test Query", "default_text_embeddings", k=5)
+        results = lexy.index.query_index(query_text="Test Query", index_id="default_text_embeddings", k=5)
         assert len(results) >= 0
 
     @pytest.mark.asyncio
     async def test_aquery_index(self):
-        results = await lexy.index.aquery_index("Test Query", "default_text_embeddings", k=5)
+        results = await lexy.index.aquery_index(query_text="Test Query", index_id="default_text_embeddings", k=5)
         assert len(results) >= 0
 
     def test_list_index_records(self):

@@ -195,7 +195,7 @@ Before we can bind this transformer to our collection, we need to create an **`I
 # define index fields
 index_fields = {
     "bio_embedding": {
-        "type": "embedding", "extras": {"dims": 384, "distance": "cosine"}
+        "type": "embedding", "extras": {"dims": 384, "model": "text.embeddings.minilm"}
     }
 }
 
@@ -253,9 +253,8 @@ binding
 
 Our binding automatically runs asynchronous jobs to process our documents and store the results in our index as embeddings. We can now query our index for "_famous artists_" and see the results ranked by cosine similarity.
 
-
 ```python
-index.query(query_string='famous artists', query_field='bio_embedding', k=3)
+index.query(query_text='famous artists', query_field='bio_embedding', k=3)
 ```
 
 
@@ -299,9 +298,8 @@ bios.add_documents([
 
 Now let's run the same query again for "_famous artists_". We can see the results have been updated and include our new document.
 
-
 ```python
-index.query(query_string='famous artists', query_field='bio_embedding', k=3)
+index.query(query_text='famous artists', query_field='bio_embedding', k=3)
 ```
 
 

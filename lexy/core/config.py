@@ -53,11 +53,13 @@ class GlobalConfig(BaseConfig):
         # 'lexy.transformers.*'
         'lexy.transformers.counter',
         'lexy.transformers.embeddings',
+        'lexy.transformers.multimodal',
     }
     lexy_worker_transformer_imports = {
         # 'lexy.transformers.*'
         'lexy.transformers.counter',
         'lexy.transformers.embeddings',
+        'lexy.transformers.multimodal',
     }
 
     @property
