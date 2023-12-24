@@ -103,7 +103,14 @@ async def query_records(query_text: str = Form(None),
 
     # get index fields to return
     if return_fields:
-        return_index_fields = [index_tbl.c[k] for k in return_fields]
+        return_index_fields = []
+        # get any related document fields
+        for rf in return_fields:
+            if rf.startswith("document."):
+                attribute_name = rf.split(".")[1]
+                return_index_fields.append(getattr(document_tbl, attribute_name).label(rf))
+            else:
+                return_index_fields.append(index_tbl.c[rf])
     else:
         return_index_fields = [index_tbl.c[k] for k, v in index.index_fields.items() if v["type"] != "embedding"]
     # optionally return document content

@@ -17,6 +17,7 @@ class CollectionModel(BaseModel):
         regex=r"^[a-z0-9_-]+$"
     )
     description: Optional[str] = None
+    config: Optional[dict[str, Any]] = Field(default={})
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -27,6 +28,7 @@ class CollectionModel(BaseModel):
 class CollectionUpdate(BaseModel):
     """ Collection update model """
     description: Optional[str] = None
+    config: Optional[dict[str, Any]] = None
 
 
 class Collection(CollectionModel):

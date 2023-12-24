@@ -71,71 +71,91 @@ class CollectionClient:
         handle_response(r)
         return Collection(**r.json(), client=self._lexy_client)
 
-    def add_collection(self, collection_id: str, description: Optional[str] = None) -> Collection:
+    def add_collection(self,
+                       collection_id: str,
+                       description: Optional[str] = None,
+                       config: Optional[dict] = None) -> Collection:
         """ Synchronously create a new collection.
 
         Args:
             collection_id (str): The ID of the collection to create.
             description (str, optional): The description of the collection. Defaults to None.
+            config (dict, optional): The config of the collection. Defaults to None.
 
         Returns:
             Collection: The created collection.
         """
         collection = Collection(
             collection_id=collection_id,
-            description=description
+            description=description,
+            config=config
         )
         r = self.client.post("/collections", json=collection.dict(exclude_none=True))
         handle_response(r)
         return Collection(**r.json(), client=self._lexy_client)
 
-    async def aadd_collection(self, collection_id: str, description: Optional[str] = None) -> Collection:
+    async def aadd_collection(self,
+                              collection_id: str,
+                              description: Optional[str] = None,
+                              config: Optional[dict] = None) -> Collection:
         """ Asynchronously create a new collection.
 
         Args:
             collection_id (str): The ID of the collection to create.
             description (str, optional): The description of the collection. Defaults to None.
+            config (dict, optional): The config of the collection. Defaults to None.
 
         Returns:
             Collection: The created collection.
         """
         collection = Collection(
             collection_id=collection_id,
-            description=description
+            description=description,
+            config=config
         )
         r = await self.aclient.post("/collections", json=collection.dict(exclude_none=True))
         handle_response(r)
         return Collection(**r.json(), client=self._lexy_client)
 
-    def update_collection(self, collection_id: str, description: Optional[str] = None) -> Collection:
+    def update_collection(self,
+                          collection_id: str,
+                          description: Optional[str] = None,
+                          config: Optional[dict] = None) -> Collection:
         """ Synchronously update a collection.
 
         Args:
             collection_id (str): The ID of the collection to update.
             description (str, optional): The updated description of the collection. Defaults to None.
+            config: (dict, optional): The updated config of the collection. Defaults to None.
 
         Returns:
             Collection: The updated collection.
         """
         collection = CollectionUpdate(
-            description=description
+            description=description,
+            config=config
         )
         r = self.client.patch(f"/collections/{collection_id}", json=collection.dict(exclude_none=True))
         handle_response(r)
         return Collection(**r.json(), client=self._lexy_client)
 
-    async def aupdate_collection(self, collection_id: str, description: Optional[str] = None) -> Collection:
+    async def aupdate_collection(self,
+                                 collection_id: str,
+                                 description: Optional[str] = None,
+                                 config: Optional[dict] = None) -> Collection:
         """ Asynchronously update a collection.
 
         Args:
             collection_id (str): The ID of the collection to update.
             description (str, optional): The updated description of the collection. Defaults to None.
+            config: (dict, optional): The updated config of the collection. Defaults to None.
 
         Returns:
             Collection: The updated collection.
         """
         collection = CollectionUpdate(
-            description=description
+            description=description,
+            config=config
         )
         r = await self.aclient.patch(f"/collections/{collection_id}", json=collection.dict(exclude_none=True))
         handle_response(r)
