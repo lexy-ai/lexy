@@ -27,6 +27,7 @@ sentence-transformers = { version = "^2.2.2", optional = true}
 lexy_transformers = ["transformers", "sentence-transformers"]
 
 [tool.poetry.group.dev.dependencies]
+alembic = "^1.13.1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.1"
