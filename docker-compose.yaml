@@ -20,8 +20,10 @@ services:
       - POSTGRES_HOST=db_postgres
       - CELERY_BROKER_URL=amqp://guest:guest@queue:5672//
       - CELERY_RESULT_BACKEND=db+postgresql://postgres:postgres@db_postgres/lexy
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     volumes:
       - ./:/home/app
+      - $HOME/.aws/credentials:/root/.aws/credentials:ro
     networks:
       - lexy-net
 
