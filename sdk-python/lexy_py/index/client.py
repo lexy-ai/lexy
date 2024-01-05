@@ -10,6 +10,7 @@ from PIL import Image
 
 from lexy_py.exceptions import handle_response, LexyClientError
 from .models import Index, IndexUpdate
+from lexy_py.document.models import Document
 
 if TYPE_CHECKING:
     from lexy_py.client import LexyClient
@@ -262,7 +263,7 @@ class IndexClient:
                     query_field: str = "embedding",
                     k: int = 5,
                     return_fields: list[str] = None,
-                    return_doc_content: bool = False,
+                    return_document: bool = False,
                     embedding_model: str = None) -> list[dict]:
         """ Synchronously query an index.
 
@@ -273,7 +274,7 @@ class IndexClient:
             query_field (str, optional): The field to query. Defaults to "embedding".
             k (int, optional): The number of records to return. Defaults to 5.
             return_fields (list[str], optional): The fields to return. Defaults to None, which returns all fields.
-            return_doc_content (bool, optional): Whether to return the document content. Defaults to False.
+            return_document (bool, optional): Whether to return the document object. Defaults to False.
             embedding_model (str, optional): The name of the embedding model to use. Defaults to None, which uses the
                 embedding model associated with `index_id.query_field`.
 
@@ -298,12 +299,16 @@ class IndexClient:
                                                    query_field=query_field,
                                                    k=k,
                                                    return_fields=return_fields,
-                                                   return_doc_content=return_doc_content,
+                                                   return_document=return_document,
                                                    embedding_model=embedding_model)
 
         r = self.client.post(f"/indexes/{index_id}/records/query", files=files, params=params)
         handle_response(r)
-        return r.json()["search_results"]
+        search_results = r.json()["search_results"]
+        if return_document:
+            for result in search_results:
+                result["document"] = Document(**result["document"], client=self._lexy_client)
+        return search_results
 
     async def aquery_index(self,
                            query_text: str = None,
@@ -312,7 +317,7 @@ class IndexClient:
                            query_field: str = "embedding",
                            k: int = 5,
                            return_fields: list[str] = None,
-                           return_doc_content: bool = False,
+                           return_document: bool = False,
                            embedding_model: str = None) -> list[dict]:
         """ Asynchronously query an index.
 
@@ -323,7 +328,7 @@ class IndexClient:
             query_field (str, optional): The field to query. Defaults to "embedding".
             k (int, optional): The number of records to return. Defaults to 5.
             return_fields (list[str], optional): The fields to return. Defaults to None, which returns all fields.
-            return_doc_content (bool, optional): Whether to return the document content. Defaults to False.
+            return_document (bool, optional): Whether to return the document object. Defaults to False.
             embedding_model (str, optional): The name of the embedding model to use. Defaults to None, which uses the
                 embedding model associated with `index_id.query_field`.
 
@@ -335,12 +340,16 @@ class IndexClient:
                                                    query_field=query_field,
                                                    k=k,
                                                    return_fields=return_fields,
-                                                   return_doc_content=return_doc_content,
+                                                   return_document=return_document,
                                                    embedding_model=embedding_model)
 
         r = await self.aclient.post(f"/indexes/{index_id}/records/query", files=files, params=params)
         handle_response(r)
-        return r.json()["search_results"]
+        search_results = r.json()["search_results"]
+        if return_document:
+            for result in search_results:
+                result["document"] = Document(**result["document"], client=self._lexy_client)
+        return search_results
 
     @staticmethod
     def _process_query_params(query_text: str,
@@ -348,7 +357,7 @@ class IndexClient:
                               query_field: str,
                               k: int,
                               return_fields: list[str],
-                              return_doc_content: bool,
+                              return_document: bool,
                               embedding_model: str) -> tuple[dict, dict]:
         files = {}
 
@@ -378,7 +387,7 @@ class IndexClient:
             "query_field": query_field,
             "k": k,
             "return_fields": return_fields,
-            "return_doc_content": return_doc_content
+            "return_document": return_document
         }
         if embedding_model:
             params["embedding_model"] = embedding_model

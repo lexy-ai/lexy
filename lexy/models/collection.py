@@ -1,8 +1,11 @@
 from datetime import datetime
-from typing import Optional, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING
 
 from sqlalchemy import Column, DateTime, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import SQLModel, Field, Relationship
+
+from lexy.core.config import settings
 
 if TYPE_CHECKING:
     from lexy.models.binding import Binding
@@ -15,9 +18,10 @@ class CollectionBase(SQLModel):
         primary_key=True,
         min_length=1,
         max_length=255,
-        regex=r"^[a-z0-9_-]+$"
+        regex=r"^[A-Za-z0-9_-]+$"
     )
     description: Optional[str] = None
+    config: Optional[dict[str, Any]] = Field(sa_column=Column(JSONB), default=settings.collection_default_config)
 
 
 class Collection(CollectionBase, table=True):
@@ -44,3 +48,4 @@ class CollectionCreate(CollectionBase):
 
 class CollectionUpdate(CollectionBase):
     description: Optional[str] = None
+    config: Optional[dict[str, Any]] = None

@@ -49,7 +49,7 @@ class Index(IndexModel):
               query_field: str = "embedding",
               k: int = 5,
               return_fields: list[str] = None,
-              return_doc_content: bool = False,
+              return_document: bool = False,
               embedding_model: str = None) -> list[dict]:
         """ Synchronously query an index.
 
@@ -59,7 +59,7 @@ class Index(IndexModel):
             query_field (str, optional): The field to query. Defaults to "embedding".
             k (int, optional): The number of records to return. Defaults to 5.
             return_fields (list[str], optional): The fields to return. Defaults to None, which returns all fields.
-            return_doc_content (bool, optional): Whether to return the document content. Defaults to False.
+            return_document (bool, optional): Whether to return the document object. Defaults to False.
             embedding_model (str, optional): The name of the embedding model to use. Defaults to None, which uses the
                 embedding model associated with `index_id.query_field`.
 
@@ -72,7 +72,7 @@ class Index(IndexModel):
                                              query_field=query_field,
                                              k=k,
                                              return_fields=return_fields,
-                                             return_doc_content=return_doc_content,
+                                             return_document=return_document,
                                              embedding_model=embedding_model)
 
     def list_records(self, document_id: Optional[str] = None) -> list[dict]:

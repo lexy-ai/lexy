@@ -15,15 +15,20 @@ model.to(device)
 
 
 @lexy_transformer(name="image.embeddings.clip")
-def image_embeddings_clip(images: Image | list[Image]) -> torch.Tensor:
+def image_embeddings_clip(images: Image | DocumentBase | list[Image | DocumentBase]) -> torch.Tensor:
     """Embed images using CLIP.
 
     Args:
-        images: A single image or a list of images to embed.
+        images: A single image or DocumentBase instance, or a list of images or DocumentBase instances to embed.
 
     Returns:
         torch.Tensor: The embeddings of the provided images.
     """
+
+    if isinstance(images, DocumentBase):
+        images = images.image
+    elif isinstance(images, list):
+        images = [i.image if isinstance(i, DocumentBase) else i for i in images]
 
     image_batch = processor(
         text=None,

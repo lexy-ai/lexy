@@ -25,7 +25,7 @@ source venv/bin/activate
 pip install poetry
 
 # install dev dependencies and extras
-poetry install --no-root --with test,docs -E "lexy_transformers"
+poetry install --no-root --with test,docs,dev -E "lexy_transformers"
 
 # install lexy in editable mode
 pip install -e .
@@ -41,6 +41,15 @@ touch .env
 # build docker images
 docker-compose up --build -d
 ```
+
+### Configuring AWS
+
+In order to upload and store files to Lexy, you'll need to configure AWS. You can use `aws configure` (recommended) or 
+put `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in your `.env` file.
+
+You'll also need to specify an S3 bucket for file storage (for which your AWS credentials should have full access). 
+You can do so by adding `S3_BUCKET=<name-of-your-S3-bucket>` to your `.env` file, or by updating the value of 
+`s3_bucket` in `lexy/core/config.py`.
 
 ## Where to find services
 

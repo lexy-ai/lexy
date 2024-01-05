@@ -1,9 +1,13 @@
 """ Client for interacting with the Document API. """
 
+import io
 import json
+import mimetypes
+import os
 from typing import Optional, TYPE_CHECKING
 
 import httpx
+from PIL import Image
 
 from lexy_py.exceptions import handle_response
 from .models import Document, DocumentUpdate
@@ -235,6 +239,96 @@ class DocumentClient:
         handle_response(r)
         return r.json()
 
+    def upload_documents(self,
+                         files: Image.Image | str | list[Image.Image | str],
+                         filenames: str | list[str] = None,
+                         collection_id: str = "default") -> list[Document]:
+        """ Synchronously upload files to a collection.
+
+        Args:
+            files (Image.Image | str | list[Image.Image | str]): The files to upload. Can be a list or single instance
+                of either an Image file or a string containing the path to an Image file.
+            filenames (str | list[str], optional): The filenames of the files to upload. Defaults to None.
+            collection_id (str): The ID of the collection to upload the files to. Defaults to "default".
+
+        Returns:
+            list[Document]: A list of created documents.
+        """
+        processed_images = self._process_images(files, filenames=filenames)
+        r = self.client.post("/documents/upload",
+                             files=processed_images,
+                             params={"collection_id": collection_id})
+        handle_response(r)
+        return [Document(**document['document'], client=self._lexy_client) for document in r.json()]
+
+    async def aupload_documents(self,
+                                files: Image.Image | str | list[Image.Image | str],
+                                filenames: str | list[str] = None,
+                                collection_id: str = "default") -> list[Document]:
+        """ Asynchronously upload files to a collection.
+
+        Args:
+            files (Image.Image | str | list[Image.Image | str]): The files to upload. Can be a list or single instance
+                of either an Image file or a string containing the path to an Image file.
+            filenames (str | list[str], optional): The filenames of the files to upload. Defaults to None.
+            collection_id (str): The ID of the collection to upload the files to. Defaults to "default".
+
+        Returns:
+            list[Document]: A list of created documents.
+        """
+        processed_images = self._process_images(files, filenames=filenames)
+        r = await self.aclient.post("/documents/upload",
+                                    files=processed_images,
+                                    params={"collection_id": collection_id})
+        handle_response(r)
+        return [Document(**document['document'], client=self._lexy_client) for document in r.json()]
+
+    def get_document_urls(self, document_id: str, expiration: int = 3600) -> dict:
+        """ Synchronously get presigned URLs for a document.
+
+        Args:
+            document_id (str): The ID of the document to get presigned URL for.
+            expiration (int): The expiration time of the presigned URLs in seconds. Defaults to 3600.
+
+        Returns:
+            dict: A dictionary containing presigned URLs.
+
+        Examples:
+            >>> from lexy_py import LexyClient
+            >>> lexy = LexyClient()
+            >>> my_image_document = lexy.list_documents('my-image-collection', limit=1)[0]
+            >>> lexy.document.get_document_urls(document_id=my_image_document.document_id)
+            {
+                "object": "https://my-bucket.s3.amazonaws.com/path/to/object?...",
+                "thumbnails": {
+                    "256x256": "https://my-bucket.s3.amazonaws.com/path/to/thumbnail?..."
+                }
+            }
+
+            >>> my_pdf_document = lexy.list_documents('pdf-collection', limit=1)[0]
+            >>> lexy.document.get_document_urls(document_id=my_pdf_document.document_id)
+            {
+                "object": "https://my-bucket.s3.amazonaws.com/path/to/object?...",
+            }
+        """
+        r = self.client.get(f"/documents/{document_id}/urls", params={"expiration": expiration})
+        handle_response(r)
+        return r.json()
+
+    async def aget_document_urls(self, document_id: str, expiration: int = 3600) -> dict:
+        """ Asynchronously get presigned URLs for a document.
+
+        Args:
+            document_id (str): The ID of the document to get presigned URL for.
+            expiration (int): The expiration time of the presigned URLs in seconds. Defaults to 3600.
+
+        Returns:
+            dict: A dictionary containing presigned URLs.
+        """
+        r = await self.aclient.get(f"/documents/{document_id}/urls", params={"expiration": expiration})
+        handle_response(r)
+        return r.json()
+
     @staticmethod
     def _process_docs(docs: Document | dict | list[Document | dict]) -> list[dict]:
         """ Process documents into a list of dictionaries. """
@@ -255,3 +349,40 @@ class DocumentClient:
                 raise TypeError(f"Invalid type for doc item: {type(doc)} - must be Document or dict")
 
         return processed_docs
+
+    @staticmethod
+    def _process_images(images: Image.Image | str | list[Image.Image | str],
+                        filenames: str | list[str] = None) -> list:
+
+        processed_images = []
+
+        if isinstance(images, (Image.Image, str)):
+            images = [images]
+
+        # if filenames is a single string, convert it to a list with repeated elements
+        if isinstance(filenames, str) or filenames is None:
+            filenames = [filenames] * len(images)
+
+        if len(images) != len(filenames):
+            raise ValueError("Length of filenames list must match length of images list")
+
+        for img, filename in zip(images, filenames):
+            if isinstance(img, str):
+                image = Image.open(img)
+                if not filename:
+                    filename = os.path.basename(img)
+            elif isinstance(img, Image.Image):
+                image = img
+                if not filename:
+                    filename = f'image.{image.format.lower()}' if image.format else 'image.jpg'
+            else:
+                raise TypeError(f"Invalid type for image: {type(img)} - must be Image.Image or str")
+
+            buffer = io.BytesIO()
+            image_format = image.format or "jpg"
+            image.save(buffer, format=image_format)
+            buffer.seek(0)
+            mime_type = mimetypes.types_map.get(f".{image_format.lower()}", "application/octet-stream")
+            processed_images.append(('files', (filename, buffer, mime_type)))
+
+        return processed_images

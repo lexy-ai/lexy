@@ -48,6 +48,22 @@ class GlobalConfig(BaseConfig):
     # db_url = os.environ.get("DATABASE_URL")
     db_echo_log: bool = True
 
+    # Config for Collection objects
+    collection_default_config: dict = {
+        'store_files': True,
+        'generate_thumbnails': True,
+    }
+
+    # AWS settings & S3 storage settings
+    aws_access_key_id: str = os.environ.get("AWS_ACCESS_KEY_ID", None)
+    aws_secret_access_key: str = os.environ.get("AWS_SECRET_ACCESS_KEY", None)
+    aws_region: str = os.environ.get("AWS_REGION", None)
+    s3_bucket: str = os.environ.get("S3_BUCKET", None)
+    image_thumbnail_sizes: set[tuple] = {
+        # (100, 100),
+        (200, 200),
+    }
+
     # Celery settings
     lexy_server_transformer_imports = {
         # 'lexy.transformers.*'
