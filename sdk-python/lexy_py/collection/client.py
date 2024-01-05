@@ -84,6 +84,17 @@ class CollectionClient:
 
         Returns:
             Collection: The created collection.
+
+        Examples:
+            >>> from lexy_py import LexyClient
+            >>> lexy = LexyClient()
+            >>> lexy.create_collection("test_collection", "My Test Collection")
+            Collection(collection_id='test_collection', description='My Test Collection')
+
+            >>> lexy.create_collection(collection_id="no_files",
+            ...                        description="Collection without files",
+            ...                        config={"store_files": False})
+            Collection(collection_id='no_files', description='Collection without files')
         """
         collection = Collection(
             collection_id=collection_id,

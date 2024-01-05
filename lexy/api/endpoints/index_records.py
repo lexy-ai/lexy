@@ -50,7 +50,7 @@ async def query_records(query_text: str = Form(None),
                         query_field: str = "embedding",
                         index_id: str = "default_text_embeddings",
                         return_fields: list[str] = Query(None),
-                        return_doc_content: bool = False,
+                        return_document: bool = False,
                         embedding_model: str = None,
                         session: AsyncSession = Depends(get_session)) -> dict:
     if query_text and query_image:
@@ -113,13 +113,13 @@ async def query_records(query_text: str = Form(None),
                 return_index_fields.append(index_tbl.c[rf])
     else:
         return_index_fields = [index_tbl.c[k] for k, v in index.index_fields.items() if v["type"] != "embedding"]
-    # optionally return document content
-    # TODO: remove "len(return_index_fields) == 0" condition once we have auto-embed option
-    if (return_doc_content is True) or (len(return_index_fields) == 0):
-        return_index_fields.append(document_tbl.content.label("document_content"))
 
-    # query index table
-    search_result = await session.execute(
+    # if there's nothing else to return, return document content
+    # TODO: remove this condition once we have auto-embed option which will return the embedded content
+    if return_document is False and len(return_index_fields) == 0:
+        return_index_fields.append(document_tbl.content.label("document.content"))
+
+    base_query = (
         select(index_tbl.c.document_id,
                index_tbl.c.custom_id,
                index_tbl.c.meta,
@@ -128,12 +128,37 @@ async def query_records(query_text: str = Form(None),
                # not adding a function here causes the query to fail for some reason
                func.pow(query_column.op("<->")(query_embedding), 1).label("distance"),
                *return_index_fields
-               )
-        .join(document_tbl, index_tbl.c.document_id == document_tbl.document_id)
-        .order_by(asc("distance"))
-        .limit(k))
+               ).join(document_tbl, index_tbl.c.document_id == document_tbl.document_id)
+    )
+
+    # optionally return the document object
+    # using this as a hack to grab document fields - will refactor to use SQLModel objects instead of tables
+    doc_prefix = "doc_"
+    if return_document:
+        document_columns = [getattr(document_tbl, field).label(doc_prefix + field)
+                            for field in document_tbl.__table__.columns.keys()]
+        base_query = base_query.add_columns(*document_columns)
+
+    # query index table
+    search_result = await session.execute(
+        base_query.order_by(asc("distance")).limit(k)
+    )
     search_results = search_result.all()
-    return {"search_results": search_results}
+
+    # process results to nest document fields under "document" key - will get rid of this once we use SQLModel objects
+    formatted_results = []
+    for row in search_results:
+        result_dict = row._asdict()  # Convert result row to dictionary
+        document_data = {}
+        if return_document:
+            # Extract prefixed Document fields and nest them under 'document' key
+            for field in document_tbl.__table__.columns.keys():
+                prefixed_name = doc_prefix + field
+                document_data[field] = result_dict.pop(prefixed_name)
+            result_dict["document"] = document_data
+        formatted_results.append(result_dict)
+
+    return {"search_results": formatted_results}
 
 
 @router.get("/indexes/{index_id}/records/{index_record_id}",

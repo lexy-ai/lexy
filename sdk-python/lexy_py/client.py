@@ -38,15 +38,16 @@ class LexyClient:
     index: IndexClient
     transformer: TransformerClient
 
-    def __init__(self, base_url: str = DEFAULT_BASE_URL) -> None:
+    def __init__(self, base_url: str = DEFAULT_BASE_URL, api_timeout=API_TIMEOUT) -> None:
         """ Initialize a LexyClient instance.
 
         Args:
             base_url (str, optional): Base URL for the Lexy API. Defaults to DEFAULT_BASE_URL.
         """
         self.base_url = base_url
-        self.aclient = httpx.AsyncClient(base_url=self.base_url, timeout=API_TIMEOUT)
-        self.client = httpx.Client(base_url=self.base_url, timeout=API_TIMEOUT)
+        self.api_timeout = api_timeout
+        self.aclient = httpx.AsyncClient(base_url=self.base_url, timeout=self.api_timeout)
+        self.client = httpx.Client(base_url=self.base_url, timeout=self.api_timeout)
 
         # binding
         self.binding = BindingClient(self)
@@ -67,10 +68,12 @@ class LexyClient:
         # document
         self.document = DocumentClient(self)
         self.add_documents = self.document.add_documents
+        self.bulk_delete_documents = self.document.bulk_delete_documents
         self.delete_document = self.document.delete_document
         self.get_document = self.document.get_document
         self.list_documents = self.document.list_documents
         self.update_document = self.document.update_document
+        self.upload_documents = self.document.upload_documents
 
         # index
         self.index = IndexClient(self)

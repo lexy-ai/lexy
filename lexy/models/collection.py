@@ -5,6 +5,8 @@ from sqlalchemy import Column, DateTime, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import SQLModel, Field, Relationship
 
+from lexy.core.config import settings
+
 if TYPE_CHECKING:
     from lexy.models.binding import Binding
     from lexy.models.document import Document
@@ -19,7 +21,7 @@ class CollectionBase(SQLModel):
         regex=r"^[A-Za-z0-9_-]+$"
     )
     description: Optional[str] = None
-    config: Optional[dict[str, Any]] = Field(sa_column=Column(JSONB), default={})
+    config: Optional[dict[str, Any]] = Field(sa_column=Column(JSONB), default=settings.collection_default_config)
 
 
 class Collection(CollectionBase, table=True):

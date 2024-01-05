@@ -1,21 +1,30 @@
 import importlib
 import logging
+from typing import TYPE_CHECKING
 
+from fastapi import Depends
+
+from lexy.storage.client import get_s3_client
 from lexy.core.config import settings
 from lexy.models import Binding, Document
 from lexy.core.celery_tasks import celery, save_records_to_index
 from lexy.indexes import index_manager
+
+if TYPE_CHECKING:
+    import boto3
 
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-async def generate_tasks_for_document(doc: Document) -> list[dict]:
+async def generate_tasks_for_document(doc: Document,
+                                      s3_client: "boto3.client" = Depends(get_s3_client)) -> list[dict]:
     """ Generate tasks for a document based on bindings and filters.
 
     Args:
-        doc (Document): The document to generate tasks for
+        doc (Document): The document for which to generate tasks
+        s3_client (boto3.client): The S3 client to use for generating presigned object URLs
 
     Returns:
         list[dict]: A list of tasks that were created for the document
@@ -56,6 +65,8 @@ async def generate_tasks_for_document(doc: Document) -> list[dict]:
         # )
 
         #   option 2: use celery.send_task
+        # TODO: add a condition to check if the document has a storage url before running refresh_object_urls
+        doc.refresh_object_urls(s3_client=s3_client)
         task_name = binding.transformer.celery_task_name
         task = celery.send_task(
             task_name,
@@ -133,8 +144,10 @@ def drop_index_table(index_id: str) -> bool:
 
 
 # TODO: remove session arg and run async after update to SQLAlchemy 2.0
-def process_new_binding(session, binding: Binding, create_index_table: bool = False) \
-        -> tuple[Binding, list[dict]]:
+def process_new_binding(session,
+                        binding: Binding,
+                        create_index_table: bool = False,
+                        s3_client: "boto3.client" = Depends(get_s3_client)) -> tuple[Binding, list[dict]]:
     """ Process a new binding.
 
     Steps involved:
@@ -143,8 +156,9 @@ def process_new_binding(session, binding: Binding, create_index_table: bool = Fa
         3. Switch binding status to 'on'
 
     Args:
-        binding: The binding to process
-        create_index_table: whether to create the index table if it doesn't exist (default: False)
+        binding (Binding): The binding to process
+        create_index_table (bool): Whether to create the index table if it doesn't exist. Defaults to False.
+        s3_client (boto3.client): The S3 client to use for generating presigned object URLs
 
     Returns:
         tuple[Binding, list[dict]]: The binding and the tasks that were created
@@ -222,6 +236,8 @@ def process_new_binding(session, binding: Binding, create_index_table: bool = Fa
     #   option 2: use celery.send_task
     task_name = binding.transformer.celery_task_name
     for doc in documents:
+        # TODO: add a condition to check if the document has a storage url before running refresh_object_urls
+        doc.refresh_object_urls(s3_client=s3_client)
         task = celery.send_task(
             task_name,
             args=[doc],

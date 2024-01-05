@@ -13,5 +13,9 @@ do
     sleep 3
 done
 
+# Run migrations - if you uncomment the next line, make sure alembic is in pyproject.toml and
+#   under [tool.poetry.dependencies], not [tool.poetry.group.dev.dependencies]
+# alembic upgrade head
+
 # Create initial data in DB
 python /home/app/lexy/seed_data.py

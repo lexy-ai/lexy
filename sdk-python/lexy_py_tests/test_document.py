@@ -34,6 +34,7 @@ class TestDocumentClient:
         assert docs_added[1].content == "Test Document 2 Content"
         assert docs_added[0].document_id is not None
         assert docs_added[0].created_at is not None
+        assert docs_added[0].image is None
         assert docs_added[0].collection_id == "tmp_collection"
 
         # get test document

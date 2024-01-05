@@ -17,7 +17,8 @@ class TestCollectionClient:
     def test_collections(self):
         collections = lexy.collection.list_collections()
         assert len(collections) > 0
-        assert collections[0].collection_id == "default"
+        collection_names = [collection.collection_id for collection in collections]
+        assert "default" in collection_names
 
         # create test collection
         test_collection = lexy.collection.add_collection("test_collection", "Test Collection")
@@ -42,14 +43,16 @@ class TestCollectionClient:
     def test_list_collections(self):
         collections = lexy.collection.list_collections()
         assert len(collections) > 0
-        assert collections[0].collection_id == "default"
+        collection_names = [collection.collection_id for collection in collections]
+        assert "default" in collection_names
         assert isinstance(collections[0].client, LexyClient)
 
     @pytest.mark.asyncio
     async def test_alist_collections(self):
         collections = await lexy.collection.alist_collections()
         assert len(collections) > 0
-        assert collections[0].collection_id == "default"
+        collection_names = [collection.collection_id for collection in collections]
+        assert "default" in collection_names
         assert isinstance(collections[0].client, LexyClient)
 
     def test_get_collection(self):
