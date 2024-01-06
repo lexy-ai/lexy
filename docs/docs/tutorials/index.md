@@ -1,6 +1,6 @@
-# Tutorial
+# Getting started with Lexy
 
-## Introduction
+## First steps
 
 Let's get started by instantiating the Lexy client. By default, this will connect to the Lexy server running at `http://localhost:9900`.
 
@@ -327,141 +327,8 @@ index.query(query_text='famous artists', query_field='bio_embedding', k=3)
 
 ## Next steps
 
-### Custom transformers
+Check out the following tutorials to learn more about Lexy.
 
-So far, we've only used the default transformers included in Lexy. Let's see how we can easily create our own transformers.
-
-
-#### Add transformer code
-
-Add your transformer code in a new module with the path `lexy.transformers.<your_module>`. Assuming your module is called `code`, your project should have the following structure:
-
-```hl_lines="4"
-lexy
-├── transformers
-    ├── __init__.py
-    ├── code.py
-    ├── counter.py
-    └── embeddings.py
-```
-
-And your file `code.py` should look something like this:
-
-```python title="lexy/transformers/code.py"
-from lexy.models.document import Document
-from lexy.transformers import lexy_transformer
-
-
-def parse_code(content):
-    # just an example
-    return [
-        {'text': 'my comment', 'line_no': 1, 'filename': 'example.py'}
-    ]
-
-
-@lexy_transformer(name='code.extract_comments.v1')  # (1)
-def get_comments(doc: Document) -> list[dict]:
-    comments = []
-    for c in parse_code(doc.content):
-        comments.append({
-            'comment_text': c['text'],
-            'comment_meta': {
-                'line_no': c['line_no'],
-                'filename': c['filename']
-            }
-        })
-    return comments
-```
-
-1.  The `@lexy_transformer` decorator registers your function as a transformer. The `name` argument is the transformer 
-    ID. This is how you'll refer to your transformer when creating bindings. The `name` should be unique across all 
-    transformers.
-
-#### Install optional dependencies
-
-Make sure to install any dependencies required for your custom transformer code.
-
-In development, you can install your dependencies using `docker exec`. This will be temporary (for the life of the 
-docker container), but makes it easy to work with your packages in development.
-
-```bash
-docker exec lexy-server pip install <your_package>
-docker exec lexy-celeryworker pip install <your_package>
-```
-
-In production, you'll want to update `pyproject.toml` to include your package in the list of `lexy_transformers` 
-extras.
-
-```toml hl_lines="6 9" title="pyproject.toml"
-[tool.poetry.dependencies]
-...
-# optional dependencies
-transformers = { version = "^4.33.1", extras = ["torch"], optional = true}
-sentence-transformers = { version = "^2.2.2", optional = true}
-<your_package> = { version = "<version>", optional = true}
-
-[tool.poetry.extras]
-lexy_transformers = ["transformers", "sentence-transformers", "<your_package>"]
-```
-
-#### Update configuration
-
-In `lexy.core.config`, update the values for `lexy_server_transformer_imports` and `lexy_worker_transformer_imports` 
-to include your new module.
-
-```python hl_lines="6 11" title="lexy/core/config.py"
-...
-
-class GlobalConfig(BaseConfig):
-    ...
-    lexy_server_transformer_imports = { # (1)
-		'lexy.transformers.code',
-		'lexy.transformers.counter',
-		'lexy.transformers.embeddings',
-    }
-    lexy_worker_transformer_imports = { # (2)
-		'lexy.transformers.code',
-		'lexy.transformers.counter',
-		'lexy.transformers.embeddings',
-    }
-    ...
-    
-...
-```
-
-1.  These modules are imported by the Lexy server at startup. If the transformer requires significant resources, you 
-    should omit it from this list and instead import it in the worker.
-2.  These modules are imported each time a worker is created or restarted.
-
-Then restart the Lexy server and worker for the updated configuration to take effect:
-
-```bash
-docker compose restart lexyserver lexyworker
-```
-
-#### Create transformer
-
-Finally, create your transformer so that it's stored in the database and available to the Lexy server. You can do this 
-by calling the `create_transformer` method.
-
-```python
-lexy.create_transformer(
-    transformer_id='code.extract_comments.v1', 
-    path='lexy.transformers.code.get_comments',
-    description='Parse comments and docstrings.'
-)
-```
-
-```{ .text .no-copy .result #code-output }
-<Transformer('code.extract_comments.v1', description='Parse comments and docstrings')>
-```
-
-You're now ready to use your custom transformer to process documents!
-
-### Document filters
-
-_Coming soon._
-
-#### Image files
-
-_Coming soon._
+- [Multimodal image search](multimodal-image-search.md) for how to use Lexy to build an image search engine.
+- [Custom transformers](custom-transformers.md) for using your own functions as transformers.
+- [Document filters](document-filters.md) shows how to build pipelines for different types of documents.

@@ -13,6 +13,7 @@ theme:
     - content.code.annotate
     - content.code.copy
     - content.tabs.link
+    - navigation.indexes
   icon:
     logo: material/wizard-hat
     repo: material/github
@@ -94,7 +95,11 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - Quickstart: quickstart.md
-  - Tutorial: tutorial.md
+  - Tutorials:
+    - tutorials/index.md
+    - Multimodal image search: tutorials/multimodal-image-search.md
+    - Custom transformers: tutorials/custom-transformers.md
+    - Document filters: tutorials/document-filters.md
   - Lexy API:
     - Overview: reference/lexy_api/overview.md
   - Python SDK:
@@ -102,7 +107,7 @@ nav:
     - Client: reference/lexy_py/client.md
     - Collection: reference/lexy_py/collection.md
     - Document: reference/lexy_py/document.md
-    - Index: reference/lexy_py/index.md
+    - Index: reference/lexy_py/indexes.md
     - Transformer: reference/lexy_py/transformer.md
 
 extra:
