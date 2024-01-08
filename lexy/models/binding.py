@@ -9,6 +9,7 @@ from sqlmodel import SQLModel, Field, Relationship
 from lexy.models.collection import Collection
 from lexy.models.index import Index
 from lexy.models.transformer import Transformer
+from lexy.schemas.filters import Filter
 
 
 class BindingStatus(str, Enum):
@@ -36,7 +37,7 @@ class BindingBase(SQLModel):
     description: Optional[str] = None
     execution_params: dict[str, Any] = Field(default={}, sa_column=Column(JSONB, nullable=False))
     transformer_params: dict[str, Any] = Field(default={}, sa_column=Column(JSONB, nullable=False))
-    filters = Field(default={}, sa_column=Column(JSONB, nullable=False))
+    filter: Optional[Filter] = Field(default=None, sa_column=Column(JSONB, nullable=True))
     # # TODO: make this ENUM
     # run_frequency: str = Field(default="daily", nullable=False)
 
@@ -72,7 +73,7 @@ class BindingUpdate(BindingBase):
     description: Optional[str] = None
     execution_params: Optional[dict[str, Any]] = None
     transformer_params: Optional[dict[str, Any]] = None
-    filters: Optional[dict[str, Any]] = None
+    filter: Optional[Filter] = None
     status: Optional[str] = None
 
 
@@ -84,3 +85,4 @@ class BindingRead(BindingBase):
     collection: Collection
     transformer: Transformer
     index: Index
+    filter: Optional[Filter]

@@ -7,6 +7,7 @@ from fastapi import Depends
 from lexy.storage.client import get_s3_client
 from lexy.core.config import settings
 from lexy.models import Binding, Document
+from lexy.schemas.filters import filter_documents
 from lexy.core.celery_tasks import celery, save_records_to_index
 from lexy.indexes import index_manager
 
@@ -44,7 +45,7 @@ async def generate_tasks_for_document(doc: Document,
             continue
 
         # check if document matches binding filters
-        if binding.filters and not all(f(doc) for f in binding.filters):
+        if binding.filter and not binding.filter.document_meets_criteria(doc):
             logger.info(f"Skipping binding {binding} because document does not match filters")
             continue
 
@@ -207,8 +208,8 @@ def process_new_binding(session,
                             f"'{binding.index.index_id}'.")
 
     # filter documents in the collection that match the binding filters
-    if binding.filters:
-        documents = [doc for doc in binding.collection.documents if all(f(doc) for f in binding.filters)]
+    if binding.filter:
+        documents = filter_documents(binding.collection.documents, binding.filter)
     else:
         documents = binding.collection.documents
 
