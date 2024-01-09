@@ -32,7 +32,7 @@ class BindingModel(BaseModel):
     description: Optional[str] = None
     execution_params: Optional[dict[str, Any]] = Field(default={})
     transformer_params: Optional[dict[str, Any]] = Field(default={})
-    filters: Optional[dict] = Field(default={})
+    filter: Optional[dict] = Field(default={})
     status: Optional[BindingStatus] = Field(default=BindingStatus.PENDING)
 
     collection: Optional[CollectionModel] = None
@@ -56,7 +56,7 @@ class BindingCreate(BaseModel):
     description: Optional[str] = None
     execution_params: Optional[dict[str, Any]] = Field(default={})
     transformer_params: Optional[dict[str, Any]] = Field(default={})
-    filters: Optional[dict[str, Any]] = Field(default={})
+    filter: Optional[dict[str, Any]] = Field(default={})
     status: Optional[BindingStatus] = Field(default=BindingStatus.PENDING)
 
 
@@ -65,7 +65,7 @@ class BindingUpdate(BaseModel):
     description: Optional[str] = None
     execution_params: Optional[dict[str, Any]] = None
     transformer_params: Optional[dict[str, Any]] = None
-    filters: Optional[dict[str, Any]] = None
+    filter: Optional[dict[str, Any]] = None
     status: Optional[BindingStatus] = None
 
 

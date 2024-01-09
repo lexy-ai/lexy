@@ -5,6 +5,7 @@ from typing import Optional, TYPE_CHECKING
 import httpx
 
 from lexy_py.exceptions import handle_response
+from lexy_py.filters import FilterBuilder
 from .models import Binding, BindingCreate, BindingUpdate
 
 if TYPE_CHECKING:
@@ -45,9 +46,15 @@ class BindingClient:
         handle_response(r)
         return [Binding(**binding, client=self._lexy_client) for binding in r.json()]
 
-    def add_binding(self, collection_id: str, transformer_id: str, index_id: str, description: Optional[str] = None,
-                    execution_params: Optional[dict] = None, transformer_params: Optional[dict] = None,
-                    filters: Optional[dict] = None, status: Optional[str] = None) -> Binding:
+    def add_binding(self,
+                    collection_id: str,
+                    transformer_id: str,
+                    index_id: str,
+                    description: Optional[str] = None,
+                    execution_params: Optional[dict] = None,
+                    transformer_params: Optional[dict] = None,
+                    filters: Optional[dict | FilterBuilder] = None,
+                    status: Optional[str] = None) -> Binding:
         """ Synchronously add a new binding.
 
         Args:
@@ -57,11 +64,24 @@ class BindingClient:
             description (str, optional): A description of the binding.
             execution_params (dict, optional): Parameters to pass to the binding's execution function.
             transformer_params (dict, optional): Parameters to pass to the transformer.
-            filters (dict, optional): Filters to apply to documents in the collection before running the transformer.
+            filters (dict | FilterBuilder, optional): Filters to apply to documents in the collection before running
+                the transformer.
             status (str, optional): The status of the binding. Defaults to "pending".
 
         Returns:
             Binding: The created binding.
+
+        Examples:
+            Create a binding that runs the transformer with ID "image.embeddings.clip" on all image documents in
+            the collection with ID "my_collection" and stores the output in the index with ID "image_embeddings".
+
+            >>> from lexy_py import LexyClient, FilterBuilder
+            >>> lexy = LexyClient()
+            >>> image_filter = FilterBuilder().include("meta.type", "equals", "image")
+            >>> binding = lexy.create_binding(collection_id="my_collection",
+            ...                               transformer_id="image.embeddings.clip",
+            ...                               index_id="image_embeddings",
+            ...                               filters=image_filter)
         """
         if execution_params is None:
             execution_params = {}
@@ -69,6 +89,8 @@ class BindingClient:
             transformer_params = {}
         if filters is None:
             filters = {}
+        elif isinstance(filters, FilterBuilder):
+            filters = filters.to_dict()
         binding = BindingCreate(
             collection_id=collection_id,
             transformer_id=transformer_id,
@@ -76,16 +98,21 @@ class BindingClient:
             description=description,
             execution_params=execution_params,
             transformer_params=transformer_params,
-            filters=filters,
+            filter=filters,
             status=status
         )
         r = self.client.post("/bindings", json=binding.dict(exclude_none=True))
         handle_response(r)
         return Binding(**r.json()["binding"], client=self._lexy_client)
 
-    async def aadd_binding(self, collection_id: str, transformer_id: str, index_id: str,
-                           description: Optional[str] = None, execution_params: Optional[dict] = None,
-                           transformer_params: Optional[dict] = None, filters: Optional[dict] = None,
+    async def aadd_binding(self,
+                           collection_id: str,
+                           transformer_id: str,
+                           index_id: str,
+                           description: Optional[str] = None,
+                           execution_params: Optional[dict] = None,
+                           transformer_params: Optional[dict] = None,
+                           filters: Optional[dict | FilterBuilder] = None,
                            status: Optional[str] = None) -> Binding:
         """ Asynchronously add a new binding.
 
@@ -96,7 +123,8 @@ class BindingClient:
             description (str, optional): A description of the binding.
             execution_params (dict, optional): Parameters to pass to the binding's execution function.
             transformer_params (dict, optional): Parameters to pass to the transformer.
-            filters (dict, optional): Filters to apply to documents in the collection before running the transformer.
+            filters (dict | FilterBuilder, optional): Filters to apply to documents in the collection before running
+                the transformer.
             status (str, optional): The status of the binding. Defaults to "pending".
 
         Returns:
@@ -108,6 +136,8 @@ class BindingClient:
             transformer_params = {}
         if filters is None:
             filters = {}
+        elif isinstance(filters, FilterBuilder):
+            filters = filters.to_dict()
         binding = BindingCreate(
             collection_id=collection_id,
             transformer_id=transformer_id,
@@ -115,7 +145,7 @@ class BindingClient:
             description=description,
             execution_params=execution_params,
             transformer_params=transformer_params,
-            filters=filters,
+            filter=filters,
             status=status
         )
         r = await self.aclient.post("/bindings", json=binding.dict(exclude_none=True))
@@ -148,9 +178,13 @@ class BindingClient:
         handle_response(r)
         return Binding(**r.json(), client=self._lexy_client)
 
-    def update_binding(self, binding_id: int, description: Optional[str] = None,
-                       execution_params: Optional[dict] = None, transformer_params: Optional[dict] = None,
-                       filters: Optional[dict] = None, status: Optional[str] = None) -> Binding:
+    def update_binding(self,
+                       binding_id: int,
+                       description: Optional[str] = None,
+                       execution_params: Optional[dict] = None,
+                       transformer_params: Optional[dict] = None,
+                       filters: Optional[dict | FilterBuilder] = None,
+                       status: Optional[str] = None) -> Binding:
         """ Synchronously update a binding.
 
         Args:
@@ -158,26 +192,33 @@ class BindingClient:
             description (str, optional): A description of the binding.
             execution_params (dict, optional): Parameters to pass to the binding's execution function.
             transformer_params (dict, optional): Parameters to pass to the transformer.
-            filters (dict, optional): Filters to apply to documents in the collection before running the transformer.
+            filters (dict | FilterBuilder, optional): Filters to apply to documents in the collection before running
+                the transformer.
             status (str, optional): The status of the binding.
 
         Returns:
             Binding: The updated binding.
         """
+        if isinstance(filters, FilterBuilder):
+            filters = filters.to_dict()
         binding = BindingUpdate(
             description=description,
             execution_params=execution_params,
             transformer_params=transformer_params,
-            filters=filters,
+            filter=filters,
             status=status
         )
         r = self.client.patch(f"/bindings/{binding_id}", json=binding.dict(exclude_none=True))
         handle_response(r)
         return Binding(**r.json(), client=self._lexy_client)
 
-    async def aupdate_binding(self, binding_id: int, description: Optional[str] = None,
-                              execution_params: Optional[dict] = None, transformer_params: Optional[dict] = None,
-                              filters: Optional[dict] = None, status: Optional[str] = None) -> Binding:
+    async def aupdate_binding(self,
+                              binding_id: int,
+                              description: Optional[str] = None,
+                              execution_params: Optional[dict] = None,
+                              transformer_params: Optional[dict] = None,
+                              filters: Optional[dict | FilterBuilder] = None,
+                              status: Optional[str] = None) -> Binding:
         """ Asynchronously update a binding.
 
         Args:
@@ -185,17 +226,20 @@ class BindingClient:
             description (str, optional): A description of the binding.
             execution_params (dict, optional): Parameters to pass to the binding's execution function.
             transformer_params (dict, optional): Parameters to pass to the transformer.
-            filters (dict, optional): Filters to apply to documents in the collection before running the transformer.
+            filters (dict | FilterBuilder, optional): Filters to apply to documents in the collection before running
+                the transformer.
             status (str, optional): The status of the binding.
 
         Returns:
             Binding: The updated binding.
         """
+        if isinstance(filters, FilterBuilder):
+            filters = filters.to_dict()
         binding = BindingUpdate(
             description=description,
             execution_params=execution_params,
             transformer_params=transformer_params,
-            filters=filters,
+            filter=filters,
             status=status
         )
         r = await self.aclient.patch(f"/bindings/{binding_id}", json=binding.dict(exclude_none=True))

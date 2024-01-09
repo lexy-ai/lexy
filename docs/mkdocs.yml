@@ -107,6 +107,7 @@ nav:
     - Client: reference/lexy_py/client.md
     - Collection: reference/lexy_py/collection.md
     - Document: reference/lexy_py/document.md
+    - Filters: reference/lexy_py/filters.md
     - Index: reference/lexy_py/indexes.md
     - Transformer: reference/lexy_py/transformer.md
 

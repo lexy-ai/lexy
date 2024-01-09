@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Optional
 
+from pydantic import parse_obj_as
 from sqlalchemy import Column, DateTime, ForeignKey, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import SQLModel, Field, Relationship
@@ -63,6 +64,12 @@ class Binding(BindingBase, table=True):
                f"collection='{self.collection_id}', " \
                f"transformer='{self.transformer_id}', " \
                f"index='{self.index_id}')>"
+
+    @property
+    def filter_obj(self):
+        if self.filter is not None:
+            return parse_obj_as(Filter, self.filter)
+        return None
 
 
 class BindingCreate(BindingBase):
