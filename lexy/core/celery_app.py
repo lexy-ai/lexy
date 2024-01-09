@@ -53,14 +53,24 @@ def create_celery():
     return celery_app
 
 
-def get_task_info(task_id):
-    """
-    return task info for the given task_id
-    """
+def get_task_info(task_id, verbose: bool = False) -> dict:
+    """Return task info for the given task_id."""
     task_result = AsyncResult(task_id)
     result = {
-        "task_id": task_id,
-        "task_status": task_result.status,
-        "task_result": task_result.result
+        "id": task_id,
+        "name": task_result.name,
+        "status": task_result.status,
+        "date_done": task_result.date_done,
+        "retries": task_result.retries,
+        "worker": task_result.worker,
+        "queue": task_result.queue,
+        "parent": task_result.parent,
+        "children": task_result.children,
+        "info": task_result.info,
     }
+    if verbose:
+        result["result"] = task_result.result
+        result["traceback"] = task_result.traceback
+        result["args"] = task_result.args
+        result["kwargs"] = task_result.kwargs
     return result

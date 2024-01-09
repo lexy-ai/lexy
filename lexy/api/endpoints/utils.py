@@ -3,6 +3,7 @@ import time
 
 from fastapi import APIRouter, status
 
+from lexy.core.celery_app import get_task_info
 from lexy.core.events import celery, restart_celery_worker
 
 
@@ -62,3 +63,12 @@ async def celery_restart_worker(worker_name: str = 'celery@celeryworker'):
     logger.info(f"Response: {celery_restart_response}")
     time.sleep(0.5)
     return {"Celery restart worker": celery_restart_response}
+
+
+@router.get("/tasks/{task_id}",
+            response_model=dict,
+            status_code=status.HTTP_200_OK,
+            name="get_task_status",
+            description="Get task status")
+async def get_task_status(task_id: str, verbose: bool = False) -> dict:
+    return get_task_info(task_id, verbose=verbose)
