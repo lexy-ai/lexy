@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Optional
 
+from pydantic import parse_obj_as
 from sqlalchemy import Column, DateTime, ForeignKey, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import SQLModel, Field, Relationship
@@ -9,6 +10,7 @@ from sqlmodel import SQLModel, Field, Relationship
 from lexy.models.collection import Collection
 from lexy.models.index import Index
 from lexy.models.transformer import Transformer
+from lexy.schemas.filters import Filter
 
 
 class BindingStatus(str, Enum):
@@ -36,7 +38,7 @@ class BindingBase(SQLModel):
     description: Optional[str] = None
     execution_params: dict[str, Any] = Field(default={}, sa_column=Column(JSONB, nullable=False))
     transformer_params: dict[str, Any] = Field(default={}, sa_column=Column(JSONB, nullable=False))
-    filters = Field(default={}, sa_column=Column(JSONB, nullable=False))
+    filter: Optional[Filter] = Field(default=None, sa_column=Column(JSONB, nullable=True))
     # # TODO: make this ENUM
     # run_frequency: str = Field(default="daily", nullable=False)
 
@@ -63,6 +65,12 @@ class Binding(BindingBase, table=True):
                f"transformer='{self.transformer_id}', " \
                f"index='{self.index_id}')>"
 
+    @property
+    def filter_obj(self):
+        if self.filter is not None:
+            return parse_obj_as(Filter, self.filter)
+        return None
+
 
 class BindingCreate(BindingBase):
     pass
@@ -72,7 +80,7 @@ class BindingUpdate(BindingBase):
     description: Optional[str] = None
     execution_params: Optional[dict[str, Any]] = None
     transformer_params: Optional[dict[str, Any]] = None
-    filters: Optional[dict[str, Any]] = None
+    filter: Optional[Filter] = None
     status: Optional[str] = None
 
 
@@ -84,3 +92,4 @@ class BindingRead(BindingBase):
     collection: Collection
     transformer: Transformer
     index: Index
+    filter: Optional[Filter]

@@ -1,4 +1,3 @@
-import importlib
 import logging
 from typing import TYPE_CHECKING
 
@@ -7,6 +6,7 @@ from fastapi import Depends
 from lexy.storage.client import get_s3_client
 from lexy.core.config import settings
 from lexy.models import Binding, Document
+from lexy.schemas.filters import filter_documents
 from lexy.core.celery_tasks import celery, save_records_to_index
 from lexy.indexes import index_manager
 
@@ -44,27 +44,11 @@ async def generate_tasks_for_document(doc: Document,
             continue
 
         # check if document matches binding filters
-        if binding.filters and not all(f(doc) for f in binding.filters):
+        if binding.filter and not binding.filter_obj.document_meets_conditions(doc):
             logger.info(f"Skipping binding {binding} because document does not match filters")
             continue
 
         # generate the task
-
-        #   option 1: use transformer_func.apply_async
-        # tfr_mod_name, tfr_func_name = binding.transformer.path.rsplit('.', 1)
-        # tfr_module = importlib.import_module(tfr_mod_name)
-        # transformer_func = getattr(tfr_module, tfr_func_name)
-        # task = transformer_func.apply_async(
-        #     # args=[doc.content],
-        #     args=[doc],
-        #     kwargs=binding.transformer_params,
-        #     link=save_records_to_index.s(document_id=doc.document_id,
-        #                                  text=doc.content,
-        #                                  index_id=binding.index_id,
-        #                                  binding_id=binding.binding_id)
-        # )
-
-        #   option 2: use celery.send_task
         # TODO: add a condition to check if the document has a storage url before running refresh_object_urls
         doc.refresh_object_urls(s3_client=s3_client)
         task_name = binding.transformer.celery_task_name
@@ -207,8 +191,9 @@ def process_new_binding(session,
                             f"'{binding.index.index_id}'.")
 
     # filter documents in the collection that match the binding filters
-    if binding.filters:
-        documents = [doc for doc in binding.collection.documents if all(f(doc) for f in binding.filters)]
+    if binding.filter:
+        filter_obj = binding.filter_obj
+        documents = filter_documents(binding.collection.documents, filter_obj)
     else:
         documents = binding.collection.documents
 
@@ -216,24 +201,6 @@ def process_new_binding(session,
     tasks = []
 
     # generate tasks for documents
-    # TODO: should this be done as a celery group?
-
-    #   option 1: use transformer_func.apply_async
-    # tfr_mod_name, tfr_func_name = binding.transformer.path.rsplit('.', 1)
-    # tfr_module = importlib.import_module(tfr_mod_name)
-    # transformer_func = getattr(tfr_module, tfr_func_name)
-    # for doc in documents:
-    #     task = transformer_func.apply_async(
-    #         args=[doc],
-    #         kwargs=binding.transformer_params,
-    #         link=save_records_to_index.s(document_id=doc.document_id,
-    #                                      text=doc.content,
-    #                                      index_id=binding.index_id,
-    #                                      binding_id=binding.binding_id)
-    #     )
-    #     tasks.append({"task_id": task.id, "document_id": doc.document_id})
-
-    #   option 2: use celery.send_task
     task_name = binding.transformer.celery_task_name
     for doc in documents:
         # TODO: add a condition to check if the document has a storage url before running refresh_object_urls

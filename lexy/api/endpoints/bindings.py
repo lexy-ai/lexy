@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.encoders import jsonable_encoder
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -27,9 +28,11 @@ async def get_bindings(session: AsyncSession = Depends(get_session)) -> list[Bin
              status_code=status.HTTP_201_CREATED,
              name="add_binding",
              description="Create a new binding")
-async def add_binding(binding: BindingCreate, session: AsyncSession = Depends(get_session)) \
-        -> dict[str, BindingRead | list[dict]]:
+async def add_binding(binding: BindingCreate,
+                      session: AsyncSession = Depends(get_session)) -> dict[str, BindingRead | list[dict]]:
     binding = Binding(**binding.dict())
+    if binding.filter:
+        binding.filter = jsonable_encoder(binding.filter)
     session.add(binding)
     await session.commit()
     await session.refresh(binding)
@@ -48,7 +51,8 @@ async def add_binding(binding: BindingCreate, session: AsyncSession = Depends(ge
             status_code=status.HTTP_200_OK,
             name="get_binding",
             description="Get a binding")
-async def get_binding(binding_id: int, session: AsyncSession = Depends(get_session)) -> BindingRead:
+async def get_binding(binding_id: int,
+                      session: AsyncSession = Depends(get_session)) -> BindingRead:
     result = await session.execute(select(Binding).where(Binding.binding_id ==
                                                          binding_id))
     binding = result.scalars().first()
@@ -61,7 +65,8 @@ async def get_binding(binding_id: int, session: AsyncSession = Depends(get_sessi
               status_code=status.HTTP_200_OK,
               name="update_binding",
               description="Update a binding")
-async def update_binding(binding_id: int, binding: BindingUpdate,
+async def update_binding(binding_id: int,
+                         binding: BindingUpdate,
                          session: AsyncSession = Depends(get_session)) -> dict:
     result = await session.execute(select(Binding).where(Binding.binding_id ==
                                                          binding_id))
@@ -74,6 +79,8 @@ async def update_binding(binding_id: int, binding: BindingUpdate,
     update_data = binding.dict(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_binding, key, value)
+    if db_binding.filter:
+        db_binding.filter = jsonable_encoder(db_binding.filter)
     session.add(db_binding)
     await session.commit()
     await session.refresh(db_binding)
@@ -98,7 +105,8 @@ async def update_binding(binding_id: int, binding: BindingUpdate,
                status_code=status.HTTP_200_OK,
                name="delete_binding",
                description="Delete a binding")
-async def delete_binding(binding_id: int, session: AsyncSession = Depends(get_session)):
+async def delete_binding(binding_id: int,
+                         session: AsyncSession = Depends(get_session)):
     result = await session.execute(select(Binding).where(Binding.binding_id ==
                                                          binding_id))
     binding = result.scalars().first()

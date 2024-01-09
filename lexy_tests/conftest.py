@@ -76,13 +76,13 @@ async def async_session(async_engine):
         yield session
 
 
-@pytest.fixture(scope='session', autouse=True)
-async def reset_db(async_engine, async_session):
-    async with async_engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.drop_all)
-        await conn.run_sync(SQLModel.metadata.create_all)
-
-    collection = Collection(collection_id="default", description="Default collection")
-    async_session.add(collection)
-    await async_session.commit()
-    await async_session.refresh(collection)
+# @pytest.fixture(scope='session', autouse=True)
+# async def reset_db(async_engine, async_session):
+#     async with async_engine.begin() as conn:
+#         await conn.run_sync(SQLModel.metadata.drop_all)
+#         await conn.run_sync(SQLModel.metadata.create_all)
+#
+#     collection = Collection(collection_id="default", description="Default collection")
+#     async_session.add(collection)
+#     await async_session.commit()
+#     await async_session.refresh(collection)
