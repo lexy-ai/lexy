@@ -4,7 +4,6 @@ from lexy.api.endpoints import (
     bindings,
     collections,
     documents,
-    embeddings,
     indexes,
     index_records,
     transformers,
@@ -17,7 +16,6 @@ lexy_api = APIRouter()
 lexy_api.include_router(bindings.router, tags=["bindings"])
 lexy_api.include_router(collections.router, tags=["collections"])
 lexy_api.include_router(documents.router, tags=["documents"])
-lexy_api.include_router(embeddings.router, tags=["embeddings"])
 lexy_api.include_router(indexes.router, tags=["indexes"])
 lexy_api.include_router(index_records.router, tags=["index_records"])
 lexy_api.include_router(transformers.router, tags=["transformers"])
