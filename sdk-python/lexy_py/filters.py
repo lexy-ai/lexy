@@ -7,8 +7,9 @@ class FilterBuilder:
 
     Attributes:
         conditions (list[dict]): A list of conditions to be combined. Each condition consists of a field, an operation,
-            and a value. The field is a string representing the field to be matched. The operation is a string representing the
-            operation to be performed on the field. The value is the value to be matched against.
+            a value, and a negation option. `field` is a string representing the field to be matched. `operation` is a
+            string representing the operation to be performed on the field. `value` is the value to be matched against.
+            `negate` is a boolean representing whether the condition should be negated.
 
             Valid operations include the following.
 
@@ -18,13 +19,13 @@ class FilterBuilder:
             - `less_than_or_equals`
             - `greater_than`
             - `greater_than_or_equals`
-            - `in`
             - `contains`
             - `contains_ci` (case-insensitive contains)
             - `starts_with`
             - `starts_with_ci` (case-insensitive starts_with)
             - `ends_with`
             - `ends_with_ci` (case-insensitive ends_with)
+            - `in`
         combination (str): The combination of conditions - either 'AND' or 'OR'
 
     Methods:
@@ -95,13 +96,13 @@ class FilterBuilder:
                 - `less_than_or_equals`
                 - `greater_than`
                 - `greater_than_or_equals`
-                - `in`
                 - `contains`
                 - `contains_ci` (case-insensitive contains)
                 - `starts_with`
                 - `starts_with_ci` (case-insensitive starts_with)
                 - `ends_with`
                 - `ends_with_ci` (case-insensitive ends_with)
+                - `in`
             value: The value to be matched against
         """
         self.conditions.append({
@@ -125,13 +126,13 @@ class FilterBuilder:
                 - `less_than_or_equals`
                 - `greater_than`
                 - `greater_than_or_equals`
-                - `in`
                 - `contains`
                 - `contains_ci` (case-insensitive contains)
                 - `starts_with`
                 - `starts_with_ci` (case-insensitive starts_with)
                 - `ends_with`
                 - `ends_with_ci` (case-insensitive ends_with)
+                - `in`
             value: The value to be matched against
         """
         self.conditions.append({

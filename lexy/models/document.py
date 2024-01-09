@@ -91,7 +91,6 @@ class Document(DocumentBase, table=True):
     )
     collection_id: str = Field(default="default", foreign_key="collections.collection_id")
     collection: Collection = Relationship(back_populates="documents", sa_relationship_kwargs={'lazy': 'selectin'})
-    embeddings: list["Embedding"] = Relationship(back_populates="document")
 
 
 class DocumentCreate(DocumentBase):
