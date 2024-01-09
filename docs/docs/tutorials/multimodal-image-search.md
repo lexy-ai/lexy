@@ -127,7 +127,7 @@ len(data)
 
 ```python
 # add documents to the collection
-for i, row in enumerate(data):
+for i, row in enumerate(data, start=1):
     print(i, row['text'])
     lexy.upload_documents(files=row['image'], 
                           filenames=row['text'] + '.jpg', 
@@ -135,27 +135,27 @@ for i, row in enumerate(data):
 ```
 
 ```{ .text .no-copy .result #code-output }
-0 aerial shot of futuristic city with large motorway
-1 aerial shot of modern city at sunrise
-2 butterfly landing on the nose of a cat
-3 cute kitten walking through long grass
-4 fluffy dog sticking out tongue with yellow background
-5 futuristic city with led lit tower blocks
-6 futuristic wet city street after rain with red and blue lights
-7 ginger striped cat with long whiskers laid on wooden table
-8 happy dog walking through park area holding ball
-9 happy ginger dog sticking out its tongue sat in front of dirt path
-10 happy small fluffy white dog running across grass
-11 kitten raising paw to sky with cyan background
-12 modern city skyline at sunrise with pink to blue sky
-13 modern neon lit city alleyway
-14 new york city street view with yellow cabs
-15 puppy with big ears sat with orange background
-16 suburban area with city skyline in distance
-17 three young dogs on dirt road
-18 top down shot of black and white cat with yellow background
-19 two dogs playing in the snow
-20 two dogs running on dirt path
+1 aerial shot of futuristic city with large motorway
+2 aerial shot of modern city at sunrise
+3 butterfly landing on the nose of a cat
+4 cute kitten walking through long grass
+5 fluffy dog sticking out tongue with yellow background
+6 futuristic city with led lit tower blocks
+7 futuristic wet city street after rain with red and blue lights
+8 ginger striped cat with long whiskers laid on wooden table
+9 happy dog walking through park area holding ball
+10 happy ginger dog sticking out its tongue sat in front of dirt path
+11 happy small fluffy white dog running across grass
+12 kitten raising paw to sky with cyan background
+13 modern city skyline at sunrise with pink to blue sky
+14 modern neon lit city alleyway
+15 new york city street view with yellow cabs
+16 puppy with big ears sat with orange background
+17 suburban area with city skyline in distance
+18 three young dogs on dirt road
+19 top down shot of black and white cat with yellow background
+20 two dogs playing in the snow
+21 two dogs running on dirt path
 ```
 
 
@@ -208,7 +208,7 @@ def image_from_url(url):
 
 def display_results_html(records):
     html_content = ""
-    for i, r in enumerate(records, start=1):
+    for r in records:
         d = r['document']
         thumbnail_url = d.thumbnail_url
         fname = d.meta.get('filename')
