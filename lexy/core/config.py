@@ -42,7 +42,7 @@ class GlobalConfig(BaseConfig):
     # Database settings
     postgres_user: str = os.environ.get("POSTGRES_USER", "postgres")
     postgres_password: str = os.environ.get("POSTGRES_PASSWORD", "postgres")
-    postgres_host: str = os.environ.get("POSTGRES_HOST", "db_postgres")
+    postgres_host: str = os.environ.get("POSTGRES_HOST", "localhost")
     # postgres_port: int = int(os.environ.get("POSTGRES_PORT"))
     postgres_db: str = os.environ.get("POSTGRES_DB", "lexy")
     # db_url = os.environ.get("DATABASE_URL")
