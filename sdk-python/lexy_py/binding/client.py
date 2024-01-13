@@ -87,9 +87,7 @@ class BindingClient:
             execution_params = {}
         if transformer_params is None:
             transformer_params = {}
-        if filters is None:
-            filters = {}
-        elif isinstance(filters, FilterBuilder):
+        if isinstance(filters, FilterBuilder):
             filters = filters.to_dict()
         binding = BindingCreate(
             collection_id=collection_id,
@@ -134,9 +132,7 @@ class BindingClient:
             execution_params = {}
         if transformer_params is None:
             transformer_params = {}
-        if filters is None:
-            filters = {}
-        elif isinstance(filters, FilterBuilder):
+        if isinstance(filters, FilterBuilder):
             filters = filters.to_dict()
         binding = BindingCreate(
             collection_id=collection_id,
@@ -193,7 +189,7 @@ class BindingClient:
             execution_params (dict, optional): Parameters to pass to the binding's execution function.
             transformer_params (dict, optional): Parameters to pass to the transformer.
             filters (dict | FilterBuilder, optional): Filters to apply to documents in the collection before running
-                the transformer.
+                the transformer. Set to an empty dict to remove any existing filter.
             status (str, optional): The status of the binding.
 
         Returns:
@@ -208,7 +204,10 @@ class BindingClient:
             filter=filters,
             status=status
         )
-        r = self.client.patch(f"/bindings/{binding_id}", json=binding.dict(exclude_none=True))
+        json_payload = binding.dict(exclude_none=True)
+        if json_payload["filter"] == {}:  # explicitly removed filters
+            json_payload["filter"] = None
+        r = self.client.patch(f"/bindings/{binding_id}", json=json_payload)
         handle_response(r)
         return Binding(**r.json(), client=self._lexy_client)
 
@@ -227,7 +226,7 @@ class BindingClient:
             execution_params (dict, optional): Parameters to pass to the binding's execution function.
             transformer_params (dict, optional): Parameters to pass to the transformer.
             filters (dict | FilterBuilder, optional): Filters to apply to documents in the collection before running
-                the transformer.
+                the transformer. Set to an empty dict to remove any existing filter.
             status (str, optional): The status of the binding.
 
         Returns:
@@ -242,7 +241,10 @@ class BindingClient:
             filter=filters,
             status=status
         )
-        r = await self.aclient.patch(f"/bindings/{binding_id}", json=binding.dict(exclude_none=True))
+        json_payload = binding.dict(exclude_none=True)
+        if json_payload["filter"] == {}:  # explicitly removed filters
+            json_payload["filter"] = None
+        r = await self.aclient.patch(f"/bindings/{binding_id}", json=json_payload)
         handle_response(r)
         return Binding(**r.json(), client=self._lexy_client)
 
