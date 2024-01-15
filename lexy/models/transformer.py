@@ -19,7 +19,7 @@ class TransformerBase(SQLModel):
         primary_key=True,
         min_length=1,
         max_length=255,
-        regex=r"^[a-zA-Z][a-zA-Z0-9_.]+$"
+        regex=r"^[a-zA-Z][a-zA-Z0-9_.-]+$"
     )
     path: Optional[str] = Field(
         default=None,
