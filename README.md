@@ -55,6 +55,22 @@ You'll also need to specify an S3 bucket for file storage (for which your AWS cr
 You can do so by adding `S3_BUCKET=<name-of-your-S3-bucket>` to your `.env` file, or by updating the value of 
 `s3_bucket` in `lexy/core/config.py`.
 
+### Using OpenAI transformers
+
+To use OpenAI embeddings in Lexy, you'll need to set the `OPENAI_API_KEY` environment variable. You can do so by adding 
+the following to your `.env` file:
+
+```Shell
+OPENAI_API_KEY=<your-openai-api-key>
+```
+
+Do this before building your docker containers. Or, if you've already run `docker-compose up`, you can run the 
+following to rebuild the server and worker containers.
+
+```shell
+docker-compose up --build -d --no-deps lexyserver lexyworker
+```
+
 ### PyCharm issues
 
 If your virtualenv keeps getting bjorked by PyCharm, make sure that you're following the instructions above verbatim, 

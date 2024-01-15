@@ -99,7 +99,10 @@ async def query_records(query_text: str = Form(None),
                             detail=f"Transformer '{embedding_model}' not found")
     task = celery.send_task(transformer.celery_task_name, args=[query], priority=10)
     result = task.get()
-    query_embedding = result.tolist()
+    if isinstance(result, list):
+        query_embedding = result
+    else:
+        query_embedding = result.tolist()
 
     # get index fields to return
     if return_fields:

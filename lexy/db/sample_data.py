@@ -26,6 +26,11 @@ default_data = {
             "description": "Image embeddings using \"openai/clip-vit-base-patch32\""
         },
         {
+            "transformer_id": "text.embeddings.openai-ada-002",
+            "path": "lexy.transformers.openai.text_embeddings_openai",
+            "description": "Text embeddings using OpenAI's \"text-embedding-ada-002\" model"
+        },
+        {
             "transformer_id": "text.counter.word_counter",
             "path": "lexy.transformers.counter.word_counter",
             "description": "Returns count of words and the longest word"

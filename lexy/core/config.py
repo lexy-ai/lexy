@@ -70,12 +70,14 @@ class GlobalConfig(BaseConfig):
         'lexy.transformers.counter',
         'lexy.transformers.embeddings',
         'lexy.transformers.multimodal',
+        'lexy.transformers.openai',
     }
     lexy_worker_transformer_imports = {
         # 'lexy.transformers.*'
         'lexy.transformers.counter',
         'lexy.transformers.embeddings',
         'lexy.transformers.multimodal',
+        'lexy.transformers.openai',
     }
 
     @property

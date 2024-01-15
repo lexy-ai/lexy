@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 class TransformerModel(BaseModel):
     """ Transformer model """
-    transformer_id: str = Field(..., min_length=1, max_length=255, regex=r"^[a-zA-Z][a-zA-Z0-9_.]+$")
+    transformer_id: str = Field(..., min_length=1, max_length=255, regex=r"^[a-zA-Z][a-zA-Z0-9_.-]+$")
     path: Optional[str] = Field(..., min_length=1, max_length=255, regex=r"^[a-zA-Z][a-zA-Z0-9_.]+$")
     description: Optional[str] = None
     created_at: Optional[datetime] = None
