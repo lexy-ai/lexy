@@ -80,6 +80,15 @@ async def add_documents(documents: list[DocumentCreate],
                         session: AsyncSession = Depends(get_session)) -> list[dict]:
     docs_added = []
     for doc in documents:
+        # Check if a document_id is provided and if it already exists
+        if doc.document_id:
+            existing_doc = await session.get(Document, doc.document_id)
+            if existing_doc:
+                raise HTTPException(status_code=400,
+                                    detail={
+                                        "msg": f"A document with this ID already exists: {doc.document_id}.",
+                                        "document_id": str(doc.document_id),
+                                    })
         document = Document(**doc.dict(), collection_id=collection_id)
         session.add(document)
         await session.commit()

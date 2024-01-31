@@ -14,9 +14,10 @@ theme:
     - content.code.copy
     - content.tabs.link
     - navigation.indexes
+  favicon: assets/public/favicon.ico
   icon:
-    logo: material/wizard-hat
     repo: material/github
+  logo: assets/public/logo.png
   palette:
     # Palette toggle for light mode
     - scheme: default

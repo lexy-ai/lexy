@@ -94,7 +94,7 @@ class Document(DocumentBase, table=True):
 
 
 class DocumentCreate(DocumentBase):
-    pass
+    document_id: Optional[UUID] = None
 
 
 class DocumentUpdate(DocumentBase):
