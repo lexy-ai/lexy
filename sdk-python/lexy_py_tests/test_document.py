@@ -3,6 +3,7 @@ from datetime import datetime
 import pytest
 
 from lexy_py.client import LexyClient
+from lexy_py.exceptions import LexyAPIError
 
 
 lexy = LexyClient()
@@ -76,3 +77,36 @@ class TestDocumentClient:
     async def test_alist_documents(self):
         documents = await lexy.document.alist_documents(collection_id='code')
         assert len(documents) > 0
+
+    def test_duplicate_documents(self):
+        # create a test collection for testing duplicate documents
+        tmp_collection = lexy.collection.add_collection("tmp_collection", "Temp collection")
+        assert tmp_collection.collection_id == "tmp_collection"
+
+        # add documents to the test collection
+        docs_added = lexy.document.add_documents(docs=[
+            {"content": "What's up doc?"}
+        ], collection_id="tmp_collection")
+        assert len(docs_added) == 1
+        doc_added = docs_added[0]
+        assert doc_added.document_id is not None
+
+        # add duplicate document
+        with pytest.raises(LexyAPIError) as exc_info:
+            lexy.add_documents([
+                doc_added
+            ])
+        assert isinstance(exc_info.value, LexyAPIError)
+        assert exc_info.value.response.status_code == 400
+        assert (exc_info.value.response.json()['detail']['msg'] ==
+                f'A document with this ID already exists: {doc_added.document_id}.')
+        assert exc_info.value.response.json()['detail']['document_id'] == doc_added.document_id
+
+        # delete test documents
+        response = lexy.document.bulk_delete_documents(collection_id="tmp_collection")
+        assert response.get("Say") == "Documents deleted!"
+        assert response.get("deleted_count") == 1
+
+        # delete test collection
+        response = lexy.collection.delete_collection("tmp_collection")
+        assert response.get("Say") == "Collection deleted!"
