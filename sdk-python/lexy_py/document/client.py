@@ -42,7 +42,7 @@ class DocumentClient:
             offset (int): The offset to start from. Defaults to 0.
 
         Returns:
-            list[Document]: A list of documents in a collection.
+            Documents: A list of documents in a collection.
         """
         r = self.client.get("/documents",
                             params={
@@ -65,7 +65,7 @@ class DocumentClient:
             offset (int): The offset to start from. Defaults to 0.
 
         Returns:
-            list[Document]: A list of documents in a collection.
+            Documents: A list of documents in a collection.
         """
         r = await self.aclient.get("/documents",
                                    params={
@@ -76,16 +76,19 @@ class DocumentClient:
         handle_response(r)
         return [Document(**document, client=self._lexy_client) for document in r.json()]
 
-    def add_documents(self, docs: Document | dict | list[Document | dict],
-                      collection_id: str = "default") -> list[Document]:
-        """ Synchronously add documents to a collection.
+    def add_documents(self,
+                      docs: Document | dict | list[Document | dict],
+                      collection_id: str = "default",
+                      batch_size: int = 100) -> list[Document]:
+        """ Synchronously add documents to a collection in batches.
 
         Args:
             docs (Document | dict | list[Document | dict]): The documents to add.
             collection_id (str): The ID of the collection to add the documents to. Defaults to "default".
+            batch_size (int): The number of documents to add in each batch. Defaults to 100.
 
         Returns:
-            list[Document]: A list of created documents.
+            Documents: A list of created documents.
 
         Examples:
             >>> from lexy_py import LexyClient
@@ -95,28 +98,39 @@ class DocumentClient:
             ...     {"content": "My second document"}
             ... ], collection_id="my_collection")
         """
+        created_docs = []
         processed_docs = self._process_docs(docs)
 
-        r = self.client.post("/documents", json=processed_docs, params={"collection_id": collection_id})
-        handle_response(r)
-        return [Document(**document['document'], client=self._lexy_client) for document in r.json()]
+        for i in range(0, len(processed_docs), batch_size):
+            batch_docs = processed_docs[i:i + batch_size]
+            r = self.client.post("/documents", json=batch_docs, params={"collection_id": collection_id})
+            handle_response(r)
+            created_docs.extend([Document(**document['document'], client=self._lexy_client) for document in r.json()])
+        return created_docs
 
-    async def aadd_documents(self, docs: Document | dict | list[Document | dict],
-                             collection_id: str = "default") -> list[Document]:
-        """ Asynchronously add documents to a collection.
+    async def aadd_documents(self,
+                             docs: Document | dict | list[Document | dict],
+                             collection_id: str = "default",
+                             batch_size: int = 100) -> list[Document]:
+        """ Asynchronously add documents to a collection in batches.
 
         Args:
             docs (Document | dict | list[Document | dict]): The documents to add.
             collection_id (str): The ID of the collection to add the documents to. Defaults to "default".
+            batch_size (int): The number of documents to add in each batch. Defaults to 100.
 
         Returns:
-            list[Document]: A list of created documents.
+            Documents: A list of created documents.
         """
+        created_docs = []
         processed_docs = self._process_docs(docs)
 
-        r = await self.aclient.post("/documents", json=processed_docs, params={"collection_id": collection_id})
-        handle_response(r)
-        return [Document(**document['document'], client=self._lexy_client) for document in r.json()]
+        for i in range(0, len(processed_docs), batch_size):
+            batch_docs = processed_docs[i:i + batch_size]
+            r = await self.aclient.post("/documents", json=batch_docs, params={"collection_id": collection_id})
+            handle_response(r)
+            created_docs.extend([Document(**document['document'], client=self._lexy_client) for document in r.json()])
+        return created_docs
 
     def add_document(self, doc: Document | dict, collection_id: str) -> Document:
         """ Synchronously add a document to a collection.
@@ -242,46 +256,66 @@ class DocumentClient:
     def upload_documents(self,
                          files: Image.Image | str | list[Image.Image | str],
                          filenames: str | list[str] = None,
-                         collection_id: str = "default") -> list[Document]:
-        """ Synchronously upload files to a collection.
+                         collection_id: str = "default",
+                         batch_size: int = 5) -> list[Document]:
+        """ Synchronously upload files to a collection in batches.
 
         Args:
             files (Image.Image | str | list[Image.Image | str]): The files to upload. Can be a list or single instance
                 of either an Image file or a string containing the path to an Image file.
             filenames (str | list[str], optional): The filenames of the files to upload. Defaults to None.
             collection_id (str): The ID of the collection to upload the files to. Defaults to "default".
+            batch_size (int): The number of files to upload in each batch. Defaults to 5.
 
         Returns:
-            list[Document]: A list of created documents.
+            Documents: A list of created documents.
         """
-        processed_images = self._process_images(files, filenames=filenames)
-        r = self.client.post("/documents/upload",
-                             files=processed_images,
-                             params={"collection_id": collection_id})
-        handle_response(r)
-        return [Document(**document['document'], client=self._lexy_client) for document in r.json()]
+        created_docs = []
+        files, filenames = self._align_filenames(files, filenames)
+
+        # process and upload files in batches
+        for i in range(0, len(files), batch_size):
+            batch_files = files[i:i + batch_size]
+            batch_filenames = filenames[i:i + batch_size]
+            processed_images = self._process_images(batch_files, filenames=batch_filenames)
+            r = self.client.post("/documents/upload",
+                                 files=processed_images,
+                                 params={"collection_id": collection_id})
+            handle_response(r)
+            created_docs.extend([Document(**document['document'], client=self._lexy_client) for document in r.json()])
+        return created_docs
 
     async def aupload_documents(self,
                                 files: Image.Image | str | list[Image.Image | str],
                                 filenames: str | list[str] = None,
-                                collection_id: str = "default") -> list[Document]:
-        """ Asynchronously upload files to a collection.
+                                collection_id: str = "default",
+                                batch_size: int = 5) -> list[Document]:
+        """ Asynchronously upload files to a collection in batches.
 
         Args:
             files (Image.Image | str | list[Image.Image | str]): The files to upload. Can be a list or single instance
                 of either an Image file or a string containing the path to an Image file.
             filenames (str | list[str], optional): The filenames of the files to upload. Defaults to None.
             collection_id (str): The ID of the collection to upload the files to. Defaults to "default".
+            batch_size (int): The number of files to upload in each batch. Defaults to 5.
 
         Returns:
-            list[Document]: A list of created documents.
+            Documents: A list of created documents.
         """
-        processed_images = self._process_images(files, filenames=filenames)
-        r = await self.aclient.post("/documents/upload",
-                                    files=processed_images,
-                                    params={"collection_id": collection_id})
-        handle_response(r)
-        return [Document(**document['document'], client=self._lexy_client) for document in r.json()]
+        created_docs = []
+        files, filenames = self._align_filenames(files, filenames)
+
+        # process and upload files in batches
+        for i in range(0, len(files), batch_size):
+            batch_files = files[i:i + batch_size]
+            batch_filenames = filenames[i:i + batch_size]
+            processed_images = self._process_images(batch_files, filenames=batch_filenames)
+            r = await self.aclient.post("/documents/upload",
+                                        files=processed_images,
+                                        params={"collection_id": collection_id})
+            handle_response(r)
+            created_docs.extend([Document(**document['document'], client=self._lexy_client) for document in r.json()])
+        return created_docs
 
     def get_document_urls(self, document_id: str, expiration: int = 3600) -> dict:
         """ Synchronously get presigned URLs for a document.
@@ -330,6 +364,21 @@ class DocumentClient:
         return r.json()
 
     @staticmethod
+    def _align_filenames(files, filenames: str | list[str] = None) -> tuple[list, list]:
+        """ Align files and filenames. """
+        # ensure files is a list
+        if not isinstance(files, list):
+            files = [files]
+
+        # if filenames is a single string (or None), convert it to a list with repeated elements
+        if isinstance(filenames, str) or filenames is None:
+            filenames = [filenames] * len(files)
+
+        if len(files) != len(filenames):
+            raise ValueError("Length of filenames list must match length of files list")
+        return files, filenames
+
+    @staticmethod
     def _process_docs(docs: Document | dict | list[Document | dict]) -> list[dict]:
         """ Process documents into a list of dictionaries. """
         processed_docs = []
@@ -355,16 +404,7 @@ class DocumentClient:
                         filenames: str | list[str] = None) -> list:
 
         processed_images = []
-
-        if isinstance(images, (Image.Image, str)):
-            images = [images]
-
-        # if filenames is a single string, convert it to a list with repeated elements
-        if isinstance(filenames, str) or filenames is None:
-            filenames = [filenames] * len(images)
-
-        if len(images) != len(filenames):
-            raise ValueError("Length of filenames list must match length of images list")
+        images, filenames = DocumentClient._align_filenames(images, filenames)
 
         for img, filename in zip(images, filenames):
             if isinstance(img, str):
