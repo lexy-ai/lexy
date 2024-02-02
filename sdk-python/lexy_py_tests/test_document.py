@@ -110,3 +110,30 @@ class TestDocumentClient:
         # delete test collection
         response = lexy.collection.delete_collection("tmp_collection")
         assert response.get("Say") == "Collection deleted!"
+
+    def test_add_documents_in_batches(self):
+        # create a test collection for testing adding documents in batches
+        tmp_collection = lexy.collection.add_collection("tmp_collection", "Temp collection")
+        assert tmp_collection.collection_id == "tmp_collection"
+
+        # add documents to the test collection
+        docs_added = lexy.document.add_documents(
+            docs=[
+                {"content": "Test Document 1 Content"},
+                {"content": "Test Document 2 Content"},
+                {"content": "Test Document 3 Content"},
+            ],
+            collection_id="tmp_collection",
+            batch_size=2)
+        assert len(docs_added) == 3
+        assert docs_added[-1].document_id is not None
+        assert docs_added[-1].content == "Test Document 3 Content"
+
+        # delete test documents
+        response = lexy.document.bulk_delete_documents(collection_id="tmp_collection")
+        assert response.get("Say") == "Documents deleted!"
+        assert response.get("deleted_count") == 3
+
+        # delete test collection
+        response = lexy.collection.delete_collection("tmp_collection")
+        assert response.get("Say") == "Collection deleted!"
