@@ -29,8 +29,8 @@ poetry install --no-root --with test,docs,dev -E "lexy_transformers"
 pip install -e .
 pip install -e sdk-python
 
-# initialize .env file
-touch .env
+# create .env file if it doesn't exist
+cp -n .env.example .env
 
 # build docker images
 docker-compose up --build -d
