@@ -35,8 +35,8 @@ pip install -e sdk-python
 ### Build docker images
 
 ```Shell
-# initialize .env file if it doesn't exist
-touch .env
+# create .env file if it doesn't exist
+cp -n .env.example .env
 
 # build docker images
 docker-compose up --build -d
