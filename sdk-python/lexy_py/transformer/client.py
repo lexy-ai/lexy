@@ -1,5 +1,6 @@
 """ Client for interacting with the Transformer API. """
 
+import json
 from typing import Optional, TYPE_CHECKING
 
 import httpx
@@ -187,7 +188,8 @@ class TransformerClient:
         """
         if isinstance(document, dict):
             document = Document(**document)
-        data = {"document": document.dict()}
+        # TODO: use document.model_dump(mode='json') after updating to Pydantic 2.0
+        data = {"document": json.loads(document.json())}
         if transformer_params:
             data["transformer_params"] = transformer_params
         if content_only:

@@ -380,7 +380,7 @@ class DocumentClient:
 
     @staticmethod
     def _process_docs(docs: Document | dict | list[Document | dict]) -> list[dict]:
-        """ Process documents into a list of dictionaries. """
+        """ Process documents into a list of json-serializable dictionaries. """
         processed_docs = []
 
         if isinstance(docs, (Document, dict)):
