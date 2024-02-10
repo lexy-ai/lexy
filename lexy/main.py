@@ -15,14 +15,14 @@ for module in settings.app_transformer_imports:
 
 def create_app() -> FastAPI:
     fastapi_app = FastAPI(
-        title=settings.title,
-        version=settings.version,
-        description=settings.description,
-        openapi_prefix=settings.openapi_prefix,
-        docs_url=settings.docs_url,
-        openapi_url=settings.openapi_url
+        title=settings.TITLE,
+        version=settings.VERSION,
+        description=settings.DESCRIPTION,
+        openapi_prefix=settings.OPENAPI_PREFIX,
+        docs_url=settings.DOCS_URL,
+        openapi_url=settings.OPENAPI_URL
     )
-    fastapi_app.include_router(lexy_api, prefix=settings.api_prefix)
+    fastapi_app.include_router(lexy_api, prefix=settings.API_PREFIX)
     return fastapi_app
 
 

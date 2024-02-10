@@ -4,9 +4,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import close_all_sessions
 from sqlmodel import SQLModel
 
+from lexy.core.config import settings
 from lexy.db.sample_data import default_data, sample_docs
 from lexy.db.session import sync_engine
-from lexy import models  # noqa
+from lexy import models  # noqa: make sure all models are imported before initializing DB
 
 
 logger = logging.getLogger(__name__)
@@ -65,14 +66,32 @@ def add_sample_docs_to_db(session=db):
         session.commit()
 
 
-def init_db(session=db, seed_data=False):
-    logger.info("Initializing database")
+def add_first_superuser_to_db(session=db):
+    superuser = session.query(models.User).filter(models.User.email == settings.FIRST_SUPERUSER_EMAIL).first()
+    if superuser:
+        # issue a warning if superuser already exists in the database
+        logger.warning("Superuser already exists - skipping superuser")
+    else:
+        # adding superuser
+        session.add(models.User.create(
+            email=settings.FIRST_SUPERUSER_EMAIL,
+            password=settings.FIRST_SUPERUSER_PASSWORD.get_secret_value(),
+            is_superuser=True
+        ))
+        session.commit()
 
-    logger.info("Creating tables")
+
+def init_db(session=db, seed_data=False):
+    logger.info(f"Initializing database (seed_data={seed_data})")
+
+    logger.info("Creating tables (SQLModel.metadata.create_all)")
     SQLModel.metadata.create_all(sync_engine)
 
     # TODO: add data via crud functions instead of directly adding to the session
     if seed_data is True:
+        logger.info("Adding superuser")
+        add_first_superuser_to_db(session)
+
         logger.info("Adding default seed data")
         add_default_data_to_db(session)
 
@@ -107,4 +126,3 @@ def reset_db(session=db, drop_all=True):
     drop_tables(session, drop_all=drop_all)
     init_db(session, seed_data=True)
     logger.info("Finished resetting database")
-

@@ -49,7 +49,7 @@ def create_thumbnails_s3(image, sizes, s3_client, s3_bucket, s3_base_path, docum
             "s3_bucket": s3_bucket,
             "s3_key": s3_key,
             "s3_uri": f"s3://{s3_bucket}/{s3_key}",
-            "s3_url": f"https://{settings.s3_bucket}.s3.amazonaws.com/{s3_key}",
+            "s3_url": f"https://{s3_bucket}.s3.amazonaws.com/{s3_key}",
         }
     return thumbnails
 
@@ -156,19 +156,19 @@ async def upload_documents(files: list[UploadFile],
                 # TODO: replace file.filename with the unique document id
                 s3_key = f"collections/{collection_id}/documents/{file.filename}"
                 file.file.seek(0)
-                s3_client.upload_fileobj(file.file, settings.s3_bucket, s3_key)
+                s3_client.upload_fileobj(file.file, settings.S3_BUCKET, s3_key)
 
-                file_dict["s3_bucket"] = settings.s3_bucket
+                file_dict["s3_bucket"] = settings.S3_BUCKET
                 file_dict["s3_key"] = s3_key
-                file_dict["s3_url"] = f"https://{settings.s3_bucket}.s3.amazonaws.com/{s3_key}"
-                file_dict["s3_uri"] = f"s3://{settings.s3_bucket}/{s3_key}"
+                file_dict["s3_url"] = f"https://{settings.S3_BUCKET}.s3.amazonaws.com/{s3_key}"
+                file_dict["s3_uri"] = f"s3://{settings.S3_BUCKET}/{s3_key}"
 
             # generate thumbnails
             if collection.config.get('generate_thumbnails') and collection.config.get('store_files'):
                 thumbnails = create_thumbnails_s3(image=img,
-                                                  sizes=settings.image_thumbnail_sizes,
+                                                  sizes=settings.IMAGE_THUMBNAIL_SIZES,
                                                   s3_client=s3_client,
-                                                  s3_bucket=settings.s3_bucket,
+                                                  s3_bucket=settings.S3_BUCKET,
                                                   s3_base_path=f"collections/{collection_id}/thumbnails",
                                                   document_id=file.filename)
                 file_dict["image"]["thumbnails"] = thumbnails
