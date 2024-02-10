@@ -1,3 +1,8 @@
+---
+hide:
+    - toc
+---
+
 # Welcome to Lexy
 
 Lexy is a data framework for building AI-powered applications.
@@ -25,3 +30,12 @@ See the [API reference](reference/lexy_api/overview.md) for detailed documentati
 
 The [Python SDK](reference/lexy_py/client.md) is a Python client for Lexy, with detailed documentation.
 
+## Contributing
+
+Check out the [developer notes](contributing.md) for guidance on contributing to the Lexy codebase.
+
+## FAQs
+
+Any questions? Check out the [FAQ](faq.md) for answers to common questions.
+
+If you can't find the answer you're looking for, please [contact us](mailto:hello@lexy.ai).

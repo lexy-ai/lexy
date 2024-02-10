@@ -10,11 +10,11 @@ if TYPE_CHECKING:
 
 async def get_s3_client() -> boto3.client:
     client_kwargs = {}
-    if settings.aws_access_key_id and settings.aws_secret_access_key:
-        client_kwargs["aws_access_key_id"] = settings.aws_access_key_id
-        client_kwargs["aws_secret_access_key"] = settings.aws_secret_access_key
-    if settings.aws_region:
-        client_kwargs["region_name"] = settings.aws_region
+    if settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY:
+        client_kwargs["aws_access_key_id"] = settings.AWS_ACCESS_KEY_ID
+        client_kwargs["aws_secret_access_key"] = settings.AWS_SECRET_ACCESS_KEY.get_secret_value()
+    if settings.AWS_REGION:
+        client_kwargs["region_name"] = settings.AWS_REGION
     return boto3.client('s3', **client_kwargs)
 
 

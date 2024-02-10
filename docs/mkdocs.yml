@@ -39,6 +39,7 @@ extra_css:
   - stylesheets/extra.css
 
 markdown_extensions:
+  - admonition
   - pymdownx.details
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
@@ -112,6 +113,7 @@ nav:
     - Filters: reference/lexy_py/filters.md
     - Index: reference/lexy_py/indexes.md
     - Transformer: reference/lexy_py/transformer.md
+  - Contributing: contributing.md
   - FAQ: faq.md
 
 extra:

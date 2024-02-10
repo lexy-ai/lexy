@@ -1,8 +1,7 @@
 import importlib
-import os
 import pkgutil
 
-from pydantic import BaseConfig
+from pydantic import BaseSettings, EmailStr, Field, SecretStr, validator
 
 
 def get_transformer_modules(transformer_pkg: str = 'lexy.transformers'):
@@ -27,52 +26,62 @@ def expand_transformer_imports(transformer_imports: set[str]) -> set[str]:
     return expanded_imports
 
 
-class GlobalConfig(BaseConfig):
+class AppSettings(BaseSettings):
 
     # API settings
-    title: str = "Lexy Server"
-    version: str = "1.0.0"
-    description: str = "Lexy Server API"
-    openapi_prefix: str = ""
-    docs_url: str = "/docs"
-    redoc_url: str = "/redoc"
-    openapi_url: str = "/openapi.json"
-    api_prefix: str = "/api"
+    TITLE: str = "Lexy Server"
+    VERSION: str = "1.0.0"
+    DESCRIPTION: str = "Lexy Server API"
+    OPENAPI_PREFIX: str = ""
+    DOCS_URL: str = "/docs"
+    REDOC_URL: str = "/redoc"
+    OPENAPI_URL: str = "/openapi.json"
+    API_PREFIX: str = "/api"
+
+    # Security settings
+    # Uncomment the line below if you want to generate a new secret key every time the server restarts. Then, to use a
+    #  fixed key, you would simply set the value of SECRET_KEY in your .env file. If you uncomment the next line,
+    #  add `import secrets` to the top of this file.
+    # SECRET_KEY: SecretStr = Field(default_factory=secrets.token_urlsafe, env="SECRET_KEY")
+    SECRET_KEY: SecretStr = Field(default="changethis", env="SECRET_KEY")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
 
     # Database settings
-    postgres_user: str = os.environ.get("POSTGRES_USER", "postgres")
-    postgres_password: str = os.environ.get("POSTGRES_PASSWORD", "postgres")
-    postgres_host: str = os.environ.get("POSTGRES_HOST", "localhost")
-    # postgres_port: int = int(os.environ.get("POSTGRES_PORT"))
-    postgres_db: str = os.environ.get("POSTGRES_DB", "lexy")
-    # db_url = os.environ.get("DATABASE_URL")
-    db_echo_log: bool = True
+    POSTGRES_USER: str = Field(default="postgres", env="POSTGRES_USER")
+    POSTGRES_PASSWORD: SecretStr = Field(default="postgres", env="POSTGRES_PASSWORD")
+    POSTGRES_HOST: str = Field(default="localhost", env="POSTGRES_HOST")
+    POSTGRES_DB: str = Field(default="lexy", env="POSTGRES_DB")
+    DB_ECHO_LOG: bool = False
 
-    # Config for Collection objects
-    collection_default_config: dict = {
+    # User settings
+    FIRST_SUPERUSER_EMAIL: EmailStr = Field("lexy@lexy.ai", env="FIRST_SUPERUSER_EMAIL")
+    FIRST_SUPERUSER_PASSWORD: SecretStr = Field("lexy", env="FIRST_SUPERUSER_PASSWORD")
+
+    # Default config for Collection objects
+    COLLECTION_DEFAULT_CONFIG: dict = {
         'store_files': True,
         'generate_thumbnails': True,
     }
 
     # AWS settings & S3 storage settings
-    aws_access_key_id: str = os.environ.get("AWS_ACCESS_KEY_ID", None)
-    aws_secret_access_key: str = os.environ.get("AWS_SECRET_ACCESS_KEY", None)
-    aws_region: str = os.environ.get("AWS_REGION", None)
-    s3_bucket: str = os.environ.get("S3_BUCKET", None)
-    image_thumbnail_sizes: set[tuple] = {
+    AWS_ACCESS_KEY_ID: str = Field(default=None, env="AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY: SecretStr = Field(default=None, env="AWS_SECRET_ACCESS_KEY")
+    AWS_REGION: str = Field(default=None, env="AWS_REGION")
+    S3_BUCKET: str = Field(default=None, env="S3_BUCKET")
+    IMAGE_THUMBNAIL_SIZES: set[tuple] = {
         # (100, 100),
         (200, 200),
     }
 
     # Celery settings
-    lexy_server_transformer_imports = {
+    LEXY_SERVER_TRANSFORMER_IMPORTS: set[str] = {
         # 'lexy.transformers.*'
         'lexy.transformers.counter',
         'lexy.transformers.embeddings',
         'lexy.transformers.multimodal',
         'lexy.transformers.openai',
     }
-    lexy_worker_transformer_imports = {
+    LEXY_WORKER_TRANSFORMER_IMPORTS: set[str] = {
         # 'lexy.transformers.*'
         'lexy.transformers.counter',
         'lexy.transformers.embeddings',
@@ -82,19 +91,37 @@ class GlobalConfig(BaseConfig):
 
     @property
     def sync_database_url(self) -> str:
-        return f"postgresql://{self.postgres_user}:{self.postgres_password}@{self.postgres_host}/{self.postgres_db}"
+        return (f"postgresql://"
+                f"{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD.get_secret_value()}"
+                f"@{self.POSTGRES_HOST}"
+                f"/{self.POSTGRES_DB}")
 
     @property
     def async_database_url(self) -> str:
-        return f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}@{self.postgres_host}/{self.postgres_db}"
+        return (f"postgresql+asyncpg://"
+                f"{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD.get_secret_value()}"
+                f"@{self.POSTGRES_HOST}"
+                f"/{self.POSTGRES_DB}")
 
     @property
     def app_transformer_imports(self):
-        return expand_transformer_imports(self.lexy_server_transformer_imports)
+        return expand_transformer_imports(self.LEXY_SERVER_TRANSFORMER_IMPORTS)
 
     @property
     def worker_transformer_imports(self):
-        return expand_transformer_imports(self.lexy_worker_transformer_imports)
+        return expand_transformer_imports(self.LEXY_WORKER_TRANSFORMER_IMPORTS)
+
+    @validator('SECRET_KEY')
+    def check_secret_key(cls, value):
+        if value.get_secret_value() == "changethis":
+            import logging
+            logging.warning("Using default value of SECRET_KEY. Do NOT use this value for production!")
+        return value
+
+    class Config:
+        case_sensitive = True
+        env_file = '.env'
+        env_file_encoding = 'utf-8'
 
 
-settings = GlobalConfig()
+settings = AppSettings()

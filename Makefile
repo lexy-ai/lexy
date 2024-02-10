@@ -8,3 +8,9 @@ recreate-queues:
 
 inspect-celery:
 	docker exec lexy-celeryworker celery inspect active -t 10.0
+
+update-dev-containers:
+	# rebuild lexyserver and lexyworker
+	docker-compose up --build -d --no-deps lexyserver lexyworker
+	# run DB migrations
+	alembic upgrade head

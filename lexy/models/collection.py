@@ -21,7 +21,7 @@ class CollectionBase(SQLModel):
         regex=r"^[A-Za-z0-9_-]+$"
     )
     description: Optional[str] = None
-    config: Optional[dict[str, Any]] = Field(sa_column=Column(JSONB), default=settings.collection_default_config)
+    config: Optional[dict[str, Any]] = Field(sa_column=Column(JSONB), default=settings.COLLECTION_DEFAULT_CONFIG)
 
 
 class Collection(CollectionBase, table=True):

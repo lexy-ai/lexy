@@ -156,7 +156,7 @@ class IndexManager(object):
         indexes = self.get_indexes()
         for index in indexes:
             if self.table_exists(index.index_table_name):
-                logger.warning(f"create_index_models -- Index table {index.index_table_name} already exists.")
+                logger.info(f"create_index_models -- Index table {index.index_table_name} already exists.")
             self.create_index_model(index)
 
     def create_index_model(self, index: Index):

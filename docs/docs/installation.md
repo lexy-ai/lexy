@@ -49,7 +49,7 @@ put `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in your `.env` file.
 
 You'll also need to specify an S3 bucket for file storage (for which your AWS credentials should have full access). 
 You can do so by adding `S3_BUCKET=<name-of-your-S3-bucket>` to your `.env` file, or by updating the value of 
-`s3_bucket` in `lexy/core/config.py`.
+`S3_BUCKET` in `lexy/core/config.py`.
 
 ## Where to find services
 

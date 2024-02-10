@@ -7,12 +7,12 @@ from lexy.core.config import settings
 
 sync_engine = create_engine(
     url=settings.sync_database_url,
-    echo=settings.db_echo_log
+    echo=settings.DB_ECHO_LOG
 )
 
 async_engine = AsyncEngine(create_engine(
     url=settings.async_database_url,
-    echo=settings.db_echo_log,
+    echo=settings.DB_ECHO_LOG,
     future=True
 ))
 
