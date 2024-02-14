@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import close_all_sessions
 from sqlmodel import SQLModel
 
-from lexy.core.config import settings
+from lexy.core.config import settings as app_settings
 from lexy.db.sample_data import default_data, sample_docs
 from lexy.db.session import sync_engine
 from lexy import models  # noqa: make sure all models are imported before initializing DB
@@ -66,7 +66,7 @@ def add_sample_docs_to_db(session=db):
         session.commit()
 
 
-def add_first_superuser_to_db(session=db):
+def add_first_superuser_to_db(session=db, settings=app_settings):
     superuser = session.query(models.User).filter(models.User.email == settings.FIRST_SUPERUSER_EMAIL).first()
     if superuser:
         # issue a warning if superuser already exists in the database

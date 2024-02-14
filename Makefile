@@ -14,3 +14,7 @@ update-dev-containers:
 	docker-compose up --build -d --no-deps lexyserver lexyworker
 	# run DB migrations
 	alembic upgrade head
+
+run-tests:
+	pytest lexy_tests
+	pytest sdk-python

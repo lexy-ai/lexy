@@ -57,17 +57,17 @@ class AppSettings(BaseSettings):
     FIRST_SUPERUSER_EMAIL: EmailStr = Field("lexy@lexy.ai", env="FIRST_SUPERUSER_EMAIL")
     FIRST_SUPERUSER_PASSWORD: SecretStr = Field("lexy", env="FIRST_SUPERUSER_PASSWORD")
 
-    # Default config for Collection objects
-    COLLECTION_DEFAULT_CONFIG: dict = {
-        'store_files': True,
-        'generate_thumbnails': True,
-    }
-
     # AWS settings & S3 storage settings
     AWS_ACCESS_KEY_ID: str = Field(default=None, env="AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY: SecretStr = Field(default=None, env="AWS_SECRET_ACCESS_KEY")
     AWS_REGION: str = Field(default=None, env="AWS_REGION")
     S3_BUCKET: str = Field(default=None, env="S3_BUCKET")
+
+    # Default config for Collection objects and images
+    COLLECTION_DEFAULT_CONFIG: dict = {
+        'store_files': True,
+        'generate_thumbnails': True,
+    }
     IMAGE_THUMBNAIL_SIZES: set[tuple] = {
         # (100, 100),
         (200, 200),
@@ -122,6 +122,18 @@ class AppSettings(BaseSettings):
         case_sensitive = True
         env_file = '.env'
         env_file_encoding = 'utf-8'
+
+
+class TestAppSettings(AppSettings):
+
+    # Database settings
+    POSTGRES_DB: str = Field(default="lexy_tests", env="POSTGRES_TEST_DB")
+    DB_ECHO_LOG: bool = True
+
+    # User settings
+    # without `env=` argument, this will revert to the environment value of FIRST_SUPERUSER_EMAIL
+    FIRST_SUPERUSER_EMAIL: EmailStr = Field("test@lexy.ai", env="TEST_SUPERUSER_EMAIL")
+    FIRST_SUPERUSER_PASSWORD: SecretStr = Field("test", env="TEST_SUPERUSER_PASSWORD")
 
 
 settings = AppSettings()
