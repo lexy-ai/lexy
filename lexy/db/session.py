@@ -1,6 +1,6 @@
 from sqlalchemy.orm import sessionmaker
 from sqlmodel.ext.asyncio.session import AsyncSession, AsyncEngine
-from sqlmodel import create_engine, SQLModel
+from sqlmodel import create_engine
 
 from lexy.core.config import settings
 
@@ -24,14 +24,3 @@ async_session = sessionmaker(
 async def get_session() -> AsyncSession:
     async with async_session() as session:
         yield session
-
-
-async def create_db_and_tables():
-    async with async_engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.create_all)
-
-
-async def recreate_db_and_tables():
-    async with async_engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.drop_all)
-        await conn.run_sync(SQLModel.metadata.create_all)
