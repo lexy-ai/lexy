@@ -79,8 +79,8 @@ To start the dashboard, run:
 
 ```shell
 cd dashboard
-pnpm install
-pnpm dev
+npm install
+npm dev
 
 ```
 
