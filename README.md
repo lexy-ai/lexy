@@ -71,6 +71,19 @@ following to rebuild the server and worker containers.
 docker-compose up --build -d --no-deps lexyserver lexyworker
 ```
 
+### Run the Dashboard
+
+Lexy comes with a built in dashboard to visualize pipelines. See [the dashboard README](./dashboard/README.md) for more details.
+
+To start the dashboard, run:
+
+```shell
+cd dashboard
+npm install
+npm run dev
+
+```
+
 ### PyCharm issues
 
 If your virtualenv keeps getting bjorked by PyCharm, make sure that you're following the instructions above verbatim, 
