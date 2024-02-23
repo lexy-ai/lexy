@@ -80,7 +80,7 @@ To start the dashboard, run:
 ```shell
 cd dashboard
 npm install
-npm dev
+npm run dev
 
 ```
 
