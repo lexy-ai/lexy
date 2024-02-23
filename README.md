@@ -73,7 +73,7 @@ docker-compose up --build -d --no-deps lexyserver lexyworker
 
 ### Run the Dashboard
 
-Lexy comes with a built in dashboard to visualize their pipelines as they are running. see [the dashboard README](./dashboard/README.md) for more details.
+Lexy comes with a built in dashboard to visualize pipelines. See [the dashboard README](./dashboard/README.md) for more details.
 
 To start the dashboard, run:
 
