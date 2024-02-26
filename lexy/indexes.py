@@ -2,25 +2,22 @@
 
 import logging
 from datetime import datetime, date, time
-from typing import Dict, Optional
+from typing import Dict, Optional, Type
 from uuid import UUID, uuid1, uuid3, uuid4, uuid5
 
 from pydantic import create_model
 from sqlalchemy import Column, DDL, event, inspect, REAL
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.engine import Engine, Inspector
 from sqlmodel import ARRAY, SQLModel, Field, Session, select
 
-from lexy.db.session import sync_engine
-from lexy.models.binding import Binding
 from lexy.models.index import Index
 from lexy.models.index_record import IndexRecordBaseTable
 
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-SyncSessionLocal = sessionmaker(class_=Session, autocommit=False, autoflush=False, bind=sync_engine)
-insp = inspect(sync_engine)
 
 LEXY_INDEX_FIELD_TYPES: Dict = {
     'int': int,
@@ -95,39 +92,30 @@ TBLNAME_TO_CLASS = map_tablename_to_class(SQLModel)
 # TODO: add hnsw index type (e.g., cosine, euclidean, etc.) to DDL statement
 class IndexManager(object):
 
-    _db: Session | None = None
-    index_models = {}
     TBLNAME_TO_CLASS: dict | None = TBLNAME_TO_CLASS
+
+    def __init__(self, engine: Engine):
+        self._engine: Engine = engine
+        self._db: Session | None = None
+        self._inspector: Inspector | None = None
+
+        self.index_models: dict[str, Type[IndexRecordBaseTable]] = {}
+        logger.info(f"IndexManager initialized with db url '{repr(self.db.bind.engine.url)}'")
 
     # TODO: Make session management more robust, specifically by
     #  ensuring that distinct API requests don't use the same session
     @property
     def db(self) -> Session:
         if self._db is None:
-            self._db = SyncSessionLocal()
+            sync_session_local = sessionmaker(class_=Session, autocommit=False, autoflush=False, bind=self._engine)
+            self._db = sync_session_local()
         return self._db
 
-    def get_bindings(self) -> list[Binding]:
-        """ Get all bindings """
-        bindings = self.db.exec(select(Binding)).all()
-        return bindings
-
-    def get_binding(self, binding_id: int) -> Binding:
-        """ Get a binding by id
-
-        Args:
-            binding_id (int): binding id
-
-        Returns:
-            Binding: binding
-
-        Raises:
-            ValueError: if binding is not found
-        """
-        binding = self.db.exec(select(Binding).filter(Binding.binding_id == binding_id)).first()
-        if not binding:
-            raise ValueError(f"Binding {binding_id} not found")
-        return binding
+    @property
+    def inspector(self) -> Inspector:
+        if self._inspector is None:
+            self._inspector = inspect(self.db.bind.engine)
+        return self._inspector
 
     def get_indexes(self) -> list[Index]:
         """ Get all indexes """
@@ -155,11 +143,20 @@ class IndexManager(object):
         logger.info("Creating index models")
         indexes = self.get_indexes()
         for index in indexes:
+            if self.index_models.get(index.index_id):
+                logger.warning(f"create_index_models -- Index model {index.index_id} already exists.")
+            index_model = self.create_index_model(index)
             if self.table_exists(index.index_table_name):
                 logger.info(f"create_index_models -- Index table {index.index_table_name} already exists.")
-            self.create_index_model(index)
+            else:
+                logger.info(f"create_index_models -- Creating new Index table {index.index_table_name}.")
+                created = self._create_index_table(index_model)
+                if created:
+                    logger.info(f"create_index_models -- Created new Index table {index.index_table_name}.")
+                else:
+                    logger.warning(f"create_index_models -- Failed to create Index table {index.index_table_name}.")
 
-    def create_index_model(self, index: Index):
+    def create_index_model(self, index: Index) -> Type[IndexRecordBaseTable]:
         index_table_name = index.index_table_name
         field_defs = self.get_field_definitions(index.index_fields)
         if index_table_name in self.TBLNAME_TO_CLASS.keys():
@@ -187,18 +184,106 @@ class IndexManager(object):
         self.index_models[index.index_id] = index_model
         return index_model
 
-    def get_or_create_index_model(self, index_id: str):
-        """ Get or create index model """
-        if index_id in self.index_models.keys():
-            return self.index_models.get(index_id)
+    def get_or_create_index_model(self, index: Index) -> tuple[Type[IndexRecordBaseTable], bool]:
+        """ Get or create an index model from an Index object.
+
+        Args:
+            index (Index): The index object to get or create the model for.
+
+        Returns:
+            tuple[Type[IndexRecordBaseTable], bool]: A tuple of the index model and a boolean indicating whether the
+                model was created.
+        """
+        if index.index_id in self.index_models.keys():
+            logger.debug(f"get_or_create_index_model -- Index model {index.index_id} already exists.")
+            return self.index_models.get(index.index_id), False
         else:
-            print(f"index model {index_id} is not in self.index_models.keys() - will try to create it")
-            index = self.get_index(index_id)
-            if index is None:
-                raise ValueError(f"Index {index_id} not found")
-            if self.table_exists(index.index_table_name):
-                logger.warning(f"get_or_create_index_model -- Index table {index.index_table_name} already exists.")
-            return self.create_index_model(index)
+            logger.debug(f"get_or_create_index_model -- Index model {index.index_id} does not exist "
+                         f"- will try to create it")
+            return self.create_index_model(index), True
+
+    def create_index_model_and_table(self, index_id: str) -> tuple[bool, bool]:
+        """ Create a new index model and its associated table.
+
+        **This requires that the index row already exists in the database.**
+
+        Steps involved:
+            1. Get the index object from the indexes table
+            2. Create (or get) the corresponding index model
+            3. Create associated index table in the database
+
+        Args:
+            index_id (str): The ID of the index to create
+
+        Returns:
+            tuple[bool, bool]: A tuple of booleans indicating whether the index model and table were created
+        """
+        logger.info(f"Creating new index model and table for {index_id = }")
+
+        # get the index object
+        index = self.get_index(index_id)
+        if index is None:
+            raise ValueError(f"Index {index_id} not found")
+
+        # create (or get) the corresponding index model
+        index_model, model_created = self.get_or_create_index_model(index)
+        if not model_created:
+            # NOTE: This should only happen if an index with the same name was previously created, and then deleted
+            #   with option `drop_table=False`. To force the recreation of the index or table, the user should recreate
+            #   the index, then delete it with option drop_table=True.
+            logger.warning(f"Index model {index_id} already exists. Skipping creation.")
+
+        # create index table in the database
+        table_created = self._create_index_table(index_model)
+        if not table_created:
+            logger.warning(f"Index table {index.index_table_name} already exists. Skipping creation.")
+
+        return model_created, table_created
+
+    def drop_index_table(self, index_id: str) -> bool:
+        """ Drops the index table from the database and removes the index model from the index manager.
+
+        Args:
+            index_id (str): The ID of the index to drop.
+
+        Returns:
+            bool: True if the index table was dropped, False otherwise.
+        """
+        logger.info(f"Dropping index table for {index_id = }")
+
+        index = self.get_index(index_id)
+
+        # pop to remove the index model from self.index_models
+        index_model = self.index_models.pop(index_id, None)
+        # if the index model doesn't exist, log a warning and return
+        if index_model is None:
+            logger.warning(f"Index model for '{index_id}' does not exist")
+            return False
+
+        # if the table doesn't exist, log a warning and return
+        if not self.table_exists(index.index_table_name):
+            logger.warning(f"Index table '{index.index_table_name}' does not exist")
+            return False
+
+        logger.debug(f"about to drop table for index_model: {index_model}")
+        index_model.metadata.drop_all(self.db.bind.engine, tables=[index_model.__table__])
+        index_model.metadata.remove(index_model.__table__)
+        return True
+
+    def table_exists(self, index_table_name: str) -> bool:
+        return self.inspector.has_table(index_table_name)
+
+    def _create_index_table(self, index_model: Type[IndexRecordBaseTable]) -> bool:
+        """ Create index table from an Index model """
+        # if the tablename is None, raise an error
+        if index_model.__tablename__ is None:
+            raise ValueError("Index model must have a __tablename__ attribute")
+        # if the table already exists, log a warning and return
+        if self.table_exists(index_model.__tablename__):
+            logger.debug(f"Index table {index_model.__tablename__} already exists. Skipping creation.")
+            return False
+        index_model.metadata.create_all(self.db.bind.engine)
+        return True
 
     @staticmethod
     def get_field_definitions(index_fields: dict) -> dict:
@@ -273,24 +358,3 @@ class IndexManager(object):
                     f");"
                 )
         return embedding_ddl
-
-    # TODO: this should probably live outside the index manager
-    def switch_binding_status(self, binding: Binding, status: str) -> Binding:
-        """ Switch binding status """
-        prev_status = binding.status
-        logger.debug(f"Switching status for binding {binding}: from '{prev_status}' to '{status}'")
-        binding.status = status
-        self.db.add(binding)
-        self.db.commit()
-        self.db.refresh(binding)
-        logger.info(f"Switched status for binding {binding}: from '{prev_status}' to '{status}'")
-        return binding
-
-    @staticmethod
-    def table_exists(index_table_name: str) -> bool:
-        return insp.has_table(index_table_name)
-
-
-index_manager = IndexManager()
-index_manager.create_index_models()
-

@@ -67,7 +67,7 @@ class TestDocumentClient:
 
         # delete test collection
         response = lexy.collection.delete_collection("tmp_collection")
-        assert response.get("Say") == "Collection deleted!"
+        assert response.get("msg") == "Collection deleted"
 
     def test_list_documents(self):
         documents = lexy.document.list_documents(collection_id='code')
@@ -109,7 +109,7 @@ class TestDocumentClient:
 
         # delete test collection
         response = lexy.collection.delete_collection("tmp_collection")
-        assert response.get("Say") == "Collection deleted!"
+        assert response.get("msg") == "Collection deleted"
 
     def test_add_documents_in_batches(self):
         # create a test collection for testing adding documents in batches
@@ -136,4 +136,4 @@ class TestDocumentClient:
 
         # delete test collection
         response = lexy.collection.delete_collection("tmp_collection")
-        assert response.get("Say") == "Collection deleted!"
+        assert response.get("msg") == "Collection deleted"

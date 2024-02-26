@@ -32,10 +32,20 @@ class DevelopmentConfig(BaseConfig):
     pass
 
 
+class TestingConfig(BaseConfig):
+    CELERY_BROKER_URL = "memory://"
+    CELERY_RESULT_BACKEND: str = "db+postgresql://postgres:postgres@localhost:5432/lexy_tests"
+    # task_always_eager: bool = True
+    # task_eager_propagates: bool = True
+    # task_store_eager_result: bool = True
+    # task_ignore_result: bool = False
+
+
 @lru_cache()
 def get_settings():
     config_cls_dict = {
         "development": DevelopmentConfig,
+        "testing": TestingConfig,
     }
     config_name = os.environ.get("CELERY_CONFIG", "development")
     config_cls = config_cls_dict[config_name]

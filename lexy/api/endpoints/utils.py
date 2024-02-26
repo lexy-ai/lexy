@@ -72,3 +72,40 @@ async def celery_restart_worker(worker_name: str = 'celery@celeryworker'):
             description="Get task status")
 async def get_task_status(task_id: str, verbose: bool = False) -> dict:
     return get_task_info(task_id, verbose=verbose)
+
+
+@router.get("/tasks",
+            response_model=dict,
+            status_code=status.HTTP_200_OK,
+            name="get_all_tasks",
+            description="Get all tasks")
+async def get_all_tasks() -> dict:
+    return {"active": celery.control.inspect().active(),
+            "scheduled": celery.control.inspect().scheduled(),
+            "reserved": celery.control.inspect().reserved(),
+            "revoked": celery.control.inspect().revoked(),
+            "stats": celery.control.inspect().stats(),
+            "registered_tasks": celery.control.inspect().registered_tasks(),
+            "conf": celery.control.inspect().conf(with_defaults=False)}
+
+
+@router.get("/index-manager",
+            status_code=status.HTTP_200_OK,
+            name="get_index_manager")
+async def get_index_manager() -> dict:
+    from lexy.api.deps import index_manager
+    index_models_and_tables = dict(
+        (model, index_manager.index_models[model].__table__.name) for model in index_manager.index_models
+    )
+    return {"index_models_and_tables": index_models_and_tables}
+
+
+@router.get("/index-manager-celery",
+            status_code=status.HTTP_200_OK,
+            name="get_index_manager_from_celery")
+async def get_index_manager_from_celery() -> dict:
+    from lexy.core.celery_tasks import index_manager
+    index_models_and_tables = dict(
+        (model, index_manager.index_models[model].__table__.name) for model in index_manager.index_models
+    )
+    return {"index_models_and_tables": index_models_and_tables}

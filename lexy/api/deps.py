@@ -5,9 +5,10 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from lexy.core.config import settings
 from lexy.core.security import ALGORITHM, oauth2_scheme, verify_password
-from lexy.db.session import get_session as get_db
+from lexy.db.session import get_session as get_db, get_sync_engine
 from lexy.models.user import User
 from lexy.schemas.token import TokenData
+from lexy.indexes import IndexManager
 
 
 async def get_user_by_email(db: AsyncSession, email: str) -> User:
@@ -55,3 +56,17 @@ async def authenticate_user(db: AsyncSession, *, email: str, password: str):
     if not verify_password(password, user.hashed_password):
         return False
     return user
+
+
+_index_manager: IndexManager | None = None
+
+
+def get_index_manager() -> IndexManager:
+    global _index_manager
+    if _index_manager is None:
+        engine = get_sync_engine()
+        _index_manager = IndexManager(engine=engine)
+    return _index_manager
+
+
+index_manager = get_index_manager()

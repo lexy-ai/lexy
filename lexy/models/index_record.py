@@ -4,6 +4,7 @@ from uuid import uuid4, UUID
 
 from sqlalchemy import Column, DateTime, ForeignKey, func
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.sql.schema import Table
 from sqlmodel import SQLModel, Field, Relationship
 
 if TYPE_CHECKING:
@@ -30,6 +31,7 @@ class IndexRecordUpdate(IndexRecordBase):
 
 
 class IndexRecordBaseTable(IndexRecordBase):
+    __table__: Table | None = None
     index_record_id: UUID = Field(
         default_factory=uuid4,
         primary_key=True,

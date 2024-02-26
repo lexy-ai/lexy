@@ -7,7 +7,8 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from lexy.db.session import get_session
 from lexy.models.index import Index, IndexCreate, IndexUpdate
-from lexy.core.events import create_new_index_table, drop_index_table, restart_celery_worker
+from lexy.core.events import restart_celery_worker
+from lexy.api.deps import index_manager
 
 
 logger = logging.getLogger(__name__)
@@ -33,18 +34,25 @@ async def get_indexes(session: AsyncSession = Depends(get_session)) -> list[Inde
              name="add_index",
              description="Create a new index")
 async def add_index(index: IndexCreate, session: AsyncSession = Depends(get_session)) -> Index:
+    # check if index already exists
+    result = await session.execute(select(Index).where(Index.index_id == index.index_id))
+    existing_index = result.scalars().first()
+    if existing_index:
+        raise HTTPException(status_code=400, detail="Index already exists")
+
+    # create new index
     index = Index(**index.dict())
     session.add(index)
     await session.commit()
     await session.refresh(index)
 
-    create_new_index_table(index_id=index.index_id)
-    logger.info(f"Restarting db worker '{celery_db_worker}' following creation of index table for index_id: "
-                f"{index.index_id}")
+    # create the index model and table
+    _ = index_manager.create_index_model_and_table(index_id=index.index_id)
+    logger.info(f"Restarting db worker '{celery_db_worker}' following creation of index table "
+                f"for index_id: {index.index_id}")
     time.sleep(0.5)
     celery_restart_response = restart_celery_worker(celery_db_worker)
-    logger.info(f"Response: {celery_restart_response}")
-    time.sleep(0.5)
+    logger.info(f"{celery_restart_response = }")
 
     return index
 
@@ -95,14 +103,19 @@ async def delete_index(index_id: str,
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Index not found")
 
     index_table_name = index.index_table_name
-    dropped = False
+
+    # NOTE: Deleting the index with option `drop_table=False` will leave the index model in the index manager.
+    #   To remove it, recreate the index, and then delete with `drop_table=True`. The issue with removing it from the
+    #   index manager is created when trying to recreate a table with the same name.
+    table_dropped = False
     if drop_table:
-        dropped = drop_index_table(index_id=index_id)
+        table_dropped = index_manager.drop_index_table(index_id=index_id)
 
     await session.delete(index)
     await session.commit()
 
     # TODO: restart celery worker here?
-    return {"Say": "Index deleted!",
+    return {"msg": "Index deleted",
+            "index_id": index_id,
             "index_table_name": index_table_name,
-            "table_dropped": dropped}
+            "table_dropped": table_dropped}

@@ -61,6 +61,7 @@ async def get_binding(binding_id: int,
     return binding
 
 
+# TODO: change to the following after SQLAlchemy 2.0: https://stackoverflow.com/a/75947988
 @router.patch("/bindings/{binding_id}",
               status_code=status.HTTP_200_OK,
               name="update_binding",
@@ -90,7 +91,7 @@ async def update_binding(binding_id: int,
         # TODO: this portion needs to be updated to reflect time stamps of tasks
         #  or to simply become part of an init script
         print(f"Binding status changed from '{old_status}' to 'on' - processing binding")
-        processed_binding, tasks = process_new_binding(db_binding)
+        processed_binding, tasks = await session.run_sync(process_new_binding, binding)
         # now commit the binding again and refresh it - status should be updated
         session.add(processed_binding)
         await session.commit()
