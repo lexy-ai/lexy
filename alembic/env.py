@@ -9,7 +9,7 @@ from sqlmodel import SQLModel  # ADDED
 from alembic import context
 
 from lexy.db import base  # noqa -- ADDED
-from lexy.indexes import index_manager  # noqa -- ADDED
+from lexy.api.deps import index_manager  # noqa -- ADDED
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -24,6 +24,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
+index_manager.create_index_models()  # ADDED
 target_metadata = SQLModel.metadata  # UPDATED
 
 # other values from the config, defined by the needs of env.py,

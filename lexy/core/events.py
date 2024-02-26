@@ -8,7 +8,6 @@ from lexy.core.config import settings
 from lexy.models import Binding, Document
 from lexy.schemas.filters import filter_documents
 from lexy.core.celery_tasks import celery, save_records_to_index
-from lexy.indexes import index_manager
 
 if TYPE_CHECKING:
     import boto3
@@ -69,108 +68,40 @@ async def generate_tasks_for_document(doc: Document,
     return tasks
 
 
-# TODO: this should move to lexy.indexes.IndexManager
-def create_new_index_table(index_id: str):
-    """ Create a new index model and its associated table.
-
-    This requires that the index row already exists in the database.
-
-    Steps involved:
-        1. Get the index object from the indexes table
-        2. Create (or get) the corresponding index model
-        3. Create associated index table in the database
-
-    Args:
-        index_id (str): The ID of the index to create
-    """
-    logger.info(f"Creating new index table for {index_id}")
-    index = index_manager.get_index(index_id)
-    if index_id in index_manager.index_models.keys():
-        logger.info(f"Index model for '{index_id}' already exists")
-        index_model = index_manager.index_models.get(index_id)
-    else:
-        index_model = index_manager.create_index_model(index)
-    if index_manager.table_exists(index.index_table_name):
-        logger.warning(f"lexy.core.events: Index table '{index.index_table_name}' already exists")
-    logger.debug(f"index_model: {index_model}")
-    index_model.metadata.create_all(index_manager.db.bind.engine)
-
-
-def drop_index_table(index_id: str) -> bool:
-    """ Drop the index table for the given index ID.
-
-    Args:
-        index_id (str): The ID of the index to drop
-
-    Returns:
-        bool: True if the index table was dropped, False otherwise
-    """
-    logger.info(f"Dropping index table for {index_id}")
-    index = index_manager.get_index(index_id)
-
-    # pop to remove the index model from the index_models dict
-    index_model = index_manager.index_models.pop(index_id, None)
-
-    # if the table doesn't exist, log a warning and return
-    if not index_manager.table_exists(index.index_table_name):
-        logger.warning(f"lexy.core.events: Index table '{index.index_table_name}' does not exist")
-        return False
-
-    # if the index model doesn't exist, log a warning and return
-    if index_model is None:
-        logger.warning(f"lexy.core.events: Index model for '{index_id}' does not exist")
-        return False
-
-    logger.debug(f"index_model: {index_model}")
-    index_model.metadata.drop_all(index_manager.db.bind.engine, tables=[index_model.__table__])
-    index_model.metadata.remove(index_model.__table__)
-    return True
-
-
 # TODO: remove session arg and run async after update to SQLAlchemy 2.0
 def process_new_binding(session,
                         binding: Binding,
-                        create_index_table: bool = False,
                         s3_client: "boto3.client" = Depends(get_s3_client)) -> tuple[Binding, list[dict]]:
     """ Process a new binding.
 
     Steps involved:
-        1. Create index table if it doesn't exist
+        1. Infer values for "lexy_index_fields" if not specified
         2. Create tasks for all documents in the collection that match the binding filters
         3. Switch binding status to 'on'
 
     Args:
         binding (Binding): The binding to process
-        create_index_table (bool): Whether to create the index table if it doesn't exist. Defaults to False.
         s3_client (boto3.client): The S3 client to use for generating presigned object URLs
 
     Returns:
         tuple[Binding, list[dict]]: The binding and the tasks that were created
-    """
-    # TODO: update this function to potentially create the index object in the database if it doesn't exist. in this
-    #  case, require a value for "lexy_index_fields"
-    # TODO: if types are not specified, infer them from the transformer below using
-    #  `transformer_func.__wrapped__.__annotations__.get('return')`
 
+    Raises:
+        ValueError:
+            - If the binding does not have a transformer or an index associated with it
+            - If the binding does not have `lexy_index_fields` defined in `binding.transformer_params` AND
+                `binding.index.index_fields` is not defined
+
+    """
     logger.info(f"Processing new binding {binding}")
 
     # check if binding has a valid transformer
     if binding.transformer is None:
-        raise Exception(f"Binding {binding} does not have a transformer associated with it")
-    if binding.transformer.path is None:
-        raise Exception(f"Binding {binding} does not have a valid transformer path associated with it")
+        raise ValueError(f"Binding {binding} does not have a transformer associated with it")
 
     # check if binding has a valid index
     if binding.index is None:
-        logger.info(f"Binding {binding} does not have an index associated with it")
-        # create index table
-        if create_index_table:
-            logger.info(f"Creating index table for binding {binding}")
-            create_new_index_table(binding.index_id)
-            # update binding
-            binding.index = index_manager.get_index(binding.index_id)
-        else:
-            raise Exception(f"Binding {binding} does not have an index associated with it")
+        raise ValueError(f"Binding {binding} does not have an index associated with it")
 
     # check that the binding has lexy_index_fields defined
     if "lexy_index_fields" not in binding.transformer_params.keys():
@@ -185,10 +116,10 @@ def process_new_binding(session,
             binding.transformer_params["lexy_index_fields"] = list(binding.index.index_fields.keys())
             logger.info(f"Updated binding.transformer_params: {binding.transformer_params}")
         else:
-            raise Exception(f"Binding {binding} does not have 'lexy_index_fields' defined in 'transformer_params' "
-                            f"and index '{binding.index.index_id}' does not have 'index_fields' defined. Either define "
-                            f"'lexy_index_fields' in 'transformer_params' or define 'index_fields' for index "
-                            f"'{binding.index.index_id}'.")
+            raise ValueError(f"Binding {binding} does not have 'lexy_index_fields' defined in 'transformer_params' "
+                             f"and index '{binding.index.index_id}' does not have 'index_fields' defined. Either "
+                             f"define 'lexy_index_fields' in 'transformer_params' or define 'index_fields' for index "
+                             f"'{binding.index.index_id}'.")
 
     # filter documents in the collection that match the binding filters
     if binding.filter:

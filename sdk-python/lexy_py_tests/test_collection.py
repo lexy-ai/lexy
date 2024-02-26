@@ -38,7 +38,7 @@ class TestCollectionClient:
 
         # delete test collection
         response = lexy.collection.delete_collection("test_collection")
-        assert response.get("Say") == "Collection deleted!"
+        assert response.get("msg") == "Collection deleted"
 
     def test_list_collections(self):
         collections = lexy.collection.list_collections()

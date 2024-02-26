@@ -10,6 +10,24 @@ Coming soon.
 
 This section contains some common development tasks and how to perform them.
 
+### Running tests
+
+To run the tests, you can use the following make command.
+
+```bash
+make run-tests
+```
+
+This will run tests for the Lexy server and Lexy Python SDK. If you want to run the tests separately, you can use the following commands.
+
+```bash
+# Run tests for Lexy server
+pytest lexy_tests
+
+# Run tests for Python SDK
+pytest sdk-python
+```
+
 ### Adding a new migration
 
 To add a new `alembic` migration, first create the migration file.

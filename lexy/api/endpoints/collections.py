@@ -27,6 +27,12 @@ async def get_collections(session: AsyncSession = Depends(get_session)) -> list[
              name="add_collection",
              description="Create a new collection")
 async def add_collection(collection: CollectionCreate, session: AsyncSession = Depends(get_session)) -> Collection:
+    # check if collection already exists
+    result = await session.execute(select(exists().where(Collection.collection_id == collection.collection_id)))
+    existing_result = result.scalar()
+    if existing_result:
+        raise HTTPException(status_code=400, detail="Collection already exists")
+
     collection = Collection(**collection.dict())
     session.add(collection)
     await session.commit()
@@ -98,4 +104,4 @@ async def delete_collection(collection_id: str,
 
     await session.delete(collection)
     await session.commit()
-    return {"Say": "Collection deleted!", "collection_id": collection_id, "documents_deleted": deleted_count}
+    return {"msg": "Collection deleted", "collection_id": collection_id, "documents_deleted": deleted_count}

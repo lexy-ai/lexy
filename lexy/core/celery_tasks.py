@@ -9,7 +9,6 @@ Sources:
         - https://stackoverflow.com/questions/60281347/is-it-possible-to-extend-celery-so-results-would-be-store-to-several-mongodb-co
         - https://docs.celeryq.dev/en/stable/userguide/configuration.html#override-backends
 """
-import importlib
 from typing import Any
 from uuid import UUID
 
@@ -19,7 +18,7 @@ from celery import current_app as celery, Task
 from celery.utils.log import get_logger, get_task_logger
 from sqlalchemy.orm import sessionmaker
 
-import lexy.indexes
+from lexy.api.deps import index_manager
 from lexy.db.session import sync_engine
 
 
@@ -30,7 +29,7 @@ SyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_eng
 
 class DatabaseTask(Task):
     _db = None
-    _index_manager = lexy.indexes.index_manager
+    _index_manager = index_manager
 
     @property
     def db(self):
@@ -42,9 +41,12 @@ class DatabaseTask(Task):
     def index_manager(self):
         if self._index_manager is None:
             task_logger.debug("_index_manager is None - reloading and assigning index manager")
-            importlib.reload(lexy.indexes)
-            self._index_manager = lexy.indexes.index_manager
+            self._index_manager = index_manager
             task_logger.debug(f"Assigned index manager with index models: {self._index_manager.index_models}")
+        if self._index_manager.index_models == {}:
+            task_logger.debug("index_manager.index_models is empty - running index_manager.create_index_models()")
+            self._index_manager.create_index_models()
+            task_logger.debug(f"index_manager.index_models: {self._index_manager.index_models}")
         return self._index_manager
 
     def restart_worker(self, msg):
@@ -57,7 +59,7 @@ class DatabaseTask(Task):
                                               arguments={
                                                   "reload": True,
                                                   "modules": [
-                                                      "lexy.indexes",
+                                                      "lexy.api.deps",
                                                       "lexy.core.celery_tasks"
                                                   ]
                                               },
@@ -76,24 +78,6 @@ class DatabaseTask(Task):
     def print_index_manager_models(self):
         sorted_models = sorted(self.index_manager.index_models.items(), key=lambda x: x[0])
         print(f"index_manager.index_models:\n", "\n".join([f"{k}: {v}" for k, v in sorted_models]))
-
-    def on_failure(self, exc, task_id, args, kwargs, einfo):
-        # if task fails because the table doesn't exist, refresh the db connection and try again
-        # FIXME: this isn't working. to reproduce, drop a table and run a task that saves to it
-        if "relation" in str(exc):
-            # example of error:
-            #   ProgrammingError('(psycopg2.errors.UndefinedTable) relation "index__default_text_embeddings_v6" does
-            #   not exist'
-            task_logger.info(f"Task {task_id} failed because the table doesn't exist. Refreshing the db connection "
-                             f"and trying again.")
-            self.db.rollback()
-            self.db.close()
-            self._db = None
-            # self.db()
-            # self.run(*args, **kwargs)
-            self.retry(*args, **kwargs, exc=exc, throw=False, countdown=1)
-        else:
-            super().on_failure(exc, task_id, args, kwargs, einfo)
 
 
 def convert_arrays_to_lists(obj):

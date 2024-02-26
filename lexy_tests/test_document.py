@@ -1,5 +1,6 @@
-import pytest
+import time
 
+import pytest
 from sqlmodel import select
 
 from lexy.models.document import Document
@@ -120,7 +121,7 @@ class TestDocument:
         assert data[1]["updated_at"] == doc2.updated_at.isoformat()
 
     @pytest.mark.asyncio
-    async def test_add_documents_from_client(self, async_client):
+    async def test_add_documents_from_client(self, async_client, celery_app, celery_worker):
         response = await async_client.post(
             "/api/documents",
             json=[{"content": "hello there!"}],
@@ -130,3 +131,14 @@ class TestDocument:
         data = response.json()
         assert len(data) == 1
         assert set(data[0].keys()) == {"document", "tasks"}
+        assert data[0]["document"]["content"] == "hello there!"
+
+        # wait for the celery worker to finish the task
+        time.sleep(2)
+
+        records_response = await async_client.get(
+            "/api/indexes/default_text_embeddings/records",
+        )
+        assert records_response.status_code == 200, records_response.text
+        records_data = records_response.json()
+        assert len(records_data) == 1

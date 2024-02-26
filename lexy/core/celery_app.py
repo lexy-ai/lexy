@@ -2,11 +2,11 @@
 from celery import Celery
 from celery.result import AsyncResult
 
-from .config import settings as lexy_settings
-from .celery_config import settings
+from lexy.core.config import settings as lexy_settings
+from lexy.core.celery_config import settings as celery_settings
 
 
-def create_celery():
+def create_celery(settings=celery_settings):
     celery_app = Celery()
     celery_app.config_from_object(settings, namespace='CELERY')
     celery_app.conf.update(task_track_started=True)
