@@ -60,3 +60,27 @@ class TestBindingClient:
         assert isinstance(binding.transformer, Transformer)
         assert binding.transformer.transformer_id == "text.embeddings.minilm"
         assert isinstance(binding.transformer.client, LexyClient)
+
+    def test_create_binding(self, lx_client, celery_app, celery_worker):
+        binding = lx_client.create_binding(
+            collection_id="default",
+            index_id="default_text_embeddings",
+            transformer_id="text.embeddings.minilm",
+            description="Test Binding"
+
+        )
+        assert binding.binding_id is not None
+        assert binding.collection.collection_id == "default"
+        assert binding.index.index_id == "default_text_embeddings"
+        assert binding.transformer.transformer_id == "text.embeddings.minilm"
+        assert binding.description == "Test Binding"
+        assert binding.status == "on"
+        assert "lexy_index_fields" in binding.transformer_params
+        assert set(binding.index.index_fields.keys()) == set(binding.transformer_params["lexy_index_fields"])
+
+        # delete test binding
+        response = lx_client.delete_binding(binding_id=binding.binding_id)
+        assert response == {
+            "msg": "Binding deleted",
+            "binding_id": binding.binding_id
+        }
