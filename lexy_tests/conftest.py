@@ -170,8 +170,7 @@ def client(test_app, async_session: AsyncSession) -> TestClient:
     # Override get_session dependency to use the test database session
     test_app.dependency_overrides[get_session] = override_get_session
 
-    print('instantiating TestClient from within test_client fixture')
-    client = TestClient(app=test_app)
+    client = TestClient(app=test_app, raise_server_exceptions=False)
     yield client
 
     del test_app.dependency_overrides[get_session]  # Reset overrides after tests
@@ -187,8 +186,6 @@ async def async_client(test_app, async_session: AsyncSession) -> httpx.AsyncClie
     # Override get_session dependency to use the test database session
     test_app.dependency_overrides[get_session] = override_get_session
 
-    print('instantiating Async TestClient from within async_test_client fixture')
-    # this next line does NOT trigger the `@app.on_startup` event in lexy/main.py
     async with httpx.AsyncClient(app=test_app, base_url="http://test") as ac:
         yield ac
 
