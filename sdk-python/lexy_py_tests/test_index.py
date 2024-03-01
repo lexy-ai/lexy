@@ -10,41 +10,72 @@ class TestIndexClient:
         assert response.status_code == 200
         assert response.json() == {"Say": "Hello!"}
 
-    def test_indexes(self):
-        # TODO: implement this after setting up mock for testing (do not run against live server)
-        # # get all indexes
-        # indexes = lexy.index.list_indexes()
-        # assert len(indexes) > 0
-        #
-        # # create test index
-        # test_index = lexy.index.add_index("test_index", "Test Index")
-        # assert test_index.index_id == "test_index"
-        # assert test_index.description == "Test Index"
-        #
-        # # get test index
-        # test_index = lexy.index.get_index("test_index")
-        # assert test_index.index_id == "test_index"
-        # assert test_index.description == "Test Index"
-        #
-        # # update test index
-        # test_index = lexy.index.update_index("test_index", "Test Index Updated")
-        # assert test_index.index_id == "test_index"
-        # assert test_index.description == "Test Index Updated"
-        # assert test_index.updated_at > test_index.created_at
-        #
-        # # delete test index
-        # response = lexy.index.delete_index("test_index")
-        # assert response == {"msg": "Index deleted"}
-        pass
+    def test_create_index(self, lx_client, celery_app, celery_worker):
+        # define index fields
+        test_index_fields = {
+            "text": {"type": "text"},
+            "embedding": {"type": "embedding", "extras": {"dims": 384, "model": "text.embeddings.minilm"}},
+            "meta": {"type": "object"},
+        }
+        # create index
+        test_index = lx_client.create_index(
+            index_id="test_index",
+            description="Test Index",
+            index_fields=test_index_fields
+        )
+        assert test_index.index_id == "test_index"
+        assert test_index.description == "Test Index"
+        assert set(test_index.index_fields.keys()) == {"text", "embedding", "meta"}
+
+    def test_get_index(self, lx_client):
+        test_index = lx_client.get_index("test_index")
+        assert test_index.index_id == "test_index"
+        assert test_index.description == "Test Index"
+        assert set(test_index.index_fields.keys()) == {"text", "embedding", "meta"}
+
+    @pytest.mark.asyncio
+    async def test_aget_index(self, lx_async_client):
+        test_index = await lx_async_client.index.aget_index("test_index")
+        assert test_index.index_id == "test_index"
+        assert test_index.description == "Test Index"
+        assert set(test_index.index_fields.keys()) == {"text", "embedding", "meta"}
+
+    def test_update_index(self, lx_client):
+        test_index = lx_client.update_index("test_index", description="Test Index Updated")
+        assert test_index.index_id == "test_index"
+        assert test_index.description == "Test Index Updated"
+        assert test_index.updated_at > test_index.created_at
+
+    @pytest.mark.asyncio
+    async def test_aupdate_index(self, lx_async_client):
+        test_index = await lx_async_client.index.aupdate_index("test_index", description="Test Index Async Update")
+        assert test_index.index_id == "test_index"
+        assert test_index.description == "Test Index Async Update"
+        assert test_index.updated_at > test_index.created_at
+
+    def test_delete_index(self, lx_client):
+        response = lx_client.delete_index("test_index", drop_table=True)
+        assert response == {
+            "msg": "Index deleted",
+            "index_id": "test_index",
+            "index_table_name": "zzidx__test_index",
+            "table_dropped": True
+        }
 
     def test_list_indexes(self, lx_client):
         indexes = lx_client.list_indexes()
         assert len(indexes) > 0
+        index_ids = [index.index_id for index in indexes]
+        assert "default_text_embeddings" in index_ids
+        assert "test_index" not in index_ids
 
     @pytest.mark.asyncio
     async def test_alist_indexes(self, lx_async_client):
         indexes = await lx_async_client.index.alist_indexes()
         assert len(indexes) > 0
+        index_ids = [index.index_id for index in indexes]
+        assert "default_text_embeddings" in index_ids
+        assert "test_index" not in index_ids
 
     def test_query_index(self, lx_client, celery_app, celery_worker):
         results = lx_client.query_index(

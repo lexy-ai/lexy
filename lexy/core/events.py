@@ -93,19 +93,19 @@ def process_new_binding(session,
                 `binding.index.index_fields` is not defined
 
     """
-    logger.info(f"Processing new binding {binding}")
+    logger.info(f"Processing new {binding = }")
 
     # check if binding has a valid transformer
     if binding.transformer is None:
-        raise ValueError(f"Binding {binding} does not have a transformer associated with it")
+        raise ValueError(f"{binding = } does not have a transformer associated with it")
 
     # check if binding has a valid index
     if binding.index is None:
-        raise ValueError(f"Binding {binding} does not have an index associated with it")
+        raise ValueError(f"{binding = } does not have an index associated with it")
 
     # check that the binding has lexy_index_fields defined
     if "lexy_index_fields" not in binding.transformer_params.keys():
-        logger.info(f"Binding {binding} does not have 'lexy_index_fields' defined in 'transformer_params'")
+        logger.info(f"{binding = } does not have 'lexy_index_fields' defined in 'transformer_params'")
         if len(binding.index.index_fields) > 0:
             logger.info(f"Will assign them using 'index_fields' from index '{binding.index.index_id}'.")
 
@@ -116,7 +116,7 @@ def process_new_binding(session,
             binding.transformer_params["lexy_index_fields"] = list(binding.index.index_fields.keys())
             logger.info(f"Updated binding.transformer_params: {binding.transformer_params}")
         else:
-            raise ValueError(f"Binding {binding} does not have 'lexy_index_fields' defined in 'transformer_params' "
+            raise ValueError(f"{binding = } does not have 'lexy_index_fields' defined in 'transformer_params' "
                              f"and index '{binding.index.index_id}' does not have 'index_fields' defined. Either "
                              f"define 'lexy_index_fields' in 'transformer_params' or define 'index_fields' for index "
                              f"'{binding.index.index_id}'.")
@@ -150,9 +150,9 @@ def process_new_binding(session,
     # switch binding status to 'on'
     prev_status = binding.status
     binding.status = 'on'
-    logger.info(f"Set status for binding {binding}: from '{prev_status}' to 'on'")
+    logger.info(f"Set status for {binding = } - from '{prev_status}' to 'on'")
 
-    logger.info(f"Created {len(tasks)} tasks for binding {binding}: "
+    logger.info(f"Created {len(tasks)} tasks for {binding = }: "
                 f"[{', '.join([t['task_id'] for t in tasks])}]")
 
     return binding, tasks
