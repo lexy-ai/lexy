@@ -20,15 +20,21 @@ class DocumentClient:
     """
     This class is used to interact with the Lexy Document API.
 
-    Attributes:
+    Properties:
         aclient (httpx.AsyncClient): Asynchronous API client.
         client (httpx.Client): Synchronous API client.
     """
 
     def __init__(self, lexy_client: "LexyClient") -> None:
         self._lexy_client = lexy_client
-        self.aclient = self._lexy_client.aclient
-        self.client = self._lexy_client.client
+
+    @property
+    def aclient(self) -> httpx.AsyncClient:
+        return self._lexy_client.aclient
+
+    @property
+    def client(self) -> httpx.Client:
+        return self._lexy_client.client
 
     def list_documents(self,
                        collection_id: str = "default",

@@ -4,12 +4,16 @@ import asyncio
 import httpx
 import pytest
 from celery import current_app
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import close_all_sessions
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.pool import NullPool
 from sqlmodel import SQLModel, create_engine, delete
-from sqlmodel.ext.asyncio.session import AsyncSession, AsyncEngine
+from sqlmodel.ext.asyncio.session import AsyncSession
+from asgi_lifespan import LifespanManager
 
 from lexy.core.config import TestAppSettings
 from lexy.db.init_db import add_default_data_to_db, add_first_superuser_to_db
@@ -22,7 +26,6 @@ test_settings = TestAppSettings()
 DB_WARNING_MSG = "There's a good chance you're about to drop the wrong database! Double check your test settings."
 assert test_settings.POSTGRES_DB != "lexy", DB_WARNING_MSG
 test_settings.DB_ECHO_LOG = False
-
 
 # the value of CELERY_CONFIG is set using pytest-env plugin in pyproject.toml
 assert os.environ.get("CELERY_CONFIG") == "testing", "CELERY_CONFIG is not set to 'testing'"
@@ -45,25 +48,6 @@ db_session.sync_engine = test_engine
 from lexy.main import app as lexy_test_app  # noqa: E402
 
 
-# UPDATE: seems like this is no longer needed with the new celery_worker fixture?
-#    - https://docs.celeryq.dev/en/stable/userguide/testing.html#celery-worker-embed-live-worker
-# NOTE: task_always_eager is ignored when running celery.send_task, one option is to override the send_task method
-#  to return the result of the task synchronously. This approach is for integration testing, where we want to test
-#  the full flow of the application. It won't work for CI/CD, so we eventually need to move to mocking the celery
-#  tasks instead (using pytest-mock). Based on the following sources:
-#    - https://stackoverflow.com/a/35807024
-#    - https://stackoverflow.com/questions/35284043/mock-celery-task-method-apply-async
-#    - https://pytest-with-eric.com/pytest-advanced/mock-celery-task-pytest/
-#    - https://stackoverflow.com/questions/72129975/celery-integration-testing-with-pytest-and-monkeypatching
-# def send_task(name, args=(), kwargs={}, **opts):
-#     # https://github.com/celery/celery/issues/581
-#     task = current_app.tasks[name]
-#     return task.apply(args, kwargs, **opts)
-#
-#
-# current_app.send_task = send_task
-
-
 @pytest.fixture(scope="session")
 def settings() -> TestAppSettings:
     """Fixture for test settings."""
@@ -76,7 +60,7 @@ def sync_engine(settings: TestAppSettings):
     """Create a SQLAlchemy sync engine for the test database."""
     engine = create_engine(
         url=settings.sync_database_url,
-        echo=settings.DB_ECHO_LOG
+        echo=settings.DB_ECHO_LOG,
     )
     print(f"sync_engine.url: {engine.url}")
     return engine
@@ -85,11 +69,11 @@ def sync_engine(settings: TestAppSettings):
 @pytest.fixture(scope="session")
 def async_engine(settings: TestAppSettings):
     """Create a SQLAlchemy async engine for the test database."""
-    engine = AsyncEngine(
-        create_engine(
-            url=settings.async_database_url,
-            echo=settings.DB_ECHO_LOG
-        )
+    engine = create_async_engine(
+        settings.async_database_url,
+        echo=settings.DB_ECHO_LOG,
+        future=True,
+        poolclass=NullPool
     )
     print(f"async_engine.url: {engine.url}")
     return engine
@@ -152,8 +136,14 @@ def seed_data(settings: TestAppSettings, sync_engine: Engine, create_test_databa
     print("Deleted test DB data")
 
 
+@pytest.fixture(scope="session")
+async def test_app(seed_data) -> FastAPI:
+    async with LifespanManager(lexy_test_app):
+        yield lexy_test_app
+
+
 @pytest.fixture(scope="function")
-def sync_session(sync_engine, create_test_database):
+def sync_session(sync_engine, test_app):
     """Create a new sync session for each test case."""
     session = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
     with session() as s:
@@ -161,7 +151,7 @@ def sync_session(sync_engine, create_test_database):
 
 
 @pytest.fixture(scope="function")
-async def async_session(async_engine, seed_data):
+async def async_session(async_engine, test_app):
     """Create a new async session for each test case."""
     async_session = sessionmaker(
         bind=async_engine, class_=AsyncSession, expire_on_commit=False
@@ -170,28 +160,36 @@ async def async_session(async_engine, seed_data):
         yield session
 
 
-@pytest.fixture(scope="session")
-def client(seed_data) -> TestClient:
+@pytest.fixture(scope="function")
+def client(test_app, async_session: AsyncSession) -> TestClient:
     """Fixture for providing a synchronous TestClient configured for testing."""
+    async def override_get_session():
+        async with async_session as session:
+            yield session
+
     # Override get_session dependency to use the test database session
-    lexy_test_app.dependency_overrides[get_session] = lambda: async_session
-    print('instantiating TestClient from within client fixture')
-    # this next line triggers the `@app.on_startup` event in lexy/main.py
-    with TestClient(app=lexy_test_app) as c:
-        yield c
-    lexy_test_app.dependency_overrides.clear()  # Reset overrides after tests
+    test_app.dependency_overrides[get_session] = override_get_session
+
+    client = TestClient(app=test_app, raise_server_exceptions=False)
+    yield client
+
+    del test_app.dependency_overrides[get_session]  # Reset overrides after tests
 
 
 @pytest.fixture(scope="function")
-async def async_client(async_session: AsyncSession) -> httpx.AsyncClient:
+async def async_client(test_app, async_session: AsyncSession) -> httpx.AsyncClient:
     """Fixture for providing an asynchronous TestClient configured for testing."""
+    async def override_get_session():
+        async with async_session as session:
+            yield session
+
     # Override get_session dependency to use the test database session
-    lexy_test_app.dependency_overrides[get_session] = lambda: async_session
-    print('instantiating Async TestClient from within async_client fixture')
-    # this next line does NOT trigger the `@app.on_startup` event in lexy/main.py
-    async with httpx.AsyncClient(app=lexy_test_app, base_url="http://test") as ac:
+    test_app.dependency_overrides[get_session] = override_get_session
+
+    async with httpx.AsyncClient(app=test_app, base_url="http://test") as ac:
         yield ac
-    lexy_test_app.dependency_overrides.clear()  # Reset overrides after tests
+
+    del test_app.dependency_overrides[get_session]  # Reset overrides after tests
 
 
 @pytest.fixture(scope="session")

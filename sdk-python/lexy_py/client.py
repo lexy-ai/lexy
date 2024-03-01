@@ -3,6 +3,7 @@
 import httpx
 
 from .settings import DEFAULT_BASE_URL
+from .exceptions import LexyClientError
 from .binding.client import BindingClient
 from .collection.client import CollectionClient
 from .document.client import DocumentClient
@@ -38,16 +39,26 @@ class LexyClient:
     index: IndexClient
     transformer: TransformerClient
 
-    def __init__(self, base_url: str = DEFAULT_BASE_URL, api_timeout=API_TIMEOUT) -> None:
+    def __init__(self,
+                 base_url: str = DEFAULT_BASE_URL,
+                 api_timeout: int = API_TIMEOUT,
+                 client_kwargs: dict = None,
+                 aclient_kwargs: dict = None) -> None:
         """ Initialize a LexyClient instance.
 
         Args:
             base_url (str, optional): Base URL for the Lexy API. Defaults to DEFAULT_BASE_URL.
+            api_timeout (int, optional): Timeout in seconds for API requests. Defaults to API_TIMEOUT.
+            client_kwargs (dict, optional): Keyword arguments for the synchronous API client.
+            aclient_kwargs (dict, optional): Keyword arguments for the asynchronous API client.
         """
         self.base_url = base_url
         self.api_timeout = api_timeout
-        self.aclient = httpx.AsyncClient(base_url=self.base_url, timeout=self.api_timeout)
-        self.client = httpx.Client(base_url=self.base_url, timeout=self.api_timeout)
+
+        client_kwargs = client_kwargs or {}
+        self._client = httpx.Client(base_url=self.base_url, timeout=self.api_timeout, **client_kwargs)
+        aclient_kwargs = aclient_kwargs or {}
+        self._aclient = httpx.AsyncClient(base_url=self.base_url, timeout=self.api_timeout, **aclient_kwargs)
 
         # binding
         self.binding = BindingClient(self)
@@ -92,6 +103,26 @@ class LexyClient:
         self.list_transformers = self.transformer.list_transformers
         self.update_transformer = self.transformer.update_transformer
         self.transform_document = self.transformer.transform_document
+
+    @property
+    def client(self) -> httpx.Client:
+        if self._client is None:
+            raise LexyClientError("Client is not set.")
+        return self._client
+
+    @client.setter
+    def client(self, value) -> None:
+        self._client = value
+
+    @property
+    def aclient(self) -> httpx.AsyncClient:
+        if self._aclient is None:
+            raise LexyClientError("AsyncClient is not set.")
+        return self._aclient
+
+    @aclient.setter
+    def aclient(self, value) -> None:
+        self._aclient = value
 
     async def __aenter__(self) -> "LexyClient":
         """ Async context manager entry point. """

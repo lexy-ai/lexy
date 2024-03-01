@@ -28,7 +28,7 @@ async def generate_tasks_for_document(doc: Document,
     Returns:
         list[dict]: A list of tasks that were created for the document
     """
-    logger.info(f"Generating tasks for document {doc.document_id}")
+    logger.debug(f"Generating tasks for document {doc.document_id}")
 
     # initiate list of tasks
     tasks = []
@@ -38,13 +38,13 @@ async def generate_tasks_for_document(doc: Document,
 
         # check if binding is enabled
         if binding.status != 'on':
-            logger.info(f"Skipping binding {binding} because it is not enabled (status: "
-                        f"{binding.status})")
+            logger.debug(f"Skipping binding {binding} because it is not enabled (status: "
+                         f"{binding.status})")
             continue
 
         # check if document matches binding filters
         if binding.filter and not binding.filter_obj.document_meets_conditions(doc):
-            logger.info(f"Skipping binding {binding} because document does not match filters")
+            logger.debug(f"Skipping binding {binding} because document does not match filters")
             continue
 
         # generate the task
@@ -63,8 +63,8 @@ async def generate_tasks_for_document(doc: Document,
 
         tasks.append({"task_id": task.id, "document_id": doc.document_id})
 
-    logger.info(f"Created {len(tasks)} tasks for document {doc.document_id}: "
-                f"[{', '.join([t['task_id'] for t in tasks])}]")
+    logger.debug(f"Created {len(tasks)} tasks for document {doc.document_id}: "
+                 f"[{', '.join([t['task_id'] for t in tasks])}]")
     return tasks
 
 

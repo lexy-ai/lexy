@@ -107,7 +107,7 @@ async def update_binding(binding_id: int,
                name="delete_binding",
                description="Delete a binding")
 async def delete_binding(binding_id: int,
-                         session: AsyncSession = Depends(get_session)):
+                         session: AsyncSession = Depends(get_session)) -> dict:
     result = await session.execute(select(Binding).where(Binding.binding_id ==
                                                          binding_id))
     binding = result.scalars().first()
@@ -115,4 +115,4 @@ async def delete_binding(binding_id: int,
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Binding not found")
     await session.delete(binding)
     await session.commit()
-    return {"Say": "Binding deleted!"}
+    return {"msg": "Binding deleted", "binding_id": binding_id}

@@ -228,7 +228,7 @@ async def bulk_delete_documents(collection_id: str, session: AsyncSession = Depe
     result = await session.execute(statement)
     deleted_count = result.rowcount
     await session.commit()
-    return {"Say": "Documents deleted!", "deleted_count": deleted_count}
+    return {"msg": "Documents deleted", "deleted_count": deleted_count}
 
 
 @router.get("/documents/{document_id}",
@@ -292,4 +292,4 @@ async def delete_document(document_id: str, session: AsyncSession = Depends(get_
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
     await session.delete(document)
     await session.commit()
-    return {"Say": "Document deleted!"}
+    return {"msg": "Document deleted", "document_id": document_id}

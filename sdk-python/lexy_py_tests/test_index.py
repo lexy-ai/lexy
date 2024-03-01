@@ -1,16 +1,12 @@
 import pytest
 
 import lexy_py.document.models
-from lexy_py.client import LexyClient
-
-
-lexy = LexyClient()
 
 
 class TestIndexClient:
 
-    def test_root(self):
-        response = lexy.get("/")
+    def test_root(self, lx_client):
+        response = lx_client.get("/")
         assert response.status_code == 200
         assert response.json() == {"Say": "Hello!"}
 
@@ -38,24 +34,24 @@ class TestIndexClient:
         #
         # # delete test index
         # response = lexy.index.delete_index("test_index")
-        # assert response == {"Say": "Index deleted!"}
+        # assert response == {"msg": "Index deleted"}
         pass
 
-    def test_list_indexes(self):
-        indexes = lexy.index.list_indexes()
+    def test_list_indexes(self, lx_client):
+        indexes = lx_client.list_indexes()
         assert len(indexes) > 0
 
     @pytest.mark.asyncio
-    async def test_alist_indexes(self):
-        indexes = await lexy.index.alist_indexes()
+    async def test_alist_indexes(self, lx_async_client):
+        indexes = await lx_async_client.index.alist_indexes()
         assert len(indexes) > 0
 
-    def test_query_index(self):
-        results = lexy.index.query_index(
+    def test_query_index(self, lx_client, celery_app, celery_worker):
+        results = lx_client.query_index(
             query_text="Test Query", index_id="default_text_embeddings", k=5
         )
         assert len(results) >= 0
-        results = lexy.index.query_index(
+        results = lx_client.query_index(
             query_text="Test Query", index_id="default_text_embeddings", k=5, return_document=True
         )
         assert len(results) >= 0
@@ -65,12 +61,12 @@ class TestIndexClient:
             assert result_doc.document_id == results[0].get('document_id')
 
     @pytest.mark.asyncio
-    async def test_aquery_index(self):
-        results = await lexy.index.aquery_index(
+    async def test_aquery_index(self, lx_async_client, celery_app, celery_worker):
+        results = await lx_async_client.index.aquery_index(
             query_text="Test Query", index_id="default_text_embeddings", k=5
         )
         assert len(results) >= 0
-        results = await lexy.index.aquery_index(
+        results = await lx_async_client.index.aquery_index(
             query_text="Test Query", index_id="default_text_embeddings", k=5, return_document=True
         )
         assert len(results) >= 0
@@ -79,11 +75,11 @@ class TestIndexClient:
             assert isinstance(result_doc, lexy_py.document.models.Document)
             assert result_doc.document_id == results[0].get('document_id')
 
-    def test_list_index_records(self):
-        records = lexy.index.list_index_records(index_id="default_text_embeddings")
+    def test_list_index_records(self, lx_client):
+        records = lx_client.index.list_index_records(index_id="default_text_embeddings")
         assert len(records) >= 0
 
     @pytest.mark.asyncio
-    async def test_alist_index_records(self):
-        records = await lexy.index.alist_index_records(index_id="default_text_embeddings")
+    async def test_alist_index_records(self, lx_async_client):
+        records = await lx_async_client.index.alist_index_records(index_id="default_text_embeddings")
         assert len(records) >= 0
