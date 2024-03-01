@@ -83,7 +83,7 @@ async def delete_transformer(transformer_id: str,
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformer not found")
     await session.delete(transformer)
     await session.commit()
-    return {"Say": "Transformer deleted!"}
+    return {"msg": "Transformer deleted", "transformer_id": transformer_id}
 
 
 @router.post("/transformers/{transformer_id}",

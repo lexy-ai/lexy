@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import asyncio
 import pytest
 
 from lexy_py.client import LexyClient
@@ -55,11 +56,13 @@ class TestDocumentClient:
 
         # delete test document
         response = lexy.document.delete_document(document_id=updated_document.document_id)
-        assert response == {"Say": "Document deleted!"}
+        assert response.get("msg") == "Document deleted"
+        assert response.get("document_id") == updated_document.document_id
 
         # delete remaining test documents
         response = lexy.document.delete_document(document_id=docs_added[1].document_id)
-        assert response == {"Say": "Document deleted!"}
+        assert response.get("msg") == "Document deleted"
+        assert response.get("document_id") == docs_added[1].document_id
 
         # verify that there are no documents in the test collection
         documents = lexy.document.list_documents(collection_id="tmp_collection")
@@ -104,7 +107,7 @@ class TestDocumentClient:
 
         # delete test documents
         response = lexy.document.bulk_delete_documents(collection_id="tmp_collection")
-        assert response.get("Say") == "Documents deleted!"
+        assert response.get("msg") == "Documents deleted"
         assert response.get("deleted_count") == 1
 
         # delete test collection
@@ -131,9 +134,61 @@ class TestDocumentClient:
 
         # delete test documents
         response = lexy.document.bulk_delete_documents(collection_id="tmp_collection")
-        assert response.get("Say") == "Documents deleted!"
+        assert response.get("msg") == "Documents deleted"
         assert response.get("deleted_count") == 3
 
         # delete test collection
         response = lexy.collection.delete_collection("tmp_collection")
         assert response.get("msg") == "Collection deleted"
+        assert response.get("collection_id") == "tmp_collection"
+
+    @pytest.mark.asyncio
+    async def test_add_documents(self, lx_client, celery_app, celery_worker):
+        doc_added = lx_client.add_documents([
+            {"content": "hello from lexy_py!"}
+        ])
+        print(f"{doc_added = }")
+        assert len(doc_added) == 1
+        assert doc_added[0].content == "hello from lexy_py!"
+        assert doc_added[0].document_id is not None
+        assert doc_added[0].created_at is not None
+        assert doc_added[0].updated_at is not None
+        assert doc_added[0].collection_id == "default"
+        assert doc_added[0].image is None
+
+        # wait for the celery worker to finish the task
+        await asyncio.sleep(1)
+
+        index_records = lx_client.index.list_index_records(
+            index_id="default_text_embeddings",
+            document_id=doc_added[0].document_id
+        )
+        assert len(index_records) == 1
+
+    @pytest.mark.asyncio
+    async def test_aadd_documents(self, lx_async_client, celery_app, celery_worker):
+        doc_added = await lx_async_client.document.aadd_documents([
+            {"content": "an async hello from lexy_py!"}
+        ])
+        print(f"{doc_added = }")
+        assert len(doc_added) == 1
+        assert doc_added[0].content == "an async hello from lexy_py!"
+        assert doc_added[0].document_id is not None
+        assert doc_added[0].created_at is not None
+        assert doc_added[0].updated_at is not None
+        assert doc_added[0].collection_id == "default"
+        # FIXME: Uncomment the following line after fixing the simultaneous clients issue.
+        #    The issue is caused by the following line when trying to access the image property:
+        #      r = self.client.get(f"/documents/{document_id}/urls", params={"expiration": expiration})
+        #    Need to figure out how to substitute get_document_urls with aget_document_urls.
+        #    (Should also figure out why a simple text document is producing an object url)
+        # assert doc_added[0].image is None
+
+        # wait for the celery worker to finish the task
+        await asyncio.sleep(1)
+
+        index_records = await lx_async_client.index.alist_index_records(
+            index_id="default_text_embeddings",
+            document_id=doc_added[0].document_id
+        )
+        assert len(index_records) == 1

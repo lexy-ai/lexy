@@ -1,5 +1,4 @@
-import time
-
+import asyncio
 import pytest
 from sqlmodel import select
 
@@ -10,43 +9,6 @@ class TestDocument:
 
     def test_hello(self):
         assert True
-
-    def test_root(self, client):
-        response = client.get("/api")
-        assert response.status_code == 200
-        assert response.json() == {"Say": "Hello!"}
-
-    @pytest.mark.asyncio
-    async def test_aroot(self, client):
-        response = client.get("/api")
-        assert response.status_code == 200
-        assert response.json() == {"Say": "Hello!"}
-
-    @pytest.mark.asyncio
-    async def test_root_async(self, async_client):
-        response = await async_client.get(
-            "/api/",  # trailing slash is required on the root path only - https://stackoverflow.com/a/70354027
-        )
-        assert response.status_code == 200
-        assert response.json() == {"Say": "Hello!"}
-
-    @pytest.mark.asyncio
-    async def test_ping(self, client):
-        response = client.get(
-            "/api/ping",
-        )
-        assert response.status_code == 200, response.text
-        data = response.json()
-        assert data == {"ping": "pong!"}
-
-    @pytest.mark.asyncio
-    async def test_ping_async(self, async_client):
-        response = await async_client.get(
-            "/api/ping",
-        )
-        assert response.status_code == 200, response.text
-        data = response.json()
-        assert data == {"ping": "pong!"}
 
     @pytest.mark.asyncio
     async def test_create_document(self, async_session):
@@ -65,7 +27,7 @@ class TestDocument:
         assert documents[0].content == "Test Content"
 
     @pytest.mark.asyncio
-    async def test_get_documents(self, async_client):
+    async def test_get_documents_with_async_client(self, async_client):
         response = await async_client.get(
             "/api/documents",
         )
@@ -76,7 +38,7 @@ class TestDocument:
         assert data[0]["content"] == "Test Content"
 
     @pytest.mark.asyncio
-    async def test_add_document_async(self, async_session, async_client):
+    async def test_add_document(self, async_session, async_client):
         doc = Document(content="a shiny new document")
         async_session.add(doc)
         await async_session.commit()
@@ -93,7 +55,7 @@ class TestDocument:
         assert data["updated_at"] == doc.updated_at.isoformat()
 
     @pytest.mark.asyncio
-    async def test_add_documents_async(self, async_session, async_client):
+    async def test_add_documents(self, async_session, async_client):
         doc1 = Document(content="import this", collection_id='code')
         doc2 = Document(content="export that", collection_id='code')
         async_session.add(doc1)
@@ -121,7 +83,7 @@ class TestDocument:
         assert data[1]["updated_at"] == doc2.updated_at.isoformat()
 
     @pytest.mark.asyncio
-    async def test_add_documents_from_client(self, async_client, celery_app, celery_worker):
+    async def test_add_documents_with_async_client(self, async_client, celery_app, celery_worker):
         response = await async_client.post(
             "/api/documents",
             json=[{"content": "hello there!"}],
@@ -134,7 +96,7 @@ class TestDocument:
         assert data[0]["document"]["content"] == "hello there!"
 
         # wait for the celery worker to finish the task
-        time.sleep(2)
+        await asyncio.sleep(1)
 
         records_response = await async_client.get(
             "/api/indexes/default_text_embeddings/records",

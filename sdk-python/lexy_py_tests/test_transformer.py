@@ -38,7 +38,8 @@ class TestTransformerClient:
 
         # delete test transformer
         response = lexy.transformer.delete_transformer("test_transformer")
-        assert response == {"Say": "Transformer deleted!"}
+        assert response.get("msg") == "Transformer deleted"
+        assert response.get("transformer_id") == "test_transformer"
 
     def test_list_transformers(self):
         transformers = lexy.transformer.list_transformers()

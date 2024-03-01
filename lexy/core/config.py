@@ -128,7 +128,7 @@ class TestAppSettings(AppSettings):
 
     # Database settings
     POSTGRES_DB: str = Field(default="lexy_tests", env="POSTGRES_TEST_DB")
-    DB_ECHO_LOG: bool = True
+    DB_ECHO_LOG: bool = False
 
     # User settings
     # without `env=` argument, this will revert to the environment value of FIRST_SUPERUSER_EMAIL

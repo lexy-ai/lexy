@@ -38,7 +38,7 @@ class TestIndexClient:
         #
         # # delete test index
         # response = lexy.index.delete_index("test_index")
-        # assert response == {"Say": "Index deleted!"}
+        # assert response == {"msg": "Index deleted"}
         pass
 
     def test_list_indexes(self):
