@@ -1,6 +1,7 @@
 import pytest
 
 import lexy_py.document.models
+from lexy_py.exceptions import LexyAPIError, NotFoundError
 
 
 class TestIndexClient:
@@ -114,3 +115,26 @@ class TestIndexClient:
     async def test_alist_index_records(self, lx_async_client):
         records = await lx_async_client.index.alist_index_records(index_id="default_text_embeddings")
         assert len(records) >= 0
+
+    def test_query_nonexistent_index_field(self, lx_client):
+        with pytest.raises(NotFoundError) as exc_info:
+            lx_client.index.query_index("this should fail!", query_field="not_a_real_field")
+        assert exc_info.value.response_data["status_code"] == 404, exc_info.value.response_data
+        assert exc_info.value.response.status_code == 404
+        assert exc_info.value.response.text == ('{"detail":"Field \'not_a_real_field\' not found in index '
+                                                '\'default_text_embeddings\'"}')
+
+    def test_query_return_nonexistent_index_field(self, lx_client, celery_app, celery_worker):
+        with pytest.raises(LexyAPIError) as exc_info:
+            lx_client.index.query_index("this should also fail!", return_fields=["not_an_index_field"])
+        assert exc_info.value.response_data["status_code"] == 400, exc_info.value.response_data
+        assert exc_info.value.response.status_code == 400
+        assert exc_info.value.response.text == ('{"detail":"Field \'not_an_index_field\' not found in index '
+                                                '\'default_text_embeddings\'"}')
+
+    def test_query_return_nonexistent_document_field(self, lx_client, celery_app, celery_worker):
+        with pytest.raises(LexyAPIError) as exc_info:
+            lx_client.index.query_index("this one too!", return_fields=["document.not_a_document_field"])
+        assert exc_info.value.response_data["status_code"] == 400, exc_info.value.response_data
+        assert exc_info.value.response.status_code == 400
+        assert exc_info.value.response.text == '{"detail":"Field \'not_a_document_field\' not found in document"}'

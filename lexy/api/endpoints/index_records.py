@@ -111,8 +111,16 @@ async def query_records(query_text: str = Form(None),
         for rf in return_fields:
             if rf.startswith("document."):
                 attribute_name = rf.split(".")[1]
+                # if document field doesn't exist, return an error
+                if attribute_name not in document_tbl.__table__.columns.keys():
+                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                        detail=f"Field '{attribute_name}' not found in document")
                 return_index_fields.append(getattr(document_tbl, attribute_name).label(rf))
             else:
+                # if index field doesn't exist, return an error
+                if rf not in index_tbl.c.keys():
+                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                        detail=f"Field '{rf}' not found in index '{index_id}'")
                 return_index_fields.append(index_tbl.c[rf])
     else:
         return_index_fields = [index_tbl.c[k] for k, v in index.index_fields.items() if v["type"] != "embedding"]
