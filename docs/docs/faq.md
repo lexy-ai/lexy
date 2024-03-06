@@ -31,7 +31,7 @@ You should add environment variables **before** building your docker containers.
 containers, you can run the following to rebuild the server and worker containers. 
 
 ```bash
-docker-compose up --build -d --no-deps lexyserver lexyworker
+make update-dev-containers
 ```
 
 Verify that your new environment variable has been added to the server and worker containers.

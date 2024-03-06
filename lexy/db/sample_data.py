@@ -26,9 +26,24 @@ default_data = {
             "description": "Image embeddings using \"openai/clip-vit-base-patch32\""
         },
         {
+            "transformer_id": "text.embeddings.openai",
+            "path": "lexy.transformers.openai.text_embeddings",
+            "description": "Text embeddings using the OpenAI API"
+        },
+        {
             "transformer_id": "text.embeddings.openai-ada-002",
-            "path": "lexy.transformers.openai.text_embeddings_openai",
+            "path": "lexy.transformers.openai.text_embeddings_ada_002",
             "description": "Text embeddings using OpenAI's \"text-embedding-ada-002\" model"
+        },
+        {
+            "transformer_id": "text.embeddings.openai-3-small",
+            "path": "lexy.transformers.openai.text_embeddings_3_small",
+            "description": "Text embeddings using OpenAI's \"text-embedding-3-small\" model"
+        },
+        {
+            "transformer_id": "text.embeddings.openai-3-large",
+            "path": "lexy.transformers.openai.text_embeddings_3_large",
+            "description": "Text embeddings using OpenAI's \"text-embedding-3-large\" model"
         },
         {
             "transformer_id": "text.counter.word_counter",

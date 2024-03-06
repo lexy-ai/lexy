@@ -63,7 +63,15 @@ class TestCollectionClient:
         assert collection.collection_id == "default"
         assert isinstance(collection.client, LexyClient)
 
-    def test_collection_client(self):
+
+class TestCollectionModel:
+
+    def test_collection_model(self):
+        collection = Collection(collection_id="test_collection", description="Test Collection")
+        assert collection.collection_id == "test_collection"
+        assert collection.description == "Test Collection"
+
+    def test_collection_without_client(self):
         collection_without_a_client = Collection(collection_id="no_client", description="No client")
         with pytest.raises(ValueError) as exc_info:
             collection_without_a_client.list_documents()

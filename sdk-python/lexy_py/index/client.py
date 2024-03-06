@@ -279,7 +279,8 @@ class IndexClient:
             index_id (str): The ID of the index to query. Defaults to "default_text_embeddings".
             query_field (str, optional): The field to query. Defaults to "embedding".
             k (int, optional): The number of records to return. Defaults to 5.
-            return_fields (list[str], optional): The fields to return. Defaults to None, which returns all fields.
+            return_fields (list[str], optional): The fields to return. Defaults to None, which returns all fields. To
+                return fields from the linked document, use "document.<field_name>".
             return_document (bool, optional): Whether to return the document object. Defaults to False.
             embedding_model (str, optional): The name of the embedding model to use. Defaults to None, which uses the
                 embedding model associated with `index_id.query_field`.
@@ -291,6 +292,8 @@ class IndexClient:
             >>> from lexy_py import LexyClient
             >>> lexy = LexyClient()
             >>> lexy.query_index(query_text="Test Query")
+
+            >>> lexy.query_index(query_text="Test Query", return_fields=["my_index_field", "document.content"])
 
             >>> lexy.query_index(query_image="test_image.jpg", index_id="my_image_index")
 
@@ -333,7 +336,8 @@ class IndexClient:
             index_id (str): The ID of the index to query. Defaults to "default_text_embeddings".
             query_field (str, optional): The field to query. Defaults to "embedding".
             k (int, optional): The number of records to return. Defaults to 5.
-            return_fields (list[str], optional): The fields to return. Defaults to None, which returns all fields.
+            return_fields (list[str], optional): The fields to return. Defaults to None, which returns all fields. To
+                return fields from the linked document, use "document.<field_name>".
             return_document (bool, optional): Whether to return the document object. Defaults to False.
             embedding_model (str, optional): The name of the embedding model to use. Defaults to None, which uses the
                 embedding model associated with `index_id.query_field`.

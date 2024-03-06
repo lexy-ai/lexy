@@ -22,7 +22,6 @@ from lexy_tests.conftest import (
     test_settings,
     use_celery_app_trap,
 )
-
 from lexy_py import LexyClient
 
 

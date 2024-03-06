@@ -4,6 +4,7 @@ import asyncio
 import pytest
 
 from lexy_py.exceptions import LexyAPIError
+from lexy_py.document.models import Document
 
 
 class TestDocumentClient:
@@ -165,7 +166,6 @@ class TestDocumentClient:
         #    The issue is caused by the following line when trying to access the image property:
         #      r = self.client.get(f"/documents/{document_id}/urls", params={"expiration": expiration})
         #    Need to figure out how to substitute get_document_urls with aget_document_urls.
-        #    (Should also figure out why a simple text document is producing an object url)
         # assert doc_added[0].image is None
 
         # wait for the celery worker to finish the task
@@ -185,3 +185,26 @@ class TestDocumentClient:
     async def test_alist_documents(self, lx_async_client):
         documents = await lx_async_client.document.alist_documents(collection_id='default')
         assert len(documents) > 0
+
+
+class TestDocumentModel:
+
+    def test_document_model(self):
+        doc = Document(content="Test Document Content")
+        assert doc.content == "Test Document Content"
+        assert doc.meta == {}
+        assert doc.created_at is None
+        assert doc.updated_at is None
+        assert doc.collection_id is None
+        assert doc.document_id is None
+        assert repr(doc) == '<Document("Test Document Content")>'
+
+        assert doc._client is None
+        assert doc._image is None
+        assert doc._urls is None
+
+        # accessing object_url property without a client raises a ValueError
+        with pytest.raises(ValueError) as exc_info:
+            _ = doc.object_url
+        assert isinstance(exc_info.value, ValueError)
+        assert str(exc_info.value) == "API client has not been set."
