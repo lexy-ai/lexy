@@ -16,7 +16,7 @@ class BindingClient:
     """
     This class is used to interact with the Lexy Bindings API.
 
-    Properties:
+    Attributes:
         aclient (httpx.AsyncClient): Asynchronous API client.
         client (httpx.Client): Synchronous API client.
     """

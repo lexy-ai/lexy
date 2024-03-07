@@ -6,6 +6,11 @@ Let's go through a basic implementation of Retrieval Augmented Generation (RAG) 
 
 In this example, we'll use Lexy to store and retrieve documents describing characters from the TV show House of the Dragon. We'll then use those documents to construct a prompt that GPT-4 can use to answer questions about the characters.
 
+!!! example "Notebook available"
+    You can find the complete code for this example in the [Lexy GitHub repository](https://github.com/lexy-ai/lexy). 
+    Follow along with this tutorial using the notebook [`examples/basic_rag.ipynb`](https://github.com/lexy-ai/lexy/blob/main/examples/basic_rag.ipynb).
+
+
 ### OpenAI API Key
 
 Note that this example requires an OpenAI API key. You can add your API key as an environment variable using the `.env` file in the root directory of the Lexy repository. See [How do I add a new environment variable](../faq.md#how-do-i-add-a-new-environment-variable) on the [FAQ page](../faq.md) for more details.
@@ -22,7 +27,7 @@ make update-dev-containers
 
 ## Sample data
 
-Our data is in the `sample_data/documents` directory. Let's import it and take a look at the first few lines. 
+Our data is in the [`sample_data/documents`](https://github.com/lexy-ai/lexy/tree/main/sample_data/documents) directory of the Lexy repo. Let's import it and take a look at the first few lines. 
 
 
 ```python
@@ -43,7 +48,10 @@ lines[:3]
 
 ## Add documents to Lexy
 
-Now let's instantiate a Lexy client and create a new collection for our documents.
+!!! tip
+    This tutorial assumes you have a basic understanding of Lexy and its core concepts. If you're new to Lexy, we recommend you start with the [Getting Started](index.md) tutorial to learn more about **Collections**, **Documents**, **Transformers**, **Indexes**, and **Bindings**.
+
+Let's instantiate a Lexy client and create a new collection for our documents.
 
 
 ```python
@@ -66,7 +74,7 @@ collection
 ```
 
 
-We can add documents to our new collection using the `add_documents` method.
+We can add documents to our new collection using the [`Collection.add_documents`](../reference/lexy_py/collection.md#lexy_py.collection.models.Collection.add_documents) method.
 
 
 ```python
@@ -119,15 +127,18 @@ index = lexy.create_index(
 )
 ```
 
-To embed each document and store the result in our index, we'll create a Binding, which connects our Collection and Index using a Transformer. The `transformers` property shows a list of available Transformers. In this example, we'll use `text.embeddings.openai-3-small`.
+To embed each document and store the result in our index, we'll create a 
+[`Binding`](../reference/lexy_py/binding.md#lexy_py.binding.models.Binding) which connects our "**house_of_the_dragon**"
+collection to our "**hotd_embeddings**" index using a 
+[`Transformer`](../reference/lexy_py/transformer.md#lexy_py.transformer.models.Transformer). The 
+[`LexyClient.transformers`](../reference/lexy_py/client.md#lexy_py.client.LexyClient.transformers) property shows a 
+list of available transformers.
 
 
 ```python
 # list of available transformers
 lexy.transformers
 ```
-
-
 
 ```{ .text .no-copy .result #code-output }
 [<Transformer('image.embeddings.clip', description='Embed images using 'openai/clip-vit-base-patch32'.')>,
@@ -138,7 +149,7 @@ lexy.transformers
  <Transformer('text.embeddings.openai-ada-002', description='OpenAI text embeddings using model text-embedding-ada-002')>]
 ```
 
-
+For this example, we'll use `text.embeddings.openai-3-small`. Let's create our binding.
 
 ```python
 # create a binding
@@ -150,43 +161,83 @@ binding = lexy.create_binding(
 binding
 ```
 
-
-
 ```{ .text .no-copy .result #code-output }
 <Binding(id=5, status=ON, collection='house_of_the_dragon', transformer='text.embeddings.openai-3-small', index='hotd_embeddings')>
 ```
 
+Our binding was created successfully and is now active (i.e., `binding.status = ON`). Any new documents added to our 
+collection will automatically be embedded and added to our index. The diagram below shows the relationship between our 
+collection, transformer, and index.
+
+<div style="text-align: center;">
+
+```mermaid
+flowchart LR
+    collection["Collection
+      
+    &quot;house_of_the_dragon&quot;"] 
+    --> 
+    transformer["Transformer 
+    
+    &quot;text.embeddings.openai-3-small&quot;"]
+    -->
+    index["Index
+    
+    &quot;hotd_embeddings&quot;"];   
+```
+
+</div>
+
 
 ## Retrieve documents
 
-Now we can query our index using similarity search to retrieve the most relevant documents for a given query. Let's test this out by retrieving the 2 most relevant documents for the query "Rhaenyra Targaryen".
+Now that our documents are embedded and those embeddings are stored in our index, we can use the 
+[`Index.query`](../reference/lexy_py/indexes.md#lexy_py.index.models.Index.query) method to retrieve the most relevant 
+documents for a given query. Specifically, the method returns the `k` documents that are most similar to our query 
+string, as measured by **cosine similarity**. 
+
+Let's test this out by retrieving the 2 most relevant documents for the query "parents in Westeros". 
 
 
 ```python
-index.query("Rhaenyra Targaryen", k=2)
+index.query(query_text="parents in Westeros", k=2)
 ```
-
-
 
 ```{ .text .no-copy .result #code-output }
-[{'document_id': '82cf6758-049a-49c9-a4b2-155f5bf3635e',
+[{'document_id': 'aaed8d7f-dd68-41dc-86f8-57b8c7b9a2d4',
   'custom_id': None,
   'meta': {},
-  'index_record_id': '78f3b6b6-edde-49d9-9349-869506f35c21',
-  'distance': 0.7504559755325317,
-  'document.content': 'Rhaenyra Targaryen is the eldest child of King Viserys I Targaryen and is considered the heir to the Iron Throne. She is a dragonrider whose mount is Syrax.'},
- {'document_id': 'f12a728a-4304-46c5-bbe1-6d517069cb67',
+  'index_record_id': '7ee2e437-ed91-4338-8d94-b6d20a7c7f17',
+  'distance': 1.1038025617599487,
+  'document.content': 'Viserys I Targaryen is the fifth king of the Targaryen dynasty to rule the Seven Kingdoms. He is the father of Rhaenyra Targaryen and Aegon II Targaryen. His mount is the dragon Balerion.'},
+ {'document_id': '82eb4376-13cc-4533-bf5b-46c252be53ae',
   'custom_id': None,
   'meta': {},
-  'index_record_id': '1323ce09-64d6-42ee-8221-366319393e71',
-  'distance': 0.8146829605102539,
-  'document.content': 'Rhaenys Targaryen, also known as the Queen Who Never Was, is a dragonrider and the wife of Corlys Velaryon. She is a claimant to the Iron Throne and her mount is Meleys.'}]
+  'index_record_id': 'cc796fdb-7d8a-4e9e-888d-d85f7211f343',
+  'distance': 1.1070433855056763,
+  'document.content': 'Alicent Hightower is the Queen of the Seven Kingdoms and the mother of Aegon II Targaryen, the second-born child of Viserys I and heir to the throne after Rhaenyra. She is the wife of Viserys I Targaryen.'}]
 ```
 
+
+!!! info
+    The `distance` field in the results shows the cosine distance between that document and the query text. The lower 
+    the distance, the more similar the document is to the query text.
+
+The documents returned by our query are profiles of Viserys Targaryen and Alicent Hightower, whose profiles specifically 
+describe them as parents. Notice that none of the documents returned contain any of the exact words in the phrase 
+"parents in Westeros". Yet the embedding model is able to identify these documents as being semantically similar to the 
+text in our query, most likely because they contain the phrases "_...the father of..._" and "_...the mother of..._".
+
+??? note "Note on cosine similarity"
+    If you find yourself thinking that cosine similarity doesn't necessarily mean the documents are the most relevant,
+    you're absolutely right! Cosine similarity is just one way to measure the similarity between two vectors. There are 
+    many other ways to measure document relevance, and the best approach often depends on the specific use case.
+    In future tutorials, we'll explore more advanced methods, including those that combine multiple similarity metrics.
+    
 
 ## Context for GPT-4
 
-These documents may not be super useful on their own, but we can provide them as context to a language model in order to generate a more informative response. Let's construct a prompt for GPT-4 to answer questions about House of the Dragon.
+The documents we've retrieved may not be super useful on their own, but we can provide them as context to a language model in order to generate a more informative response. Let's construct a prompt for GPT-4 to answer questions about House of the Dragon.
 
 ### Construct a prompt
 
@@ -261,11 +312,20 @@ oai_response = openai_client.chat.completions.create(
 print(oai_response.choices[0].message.content)
 ```
 
-```{ .text .no-copy .result #code-output }
-The dragon ridden by Daemon Targaryen is Caraxes. Caraxes, also known as the Blood Wyrm, is known for his red scales and fierce temperament. [doc_id: 8baa2a34-10f7-48e5-b053-1c6b8317af94][doc_id: a01b386d-12ad-4edb-9784-c5e0ee80d1fb]
+```{ .text .no-copy .result #code-output-textwrap }
+The dragon ridden by Daemon Targaryen is Caraxes. Caraxes, also known as the Blood Wyrm, is known for his red scales and fierce temperament. 
+[doc_id: 8baa2a34-10f7-48e5-b053-1c6b8317af94]
+[doc_id: a01b386d-12ad-4edb-9784-c5e0ee80d1fb]
 ```
 
+
 We can see that GPT-4 has used the context we provided to answer the question, and has specifically cited the first two documents in our search results.
+
+!!! note "Note on GPT-4 completions"
+    Keep in mind that the response from GPT-4 can vary widely, and the responses shown here may differ from the ones 
+    you'll get when running the same code. In particular, the response will often list document references in 
+    inconsistent ways. If you need a more structured response, you may want to try OpenAI's 
+    [JSON mode](https://platform.openai.com/docs/guides/text-generation/json-mode).
 
 Let's put everything together into two functions: `construct_prompt` will construct a prompt given a user question, and `chat_completion` will prompt a completion from GPT-4.
 
@@ -297,6 +357,7 @@ def chat_completion(message: str,
     )
 ```
 
+
 Now let's try asking GPT-4 some more questions.
 
 
@@ -306,8 +367,9 @@ oai_response = chat_completion(message=construct_prompt(q))
 print(oai_response.choices[0].message.content)
 ```
 
-```{ .text .no-copy .result #code-output }
-The blue dragon is Dreamfyre, ridden by Helaena Targaryen. She is known for her pale blue scales and graceful flight. [doc_id: 8aca8431-c146-4db2-a4d3-d57673fb0f7c]
+```{ .text .no-copy .result #code-output-textwrap }
+The blue dragon is Dreamfyre, ridden by Helaena Targaryen. She is known for her pale blue scales and graceful flight. 
+[doc_id: 8aca8431-c146-4db2-a4d3-d57673fb0f7c]
 ```
 
 
@@ -317,7 +379,7 @@ oai_response = chat_completion(message=construct_prompt(q))
 print(oai_response.choices[0].message.content)
 ```
 
-```{ .text .no-copy .result #code-output }
+```{ .text .no-copy .result #code-output-textwrap }
 Vhagar is ridden by Visenya Targaryen, Laena Velaryon, and Aemond Targaryen.
 [doc_id: dc9e31bb-dfe7-429f-9275-9165c1b60c01]
 [doc_id: d319aced-f363-4287-b034-260c6f5e5c70]
@@ -331,8 +393,9 @@ oai_response = chat_completion(message=construct_prompt(q))
 print(oai_response.choices[0].message.content)
 ```
 
-```{ .text .no-copy .result #code-output }
-The second son of King Viserys I Targaryen is Aemond Targaryen. [doc_id: d319aced-f363-4287-b034-260c6f5e5c70]
+```{ .text .no-copy .result #code-output-textwrap }
+The second son of King Viserys I Targaryen is Aemond Targaryen. 
+[doc_id: d319aced-f363-4287-b034-260c6f5e5c70]
 ```
 
 
@@ -342,15 +405,20 @@ oai_response = chat_completion(message=construct_prompt(q))
 print(oai_response.choices[0].message.content)
 ```
 
-```{ .text .no-copy .result #code-output }
-The heir to the throne after King Viserys I Targaryen is Rhaenyra Targaryen, who is his eldest child. Following Rhaenyra, the heir is Daemon Targaryen, the king's younger brother. Aegon II Targaryen, the second-born child of Viserys I, is also a claimant to the throne. [doc_id: 82cf6758-049a-49c9-a4b2-155f5bf3635e] [doc_id: 8baa2a34-10f7-48e5-b053-1c6b8317af94] [doc_id: a2418a31-870e-4876-b5b2-96eaf61b0f69]
+```{ .text .no-copy .result #code-output-textwrap }
+The heir to the throne after King Viserys I Targaryen is Rhaenyra Targaryen, who is his eldest child. Following Rhaenyra, the heir is Daemon Targaryen, the king's younger brother. Aegon II Targaryen, the second-born child of Viserys I, is also a claimant to the throne. 
+[doc_id: 82cf6758-049a-49c9-a4b2-155f5bf3635e] 
+[doc_id: 8baa2a34-10f7-48e5-b053-1c6b8317af94] 
+[doc_id: a2418a31-870e-4876-b5b2-96eaf61b0f69]
 ```
 
 ## Using metadata as context
 
-By now, you're probably thinking "Wow, is there anything Lexy *can't* do?". Well the answer is NO; Lexy can do literally everything! To prove it, let's look at an example where we might want to use document metadata as context for our prompts.
+We often want to use additional metadata in our prompts to provide even more context or useful instructions to our 
+language model. Let's look at an example where we might want to include document metadata when constructing our 
+prompts.
 
-Let's ask which is the largest of the Targaryen dragons. We get the correct answer, Balerion.  
+First, let's ask "which is the largest Targaryen dragon?". We get the correct answer, Balerion.  
 
 
 ```python
@@ -359,13 +427,19 @@ oai_response = chat_completion(message=construct_prompt(q))
 print(oai_response.choices[0].message.content)
 ```
 
-```{ .text .no-copy .result #code-output }
-The largest Targaryen dragon was Balerion, also known as the Black Dread. He was ridden by Aegon the Conqueror and King Viserys I Targaryen. [doc_id: 9271dfb9-c8f2-48b4-9124-e54c0e0bf725]
+```{ .text .no-copy .result #code-output-textwrap }
+The largest Targaryen dragon was Balerion, also known as the Black Dread. He was ridden by Aegon the Conqueror and King Viserys I Targaryen. 
+[doc_id: 9271dfb9-c8f2-48b4-9124-e54c0e0bf725]
 ```
 
-But what if we want to add new documents to our collection, and those documents contain new or contradictory information? In that case, we'll want to include additional metadata in our prompt which the language model can use to arrive at an answer. 
 
-First, let's add a new document to our collection. Because the binding we created earlier has status set to ON, our new document will automatically be embedded and added to our index. This document will be a more recent document, as measured by the `updated_at` field.
+But what if we want to add new documents to our collection, and those documents contain new or contradictory 
+information? In that case, we'll want to include additional metadata in our prompt which the language model can use when 
+deriving an answer. 
+
+Let's add a new document to our collection which describes a new dragon that is larger than Balerion. Because the 
+binding we created earlier has status set to ON, our new document will automatically be embedded and added to our index. 
+This document will be a more recent document, as measured by the value of its `updated_at` field.
 
 
 ```python
@@ -374,8 +448,6 @@ collection.add_documents([
     {"content": "Lexy was by far the largest of the Targaryen dragons, and was ridden by AGI the Conqueror."}
 ])
 ```
-
-
 
 ```{ .text .no-copy .result .wrap #code-output }
 [<Document("Lexy was by far the largest of the Targaryen dragons, and was ridden by AGI the Conqueror.")>]
@@ -409,6 +481,7 @@ Context:
 [doc_id: a2418a31-870e-4876-b5b2-96eaf61b0f69, updated_at: 2024-03-05T22:30:05.793991+00:00] Aegon II Targaryen is the second-born child of Viserys I Targaryen and Alicent Hightower. He is a claimant to the Iron Throne and a dragonrider whose mount is Sunfyre.
 ```
 
+
 We can see that our prompt now includes the `updated_at` field for each document. Now let's update our system prompt to tell GPT-4 to use the latest document when faced with conflicting information.
 
 
@@ -420,6 +493,7 @@ new_system_prompt = (
     "recent document as determined by the `updated_at` field."
 )
 ```
+
 
 Now let's ask GPT-4 again.
 
@@ -437,15 +511,19 @@ oai_response = chat_completion(
 print(oai_response.choices[0].message.content)
 ```
 
-```{ .text .no-copy .result #code-output }
-The largest Targaryen dragon is Lexy, as indicated in the most recent document. (Source: doc_id: c5dd2ec7-fbb8-415e-bc6b-2510e3354e74, updated_at: 2024-03-06T04:21:26.292323+00:00)
+```{ .text .no-copy .result #code-output-textwrap }
+The largest Targaryen dragon is Lexy, as indicated in the most recent document. 
+(Source: doc_id: c5dd2ec7-fbb8-415e-bc6b-2510e3354e74, updated_at: 2024-03-06T04:21:26.292323+00:00)
 ```
 
 ## Next steps
 
-In this tutorial we learned how to implement basic RAG using Lexy. Specifically, we've seen how to use Lexy to store and retrieve documents, and how to include those documents and their metadata as context for a language model.
+In this tutorial we learned how to implement Retrieval Augmented Generation (RAG) using Lexy. Specifically, we've seen 
+how to use Lexy to store and retrieve documents, and how to include those documents and their metadata as context for a 
+language model (in this case, GPT-4).
 
-While this is a simple example, the basic principles are powerful. As we'll see, they can be applied to build far more complex AI applications. In the coming examples you'll learn:
+While this is a simple example, the basic principles are powerful. As we'll see, they can be applied to build far more 
+complex AI applications. In the coming examples you'll learn:
 
 - How to parse and store custom metadata along with your documents.
 - How to use Lexy to summarize documents, and then leverage those summaries to retreive the most relevant documents.
