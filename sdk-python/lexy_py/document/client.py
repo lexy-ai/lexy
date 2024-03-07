@@ -20,7 +20,7 @@ class DocumentClient:
     """
     This class is used to interact with the Lexy Document API.
 
-    Properties:
+    Attributes:
         aclient (httpx.AsyncClient): Asynchronous API client.
         client (httpx.Client): Synchronous API client.
     """
