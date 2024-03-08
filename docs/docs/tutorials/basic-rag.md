@@ -13,7 +13,9 @@ In this example, we'll use Lexy to store and retrieve documents describing chara
 
 ### OpenAI API Key
 
-Note that this example requires an OpenAI API key. You can add your API key as an environment variable using the `.env` file in the root directory of the Lexy repository. See [How do I add a new environment variable](../faq.md#how-do-i-add-a-new-environment-variable) on the [FAQ page](../faq.md) for more details.
+Note that this example requires an OpenAI API key. You can add your API key as an environment variable using the `.env` 
+file in the root directory of the Lexy repository. See [How do I add a new environment variable](../faq.md#how-do-i-add-a-new-environment-variable) on the 
+[FAQ page](../faq.md) for more details.
 
 ```shell title=".env"
 OPENAI_API_KEY=your_secret_api_key
@@ -23,6 +25,20 @@ Remember to rebuild your containers after adding the environment variable. Simpl
 
 ```shell
 make update-dev-containers
+```
+
+Then run the following in your notebook to load the environment variables.
+
+```python
+import os
+from dotenv import load_dotenv
+
+# load environment variables, including OPENAI_API_KEY
+load_dotenv()
+
+# alternatively, you can set the environment variable directly
+if "OPENAI_API_KEY" not in os.environ:
+    os.environ["OPENAI_API_KEY"] = "your_secret_api_key"
 ```
 
 ## Sample data
@@ -58,7 +74,10 @@ Let's instantiate a Lexy client and create a new collection for our documents.
 from lexy_py import LexyClient
 
 lexy = LexyClient()
+```
 
+
+```python
 # create a new collection
 collection = lexy.create_collection(
     collection_id="house_of_the_dragon", 
@@ -66,8 +85,6 @@ collection = lexy.create_collection(
 )
 collection
 ```
-
-
 
 ```{ .text .no-copy .result #code-output }
 <Collection('house_of_the_dragon', description='House of the Dragon characters')>
@@ -82,8 +99,6 @@ collection.add_documents([
     {"content": line} for line in lines
 ])
 ```
-
-
 
 ```{ .text .no-copy .result #code-output }
 [<Document("Viserys I Targaryen is the fifth king of the Targaryen dynasty to rule the Seven Kingdoms. He is...")>,
@@ -513,7 +528,7 @@ print(oai_response.choices[0].message.content)
 
 ```{ .text .no-copy .result #code-output-textwrap }
 The largest Targaryen dragon is Lexy, as indicated in the most recent document. 
-(Source: doc_id: c5dd2ec7-fbb8-415e-bc6b-2510e3354e74, updated_at: 2024-03-06T04:21:26.292323+00:00)
+[doc_id: c5dd2ec7-fbb8-415e-bc6b-2510e3354e74, updated_at: 2024-03-06T04:21:26.292323+00:00]
 ```
 
 ## Next steps
@@ -526,6 +541,6 @@ While this is a simple example, the basic principles are powerful. As we'll see,
 complex AI applications. In the coming examples you'll learn:
 
 - How to parse and store custom metadata along with your documents.
-- How to use Lexy to summarize documents, and then leverage those summaries to retreive the most relevant documents.
+- How to use Lexy to summarize documents, and then leverage those summaries to retrieve the most relevant documents.
 - How to use document filters and custom Transformers to build flexible pipelines for your data.
 - How to ingest and process file-based documents (including PDFs and images) for use in your AI applications.
