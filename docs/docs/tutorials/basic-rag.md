@@ -2,18 +2,29 @@
 
 ## Introduction
 
-Let's go through a basic implementation of Retrieval Augmented Generation (RAG) using Lexy. RAG is the process of using a retriever to find relevant documents to include in the prompt as context for a language model. 
+Let's go through a basic implementation of Retrieval Augmented Generation (RAG) using Lexy. RAG is the process of using 
+a retriever to find relevant documents to include in the prompt as context for a language model. 
 
-In this example, we'll use Lexy to store and retrieve documents describing characters from the TV show House of the Dragon. We'll then use those documents to construct a prompt that GPT-4 can use to answer questions about the characters.
+In this example, we'll use Lexy to store and retrieve documents describing characters from the TV show House of the 
+Dragon. We'll then use those documents to construct a prompt that GPT-4 can use to answer questions about the 
+characters.
 
 !!! example "Notebook available"
     You can find the complete code for this example in the [Lexy GitHub repository](https://github.com/lexy-ai/lexy). 
     Follow along with this tutorial using the notebook [`examples/basic_rag.ipynb`](https://github.com/lexy-ai/lexy/blob/main/examples/basic_rag.ipynb).
 
+This tutorial is a **simplified introduction** to RAG, and not a real-world application. This is done intentionally to 
+teach the basic concept of RAG and how it is implemented. We'll point out some of these simplifications as we go along, 
+and discuss them in more detail in the section [Real-world considerations](#Real-world-considerations). We'll also 
+provide links to additional tutorials which cover the complexities typically encountered in real-world applications.
 
 ### OpenAI API Key
 
-Note that this example requires an OpenAI API key. You can add your API key as an environment variable using the `.env` 
+This example requires an OpenAI API key in order to (1) generate embeddings, and (2) interact with 
+GPT-4. Although this example uses OpenAI, you can use Lexy with any language model and any embedding model, including 
+free, open-source models such as `SentenceTransformer`.
+
+You can add your API key as an environment variable using the `.env` 
 file in the root directory of the Lexy repository. See [How do I add a new environment variable](../faq.md#how-do-i-add-a-new-environment-variable) on the 
 [FAQ page](../faq.md) for more details.
 
@@ -21,7 +32,8 @@ file in the root directory of the Lexy repository. See [How do I add a new envir
 OPENAI_API_KEY=your_secret_api_key
 ```
 
-Remember to rebuild your containers after adding the environment variable. Simply run the following on the command line.
+Remember to rebuild your containers after adding the environment variable (otherwise your container won't see the newly 
+added variable). Simply run the following on the command line:
 
 ```shell
 make update-dev-containers
@@ -52,8 +64,6 @@ with open("../sample_data/documents/hotd.txt") as f:
     
 lines[:3]
 ```
-
-
 
 ```{ .text .no-copy .result #code-output }
 ['Viserys I Targaryen is the fifth king of the Targaryen dynasty to rule the Seven Kingdoms. He is the father of Rhaenyra Targaryen and Aegon II Targaryen. His mount is the dragon Balerion.',
@@ -337,8 +347,8 @@ The dragon ridden by Daemon Targaryen is Caraxes. Caraxes, also known as the Blo
 We can see that GPT-4 has used the context we provided to answer the question, and has specifically cited the first two documents in our search results.
 
 !!! note "Note on GPT-4 completions"
-    Keep in mind that the response from GPT-4 can vary widely, and the responses shown here may differ from the ones 
-    you'll get when running the same code. In particular, the response will often list document references in 
+    Keep in mind that the response from GPT-4 varies, and the responses shown here may differ from the ones 
+    you'll see when running the same code. In particular, the response will often list document references in 
     inconsistent ways. If you need a more structured response, you may want to try OpenAI's 
     [JSON mode](https://platform.openai.com/docs/guides/text-generation/json-mode).
 
@@ -531,16 +541,55 @@ The largest Targaryen dragon is Lexy, as indicated in the most recent document.
 [doc_id: c5dd2ec7-fbb8-415e-bc6b-2510e3354e74, updated_at: 2024-03-06T04:21:26.292323+00:00]
 ```
 
+## Real-world considerations
+
+As mentioned earlier, this tutorial is intended to teach the basics of RAG and how it's implemented. Let's briefly 
+review some of the simplifications we've made. Our future tutorials will cover these topics in more detail, and 
+show how Lexy helps to address them when building real-world AI applications.
+
+- **Dataset size**: Our [sample data](https://github.com/lexy-ai/lexy/blob/main/sample_data/documents/hotd.txt) is 
+  small, both in the number of documents and the size of each document. In fact, our dataset is so small that we don't 
+  even need to perform retrieval; we could simply choose to include all of our documents in the prompt with each API 
+  call. But in real world applications, we might have thousands or millions of documents, in which case we'll need to 
+  dynamically retrieve the documents that are most relevant for a particular query.
+- **Document chunking**: We've used the full text of each document as context for our language model. Documents used in 
+  real-world applications will be much longer. We'll often want to break our documents up into smaller pieces (i.e., 
+  chunks), and use those pieces to construct more informative prompts for our language model.
+- **Multimodal data**: Our documents only contain text data. In practice, they will include other types of data 
+  including images, audio, and video. We'll often want to embed and retrieve multimodal data, and to query for one 
+  modality using another (e.g., search for images using audio, or search for text using video).
+- **File-based documents**: Our documents consist of "free form" text. In practice, our documents may be stored as 
+  external files in a variety of file formats, including PDFs, Word documents, and images. We'll often want to 
+  catalogue, ingest, and process these file-based documents, and to use different parsing logic based on the file or 
+  the specific application.
+- **Metadata and relationships**: We've only used the `updated_at` field as an example of metadata. In the real world, 
+  our document metadata will contain many more fields, including complex relationships with other documents and 
+  entities. For example, we may choose to chunk and embed a function docstring, which resides in a single file of 
+  Python code, which is part of a larger source code repository, which could be accessible to one or more organizations.
+- **Retrieval methods**: We've used a simple cosine similarity search to retrieve documents. In a real-world 
+  application, we will want to use more advanced retrieval methods, such as BM25.
+- **Custom transformations**: We've used the OpenAI API to transform our text documents into vector embeddings. We may 
+  want to use more advanced transformations, such as a custom (i.e., fine-tuned) embedding model, or a combination of 
+  multiple Transformer models, some of which might require running your own servers.
+- **Topic relevance**: In practice, one of the most difficult aspects of this type of dynamic RAG application is 
+  knowing **_when_** to use it (i.e., which requests should trigger it) and **_how_** to use it (i.e., which template 
+  should be populated). This is especially true in cases where the language model already contains some information on 
+  the underlying topic (i.e., the information contained in our documents is part of the dataset used to train the 
+  language model). This is certainly the case with our example (GPT-4 already knows about House of the Dragon, and can 
+  answer our questions without the need to refer to our documents). We plan on discussing this topic as part of a 
+  future blog post.
+
+
 ## Next steps
 
 In this tutorial we learned how to implement Retrieval Augmented Generation (RAG) using Lexy. Specifically, we've seen 
 how to use Lexy to store and retrieve documents, and how to include those documents and their metadata as context for a 
-language model (in this case, GPT-4).
+language model like GPT-4.
 
 While this is a simple example, the basic principles are powerful. As we'll see, they can be applied to build far more 
-complex AI applications. In the coming examples you'll learn:
+complex AI applications. In the coming examples we'll learn:
 
-- How to parse and store custom metadata along with your documents.
+- How to parse and store custom metadata along with our documents.
 - How to use Lexy to summarize documents, and then leverage those summaries to retrieve the most relevant documents.
-- How to use document filters and custom Transformers to build flexible pipelines for your data.
-- How to ingest and process file-based documents (including PDFs and images) for use in your AI applications.
+- How to use document filters and custom Transformers to build flexible pipelines for our data.
+- How to ingest and process file-based documents (including PDFs and images) for use in our AI applications.
