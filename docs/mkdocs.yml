@@ -118,3 +118,6 @@ nav:
 
 extra:
   generator: false
+  analytics:
+    provider: google
+    property: G-GXKGDFL4B1
