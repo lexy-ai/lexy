@@ -8,6 +8,7 @@ from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from lexy.core.events import celery
+from lexy.core.celery_tasks import convert_arrays_to_lists
 from lexy.db.session import get_session
 from lexy.models.document import Document
 from lexy.models.index import Index
@@ -26,17 +27,18 @@ document_tbl = aliased(Document, name="document_tbl")
             description="Get records for an index")
 async def get_records(index_id: str = "default_text_embeddings", document_id: str | None = None,
                       session: AsyncSession = Depends(get_session)) -> list[dict]:
-    result = await session.execute(select(Index).where(Index.index_id == index_id))
+    result = await session.exec(select(Index).where(Index.index_id == index_id))
     index = result.scalars().first()
     if not index:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Index {index_id} not found")
     index_tbl = SQLModel.metadata.tables.get(index.index_table_name)
     if document_id:
-        result = await session.execute(select(index_tbl).where(index_tbl.c.document_id == document_id))
+        result = await session.exec(select(index_tbl).where(index_tbl.c.document_id == document_id))
     else:
-        result = await session.execute(select(index_tbl))
+        result = await session.exec(select(index_tbl))
     index_records = result.all()
-    return index_records  # type: ignore
+    # FIXME: need a more efficient way to do this - revisit after updating to SQLAlchemy 2.0
+    return [convert_arrays_to_lists(dict(ir)) for ir in index_records]
 
 
 @router.post("/indexes/{index_id}/records/query",
@@ -182,9 +184,10 @@ async def get_record(index_record_id: str, index_id: str, session: AsyncSession 
     if not index:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Index '{index_id}' not found")
     index_tbl = SQLModel.metadata.tables.get(index.index_table_name)
-    result = await session.execute(select(index_tbl).where(index_tbl.c.index_record_id == index_record_id))
+    result = await session.exec(select(index_tbl).where(index_tbl.c.index_record_id == index_record_id))
     index_record = result.first()
     if not index_record:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Index record '{index_record_id}' not found in index '{index_id}'")
-    return index_record
+    # FIXME: need a more efficient way to do this - revisit after updating to SQLAlchemy 2.0
+    return convert_arrays_to_lists(dict(index_record))

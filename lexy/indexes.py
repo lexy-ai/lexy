@@ -2,15 +2,16 @@
 
 import logging
 from datetime import datetime, date, time
-from typing import Dict, Optional, Type
+from typing import Dict, Literal, Optional, Type
 from uuid import UUID, uuid1, uuid3, uuid4, uuid5
 
 from pydantic import create_model
-from sqlalchemy import Column, DDL, event, inspect, REAL
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import Column, DDL, event, inspect
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine import Engine, Inspector
-from sqlmodel import ARRAY, SQLModel, Field, Session, select
+from sqlmodel import SQLModel, Field, Session, select
 
 from lexy.models.index import Index
 from lexy.models.index_record import IndexRecordBaseTable
@@ -308,8 +309,9 @@ class IndexManager(object):
             fd_info = None
 
             if fv['type'] == 'embedding':
+                embedding_args = fv['extras']
                 fd_type = list[float]
-                fd_info = Field(sa_column=Column(ARRAY(REAL)))
+                fd_info = Field(sa_column=Column(Vector(dim=embedding_args['dims'])))
             else:
                 fd_type = LEXY_INDEX_FIELD_TYPES.get(fv['type'])
                 if 'optional' in fv and fv['optional'] is True:
@@ -323,12 +325,17 @@ class IndexManager(object):
         return field_defs
 
     @staticmethod
-    def get_ddl_for_embedding_fields(index_fields: dict, tablename) -> dict:
+    def get_ddl_for_embedding_fields(
+            index_fields: dict,
+            tablename: str,
+            vector_ops_type: Literal['vector_cosine_ops', 'vector_l2_ops', 'vector_ip_ops'] = 'vector_cosine_ops') \
+            -> dict:
         """ Get DDL statements for index fields of type 'embedding'
 
         Args:
             index_fields: dict representation of index fields
-            tablename: name of index table
+            tablename: Name of index table
+            vector_ops_type: Type of vector operations to use for the index. Default is 'vector_cosine_ops'.
 
         Returns:
             dict[str, DDL]: ddl statements
@@ -345,16 +352,13 @@ class IndexManager(object):
         for fk, fv in index_fields.items():
             if fv['type'] == 'embedding':
                 colname = fk
-                embedding_args = fv['extras']
                 embedding_ddl[fk] = DDL(
                     f"CREATE INDEX IF NOT EXISTS ix_{tablename}_{colname}_hnsw "
                     f"ON {tablename} "
-                    f"USING hnsw ({colname}) "
+                    f"USING hnsw ({colname} {vector_ops_type}) "
                     f"WITH ("
-                    f"  dims = {embedding_args['dims']}, "
-                    f"  m = 8, "
-                    f"  efconstruction = 16, "
-                    f"  efsearch = 16"
+                    f"  m = 16, "
+                    f"  ef_construction = 64 "
                     f");"
                 )
         return embedding_ddl
