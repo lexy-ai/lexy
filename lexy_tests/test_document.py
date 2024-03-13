@@ -94,13 +94,26 @@ class TestDocument:
         assert len(data) == 1
         assert set(data[0].keys()) == {"document", "tasks"}
         assert data[0]["document"]["content"] == "hello there!"
+        doc_id = data[0]["document"]["document_id"]
 
         # wait for the celery worker to finish the task
         await asyncio.sleep(1)
 
+        # retrieve the index records for default_text_embeddings
         records_response = await async_client.get(
             "/api/indexes/default_text_embeddings/records",
         )
         assert records_response.status_code == 200, records_response.text
         records_data = records_response.json()
         assert len(records_data) == 1
+        assert records_data[0]["document_id"] == doc_id
+        index_record_id = records_data[0]["index_record_id"]
+
+        # retrieve the index record by id
+        index_record_response = await async_client.get(
+            f"/api/indexes/default_text_embeddings/records/{index_record_id}",
+        )
+        assert index_record_response.status_code == 200, index_record_response.text
+        index_record_data = index_record_response.json()
+        assert index_record_data["document_id"] == doc_id
+        assert index_record_data["index_record_id"] == index_record_id
