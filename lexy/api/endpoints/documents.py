@@ -63,11 +63,11 @@ async def get_documents(collection_id: str | None = "default",
                         limit: int = Query(100, gt=0, le=1000),
                         offset: int = 0,
                         session: AsyncSession = Depends(get_session)) -> list[Document]:
-    result = await session.execute(select(Document)
-                                   .where(Document.collection_id == collection_id)
-                                   .limit(limit)
-                                   .offset(offset))
-    documents = result.scalars().all()
+    result = await session.exec(select(Document)
+                                .where(Document.collection_id == collection_id)
+                                .limit(limit)
+                                .offset(offset))
+    documents = result.all()
     return documents
 
 
@@ -89,7 +89,7 @@ async def add_documents(documents: list[DocumentCreate],
                                         "msg": f"A document with this ID already exists: {doc.document_id}.",
                                         "document_id": str(doc.document_id),
                                     })
-        document = Document(**doc.dict(), collection_id=collection_id)
+        document = Document(**doc.model_dump(), collection_id=collection_id)
         session.add(document)
         await session.commit()
         await session.refresh(document)
@@ -110,8 +110,8 @@ async def upload_documents(files: list[UploadFile],
                            s3_client: boto3.client = Depends(get_s3_client)) -> list[dict]:
     upload_files = []
 
-    collection = await session.execute(select(Collection).where(Collection.collection_id == collection_id))
-    collection = collection.scalars().first()
+    collection = await session.exec(select(Collection).where(Collection.collection_id == collection_id))
+    collection = collection.first()
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
 
@@ -136,10 +136,10 @@ async def upload_documents(files: list[UploadFile],
             file_dict["type"] = 'image'
 
             # check for duplicates first
-            result = await session.execute(select(Document)
-                                           .where(Document.content == f"<Image({file.filename})>")
-                                           .where(Document.collection_id == collection_id))
-            document = result.scalars().first()
+            result = await session.exec(select(Document)
+                                        .where(Document.content == f"<Image({file.filename})>")
+                                        .where(Document.collection_id == collection_id))
+            document = result.first()
             if document:
                 file_dict['document'] = document
                 upload_files.append(file_dict)
@@ -223,9 +223,10 @@ async def upload_documents(files: list[UploadFile],
                status_code=status.HTTP_200_OK,
                name="bulk_delete_documents",
                description="Bulk delete all documents in a collection")
-async def bulk_delete_documents(collection_id: str, session: AsyncSession = Depends(get_session)) -> dict:
+async def bulk_delete_documents(collection_id: str,
+                                session: AsyncSession = Depends(get_session)) -> dict:
     statement = delete(Document).where(Document.collection_id == collection_id)
-    result = await session.execute(statement)
+    result = await session.exec(statement)
     deleted_count = result.rowcount
     await session.commit()
     return {"msg": "Documents deleted", "deleted_count": deleted_count}
@@ -236,9 +237,10 @@ async def bulk_delete_documents(collection_id: str, session: AsyncSession = Depe
             status_code=status.HTTP_200_OK,
             name="get_document",
             description="Get a document")
-async def get_document(document_id: str, session: AsyncSession = Depends(get_session)) -> Document:
-    result = await session.execute(select(Document).where(Document.document_id == document_id))
-    document = result.scalars().first()
+async def get_document(document_id: str,
+                       session: AsyncSession = Depends(get_session)) -> Document:
+    result = await session.exec(select(Document).where(Document.document_id == document_id))
+    document = result.first()
     if not document:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
     return document
@@ -252,8 +254,8 @@ async def get_document_urls(document_id: str,
                             expiration: int = Query(3600, gt=0, le=3600),
                             session: AsyncSession = Depends(get_session),
                             s3_client: boto3.client = Depends(get_s3_client)) -> dict:
-    result = await session.execute(select(Document).where(Document.document_id == document_id))
-    document = result.scalars().first()
+    result = await session.exec(select(Document).where(Document.document_id == document_id))
+    document = result.first()
     if not document:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
     return generate_presigned_urls_for_document(document, s3_client, expiration)
@@ -267,11 +269,11 @@ async def update_document(document_id: str,
                           document: DocumentUpdate,
                           session: AsyncSession = Depends(get_session),
                           s3_client: boto3.client = Depends(get_s3_client)) -> dict:
-    result = await session.execute(select(Document).where(Document.document_id == document_id))
-    db_document = result.scalars().first()
+    result = await session.exec(select(Document).where(Document.document_id == document_id))
+    db_document = result.first()
     if not db_document:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
-    document_data = document.dict(exclude_unset=True)
+    document_data = document.model_dump(exclude_unset=True)
     for key, value in document_data.items():
         setattr(db_document, key, value)
     session.add(db_document)
@@ -286,8 +288,8 @@ async def update_document(document_id: str,
                name="delete_document",
                description="Delete a document")
 async def delete_document(document_id: str, session: AsyncSession = Depends(get_session)) -> dict:
-    result = await session.execute(select(Document).where(Document.document_id == document_id))
-    document = result.scalars().first()
+    result = await session.exec(select(Document).where(Document.document_id == document_id))
+    document = result.first()
     if not document:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
     await session.delete(document)

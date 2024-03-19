@@ -61,7 +61,7 @@ class TestIndexClient:
             "index_id": "test_index",
             "index_table_name": "zzidx__test_index",
             "table_dropped": True
-        }
+        }, response
 
     def test_list_indexes(self, lx_client):
         indexes = lx_client.list_indexes()

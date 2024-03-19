@@ -1,15 +1,32 @@
 [tool.poetry]
 name = "lexy"
 version = "0.1.0"
-description = ""
+description = "Lexy is a data platform for building AI applications."
 authors = ["Reza Shabani"]
 license = "Apache 2.0"
 readme = "README.md"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Database",
+    "Topic :: Database :: Database Engines/Servers",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence"
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
 fastapi = ">=0.109.0,<1.0.0"
-sqlmodel = "^0.0.11"
+sqlmodel = "^0.0.16"
 pydantic = { version = "^1.10.0", extras = ["email", "dotenv"] }
 python-jose = {version = "^3.3.0", extras = ["cryptography"]}
 passlib = {version = "^1.7.4", extras = ["bcrypt"]}

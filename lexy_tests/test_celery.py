@@ -15,7 +15,7 @@ class TestCelery:
         save_records_task = celery_app.tasks.get('lexy.db.save_records_to_index')
         assert save_records_task is not None
         assert save_records_task.db.bind.engine.url.database == 'lexy_tests'
-        assert str(save_records_task.db.bind.engine.url) == settings.sync_database_url
+        assert save_records_task.db.bind.engine.url.render_as_string(hide_password=False) == settings.sync_database_url
 
         text_embeddings_task = celery_app.tasks.get('lexy.transformers.text.embeddings.minilm')
         assert text_embeddings_task is not None

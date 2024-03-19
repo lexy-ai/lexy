@@ -215,7 +215,7 @@ class BindingClient:
             json_payload["filter"] = None
         r = self.client.patch(f"/bindings/{binding_id}", json=json_payload)
         handle_response(r)
-        return Binding(**r.json(), client=self._lexy_client)
+        return Binding(**r.json()["binding"], client=self._lexy_client)
 
     async def aupdate_binding(self,
                               binding_id: int,
@@ -252,7 +252,7 @@ class BindingClient:
             json_payload["filter"] = None
         r = await self.aclient.patch(f"/bindings/{binding_id}", json=json_payload)
         handle_response(r)
-        return Binding(**r.json(), client=self._lexy_client)
+        return Binding(**r.json()["binding"], client=self._lexy_client)
 
     def delete_binding(self, binding_id: int) -> dict:
         """ Synchronously delete a binding.

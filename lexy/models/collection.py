@@ -27,9 +27,11 @@ class CollectionBase(SQLModel):
 class Collection(CollectionBase, table=True):
     __tablename__ = "collections"
     created_at: datetime = Field(
+        default=None,
         sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now()),
     )
     updated_at: datetime = Field(
+        default=None,
         sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
     )
     documents: list["Document"] = Relationship(

@@ -16,8 +16,8 @@ router = APIRouter()
             name="get_collections",
             description="Get all collections")
 async def get_collections(session: AsyncSession = Depends(get_session)) -> list[Collection]:
-    result = await session.execute(select(Collection))
-    collections = result.scalars().all()
+    result = await session.exec(select(Collection))
+    collections = result.all()
     return collections
 
 
@@ -26,18 +26,18 @@ async def get_collections(session: AsyncSession = Depends(get_session)) -> list[
              status_code=status.HTTP_201_CREATED,
              name="add_collection",
              description="Create a new collection")
-async def add_collection(collection: CollectionCreate, session: AsyncSession = Depends(get_session)) -> Collection:
+async def add_collection(collection: CollectionCreate,
+                         session: AsyncSession = Depends(get_session)) -> Collection:
     # check if collection already exists
-    result = await session.execute(select(exists().where(Collection.collection_id == collection.collection_id)))
-    existing_result = result.scalar()
-    if existing_result:
-        raise HTTPException(status_code=400, detail="Collection already exists")
+    existing_collection = await session.get(Collection, collection.collection_id)
+    if existing_collection:
+        raise HTTPException(status_code=400, detail="Collection with that ID already exists")
 
-    collection = Collection(**collection.dict())
-    session.add(collection)
+    db_collection = Collection.model_validate(collection)
+    session.add(db_collection)
     await session.commit()
-    await session.refresh(collection)
-    return collection
+    await session.refresh(db_collection)
+    return db_collection
 
 
 @router.get("/collections/{collection_id}",
@@ -45,9 +45,10 @@ async def add_collection(collection: CollectionCreate, session: AsyncSession = D
             status_code=status.HTTP_200_OK,
             name="get_collection",
             description="Get a collection")
-async def get_collection(collection_id: str, session: AsyncSession = Depends(get_session)) -> Collection:
-    result = await session.execute(select(Collection).where(Collection.collection_id == collection_id))
-    collection = result.scalars().first()
+async def get_collection(collection_id: str,
+                         session: AsyncSession = Depends(get_session)) -> Collection:
+    result = await session.exec(select(Collection).where(Collection.collection_id == collection_id))
+    collection = result.first()
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
     return collection
@@ -58,13 +59,14 @@ async def get_collection(collection_id: str, session: AsyncSession = Depends(get
               status_code=status.HTTP_200_OK,
               name="update_collection",
               description="Update a collection")
-async def update_collection(collection_id: str, collection: CollectionUpdate,
+async def update_collection(collection_id: str,
+                            collection: CollectionUpdate,
                             session: AsyncSession = Depends(get_session)) -> Collection:
-    result = await session.execute(select(Collection).where(Collection.collection_id == collection_id))
-    db_collection = result.scalars().first()
+    result = await session.exec(select(Collection).where(Collection.collection_id == collection_id))
+    db_collection = result.first()
     if not db_collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
-    collection_data = collection.dict(exclude_unset=True)
+    collection_data = collection.model_dump(exclude_unset=True)
     for key, value in collection_data.items():
         setattr(db_collection, key, value)
     session.add(db_collection)
@@ -90,13 +92,13 @@ async def delete_collection(collection_id: str,
     deleted_count = 0
     if delete_documents is True:
         statement = delete(Document).where(Document.collection_id == collection_id)
-        result = await session.execute(statement)
+        result = await session.exec(statement)
         deleted_count = result.rowcount
     else:
         # check if there are any related documents
         statement = select(exists().where(Document.collection_id == collection_id)).select_from(Document)
-        result = await session.execute(statement)
-        has_documents = result.scalar()
+        result = await session.exec(statement)
+        has_documents = result.first()
         if has_documents:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                 detail="There are still documents in this collection. "

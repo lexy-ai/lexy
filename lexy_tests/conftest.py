@@ -3,13 +3,14 @@ import os
 import asyncio
 import httpx
 import pytest
+import sqlalchemy
 from celery import current_app
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import close_all_sessions
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 from sqlmodel import SQLModel, create_engine, delete
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -35,7 +36,8 @@ def create_test_engine(settings: TestAppSettings = test_settings) -> Engine:
     """Create a SQLAlchemy sync engine for the test database."""
     return create_engine(
         url=settings.sync_database_url,
-        echo=settings.DB_ECHO_LOG
+        echo=settings.DB_ECHO_LOG,
+        future=True
     )
 
 
@@ -61,6 +63,7 @@ def sync_engine(settings: TestAppSettings):
     engine = create_engine(
         url=settings.sync_database_url,
         echo=settings.DB_ECHO_LOG,
+        future=True
     )
     print(f"sync_engine.url: {engine.url}")
     return engine
@@ -153,7 +156,7 @@ def sync_session(sync_engine, test_app):
 @pytest.fixture(scope="function")
 async def async_session(async_engine, test_app):
     """Create a new async session for each test case."""
-    async_session = sessionmaker(
+    async_session = async_sessionmaker(
         bind=async_engine, class_=AsyncSession, expire_on_commit=False
     )
     async with async_session() as session:
