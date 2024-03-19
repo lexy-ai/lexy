@@ -11,8 +11,8 @@ class TestCollection:
 
     @pytest.mark.asyncio
     async def test_get_collections(self, async_session):
-        result = await async_session.execute(select(Collection))
-        collections = result.scalars().all()
+        result = await async_session.exec(select(Collection))
+        collections = result.all()
         assert len(collections) > 1
         collection_ids = [c.collection_id for c in collections]
         assert "default" in collection_ids
@@ -49,8 +49,8 @@ class TestCollection:
         assert collection.created_at is not None
         assert collection.updated_at is not None
 
-        result = await async_session.execute(select(Collection).where(Collection.collection_id == "test_collection"))
-        collections = result.scalars().all()
+        result = await async_session.exec(select(Collection).where(Collection.collection_id == "test_collection"))
+        collections = result.all()
         assert len(collections) == 1
         assert collections[0].collection_id == "test_collection"
         assert collections[0].description == "Test Collection"

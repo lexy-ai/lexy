@@ -1,6 +1,7 @@
 import logging
 
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import text
 
 from lexy.db.session import sync_engine
 
@@ -14,7 +15,7 @@ def init() -> None:
     try:
         db = SyncSessionLocal()
         # Try to create session to check if DB is awake
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
     except Exception as e:
         logger.error(e)
         raise e

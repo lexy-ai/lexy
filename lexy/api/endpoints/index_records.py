@@ -1,10 +1,12 @@
 import io
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, status, UploadFile
+import sqlalchemy as sa
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+
 from PIL import Image
-from sqlalchemy import asc, func, select
+from sqlalchemy import asc, func
 from sqlalchemy.orm import aliased
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from lexy.core.events import celery
@@ -13,6 +15,7 @@ from lexy.db.session import get_session
 from lexy.models.document import Document
 from lexy.models.index import Index
 from lexy.models.transformer import Transformer
+from lexy.api.deps import index_manager
 
 
 router = APIRouter()
@@ -25,20 +28,22 @@ document_tbl = aliased(Document, name="document_tbl")
             status_code=status.HTTP_200_OK,
             name="get_records",
             description="Get records for an index")
-async def get_records(index_id: str = "default_text_embeddings", document_id: str | None = None,
+async def get_records(index_id: str = "default_text_embeddings",
+                      document_id: str | None = None,
                       session: AsyncSession = Depends(get_session)) -> list[dict]:
     result = await session.exec(select(Index).where(Index.index_id == index_id))
-    index = result.scalars().first()
+    index = result.first()
     if not index:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Index {index_id} not found")
-    index_tbl = SQLModel.metadata.tables.get(index.index_table_name)
+
+    index_model = index_manager.index_models.get(index.index_id)
+    statement = select(index_model)
     if document_id:
-        result = await session.exec(select(index_tbl).where(index_tbl.c.document_id == document_id))
-    else:
-        result = await session.exec(select(index_tbl))
+        statement = statement.where(index_model.document_id == document_id)
+    result = await session.exec(statement)
     index_records = result.all()
-    # FIXME: need a more efficient way to do this - revisit after updating to SQLAlchemy 2.0
-    return [convert_arrays_to_lists(dict(ir)) for ir in index_records]
+    # FIXME: need a more efficient way to do this - revisit after upgrading to Pydantic 2.x
+    return [convert_arrays_to_lists(ir.model_dump()) for ir in index_records]
 
 
 @router.post("/indexes/{index_id}/records/query",
@@ -68,8 +73,8 @@ async def query_records(query_text: str = Form(None),
                             detail="Please submit either 'query_text' or 'query_image'.")
 
     # get index table and query column
-    result = await session.execute(select(Index).where(Index.index_id == index_id))
-    index = result.scalars().first()
+    result = await session.exec(select(Index).where(Index.index_id == index_id))
+    index = result.first()
     if not index:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Index '{index_id}' not found")
     index_tbl = SQLModel.metadata.tables.get(index.index_table_name)
@@ -94,8 +99,8 @@ async def query_records(query_text: str = Form(None),
             embedding_model = embedding_model.replace("*", "text")
 
     # get embedding for query string
-    transformer = await session.execute(select(Transformer).where(Transformer.transformer_id == embedding_model))
-    transformer = transformer.scalars().first()
+    transformer = await session.exec(select(Transformer).where(Transformer.transformer_id == embedding_model))
+    transformer = transformer.first()
     if not transformer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Transformer '{embedding_model}' not found")
@@ -133,15 +138,15 @@ async def query_records(query_text: str = Form(None),
         return_index_fields.append(document_tbl.content.label("document.content"))
 
     base_query = (
-        select(index_tbl.c.document_id,
-               index_tbl.c.custom_id,
-               index_tbl.c.meta,
-               index_tbl.c.index_record_id,
-               func.abs(query_column.op("<->")(query_embedding)).label("abs_distance"),
-               # not adding a function here causes the query to fail for some reason
-               func.pow(query_column.op("<->")(query_embedding), 1).label("distance"),
-               *return_index_fields
-               ).join(document_tbl, index_tbl.c.document_id == document_tbl.document_id)
+        sa.select(index_tbl.c.document_id,
+                  index_tbl.c.custom_id,
+                  index_tbl.c.meta,
+                  index_tbl.c.index_record_id,
+                  func.abs(query_column.op("<->")(query_embedding)).label("abs_distance"),
+                  # not adding a function here causes the query to fail for some reason
+                  func.pow(query_column.op("<->")(query_embedding), 1).label("distance"),
+                  *return_index_fields
+                  ).join(document_tbl, index_tbl.c.document_id == document_tbl.document_id)
     )
 
     # optionally return the document object
@@ -153,7 +158,7 @@ async def query_records(query_text: str = Form(None),
         base_query = base_query.add_columns(*document_columns)
 
     # query index table
-    search_result = await session.execute(
+    search_result = await session.exec(
         base_query.order_by(asc("distance")).limit(k)
     )
     search_results = search_result.all()
@@ -179,15 +184,15 @@ async def query_records(query_text: str = Form(None),
             name="get_record",
             description="Get a record from an index")
 async def get_record(index_record_id: str, index_id: str, session: AsyncSession = Depends(get_session)) -> dict:
-    index_result = await session.execute(select(Index).where(Index.index_id == index_id))
-    index = index_result.scalars().first()
+    index_result = await session.exec(select(Index).where(Index.index_id == index_id))
+    index = index_result.first()
     if not index:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Index '{index_id}' not found")
-    index_tbl = SQLModel.metadata.tables.get(index.index_table_name)
-    result = await session.exec(select(index_tbl).where(index_tbl.c.index_record_id == index_record_id))
+    index_model = index_manager.index_models.get(index.index_id)
+    result = await session.exec(select(index_model).where(index_model.index_record_id == index_record_id))
     index_record = result.first()
     if not index_record:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Index record '{index_record_id}' not found in index '{index_id}'")
-    # FIXME: need a more efficient way to do this - revisit after updating to SQLAlchemy 2.0
-    return convert_arrays_to_lists(dict(index_record))
+    # FIXME: need a more efficient way to do this - revisit after upgrading to Pydantic 2.x
+    return convert_arrays_to_lists(index_record.model_dump())

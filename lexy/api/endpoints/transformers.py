@@ -17,8 +17,8 @@ router = APIRouter()
             name="get_transformers",
             description="Get all transformers")
 async def get_transformers(session: AsyncSession = Depends(get_session)) -> list[Transformer]:
-    result = await session.execute(select(Transformer))
-    transformers = result.scalars().all()
+    result = await session.exec(select(Transformer))
+    transformers = result.all()
     return transformers
 
 
@@ -29,7 +29,12 @@ async def get_transformers(session: AsyncSession = Depends(get_session)) -> list
              description="Add a transformer")
 async def add_transformer(transformer: TransformerCreate,
                           session: AsyncSession = Depends(get_session)) -> Transformer:
-    db_transformer = Transformer(**transformer.dict())
+    # check if transformer already exists
+    existing_transformer = await session.get(Transformer, transformer.transformer_id)
+    if existing_transformer:
+        raise HTTPException(status_code=400, detail="Transformer with that ID already exists")
+
+    db_transformer = Transformer.model_validate(transformer)
     session.add(db_transformer)
     await session.commit()
     await session.refresh(db_transformer)
@@ -43,8 +48,8 @@ async def add_transformer(transformer: TransformerCreate,
             description="Get a transformer")
 async def get_transformer(transformer_id: str,
                           session: AsyncSession = Depends(get_session)) -> Transformer:
-    result = await session.execute(select(Transformer).where(Transformer.transformer_id == transformer_id))
-    transformer = result.scalars().first()
+    result = await session.exec(select(Transformer).where(Transformer.transformer_id == transformer_id))
+    transformer = result.first()
     if not transformer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformer not found")
     return transformer
@@ -58,11 +63,11 @@ async def get_transformer(transformer_id: str,
 async def update_transformer(transformer_id: str,
                              transformer: TransformerUpdate,
                              session: AsyncSession = Depends(get_session)) -> Transformer:
-    result = await session.execute(select(Transformer).where(Transformer.transformer_id == transformer_id))
-    db_transformer = result.scalars().first()
+    result = await session.exec(select(Transformer).where(Transformer.transformer_id == transformer_id))
+    db_transformer = result.first()
     if not db_transformer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformer not found")
-    transformer_data = transformer.dict(exclude_unset=True)
+    transformer_data = transformer.model_dump(exclude_unset=True)
     for key, value in transformer_data.items():
         setattr(db_transformer, key, value)
     session.add(db_transformer)
@@ -77,8 +82,8 @@ async def update_transformer(transformer_id: str,
                description="Delete a transformer")
 async def delete_transformer(transformer_id: str,
                              session: AsyncSession = Depends(get_session)) -> dict:
-    result = await session.execute(select(Transformer).where(Transformer.transformer_id == transformer_id))
-    transformer = result.scalars().first()
+    result = await session.exec(select(Transformer).where(Transformer.transformer_id == transformer_id))
+    transformer = result.first()
     if not transformer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformer not found")
     await session.delete(transformer)
@@ -96,8 +101,8 @@ async def transform_document(transformer_id: str,
                              transformer_params: dict = None,
                              content_only: bool = False,
                              session: AsyncSession = Depends(get_session)) -> dict:
-    result = await session.execute(select(Transformer).where(Transformer.transformer_id == transformer_id))
-    transformer = result.scalars().first()
+    result = await session.exec(select(Transformer).where(Transformer.transformer_id == transformer_id))
+    transformer = result.first()
     if not transformer:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformer not found")
 

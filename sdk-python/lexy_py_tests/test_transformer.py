@@ -1,5 +1,7 @@
 import pytest
 
+from lexy_py.exceptions import LexyAPIError
+
 
 class TestTransformerClient:
 
@@ -51,3 +53,13 @@ class TestTransformerClient:
         assert 'task_id' in response
         assert isinstance(response["result"], list)
         assert all(isinstance(elem, float) for elem in response["result"])
+
+    def test_create_existing_transformer(self, lx_client):
+        with pytest.raises(LexyAPIError) as exc_info:
+            lx_client.create_transformer(transformer_id="text.embeddings.minilm",
+                                         path="test.tester",
+                                         description="Existing Transformer")
+        assert isinstance(exc_info.value, LexyAPIError)
+        assert exc_info.value.response_data["status_code"] == 400, exc_info.value.response_data
+        assert exc_info.value.response.status_code == 400
+        assert exc_info.value.response.json()["detail"] == "Transformer with that ID already exists"

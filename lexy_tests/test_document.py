@@ -21,8 +21,8 @@ class TestDocument:
         assert document.created_at is not None
         assert document.updated_at is not None
 
-        result = await async_session.execute(select(Document))
-        documents = result.scalars().all()
+        result = await async_session.exec(select(Document))
+        documents = result.all()
         assert len(documents) == 1
         assert documents[0].content == "Test Content"
 
@@ -59,6 +59,11 @@ class TestDocument:
         doc1 = Document(content="import this", collection_id='code')
         doc2 = Document(content="export that", collection_id='code')
         async_session.add(doc1)
+        # TODO: remove the next line and use only a single commit
+        #  Requires SQLModel to update the GUID class, or SQLAlchemy update to 2.0.29. See the issues below.
+        #  - SQLAlchemy: https://github.com/sqlalchemy/sqlalchemy/issues/11160
+        #  - SQLModel: https://github.com/tiangolo/sqlmodel/discussions/843
+        await async_session.commit()
         async_session.add(doc2)
         await async_session.commit()
 

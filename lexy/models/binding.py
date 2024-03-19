@@ -47,9 +47,11 @@ class Binding(BindingBase, table=True):
     __tablename__ = "bindings"
     binding_id: int = Field(default=None, primary_key=True)
     created_at: datetime = Field(
+        default=None,
         sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now()),
     )
     updated_at: datetime = Field(
+        default=None,
         sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
     )
     status: str = Field(default=BindingStatus.PENDING, nullable=False)

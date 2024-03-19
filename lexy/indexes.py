@@ -135,7 +135,7 @@ class IndexManager(object):
         Raises:
             ValueError: if index is not found
         """
-        index = self.db.exec(select(Index).filter(Index.index_id == index_id)).first()
+        index = self.db.exec(select(Index).where(Index.index_id == index_id)).first()
         if not index:
             raise ValueError(f"Index {index_id} not found")
         return index
@@ -269,9 +269,13 @@ class IndexManager(object):
         logger.debug(f"about to drop table for index_model: {index_model}")
         index_model.metadata.drop_all(self.db.bind.engine, tables=[index_model.__table__])
         index_model.metadata.remove(index_model.__table__)
+        # clear the inspector cache to ensure that `self.table_exists` works as expected
+        self.inspector.clear_cache()
         return True
 
-    def table_exists(self, index_table_name: str) -> bool:
+    def table_exists(self, index_table_name: str, use_cache: bool = True) -> bool:
+        if use_cache is not True:
+            self.inspector.clear_cache()
         return self.inspector.has_table(index_table_name)
 
     def _create_index_table(self, index_model: Type[IndexRecordBaseTable]) -> bool:
@@ -284,6 +288,8 @@ class IndexManager(object):
             logger.debug(f"Index table {index_model.__tablename__} already exists. Skipping creation.")
             return False
         index_model.metadata.create_all(self.db.bind.engine)
+        # clear the inspector cache to ensure that `self.table_exists` works as expected
+        self.inspector.clear_cache()
         return True
 
     @staticmethod

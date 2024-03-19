@@ -17,8 +17,8 @@ router = APIRouter()
             name="get_bindings",
             description="Get all bindings")
 async def get_bindings(session: AsyncSession = Depends(get_session)) -> list[BindingRead]:
-    result = await session.execute(select(Binding))
-    bindings = result.scalars().all()
+    result = await session.exec(select(Binding))
+    bindings = result.all()
     return bindings
 
 
@@ -30,7 +30,7 @@ async def get_bindings(session: AsyncSession = Depends(get_session)) -> list[Bin
              description="Create a new binding")
 async def add_binding(binding: BindingCreate,
                       session: AsyncSession = Depends(get_session)) -> dict[str, BindingRead | list[dict]]:
-    binding = Binding(**binding.dict())
+    binding = Binding(**binding.model_dump())
     if binding.filter:
         binding.filter = jsonable_encoder(binding.filter)
     session.add(binding)
@@ -53,9 +53,8 @@ async def add_binding(binding: BindingCreate,
             description="Get a binding")
 async def get_binding(binding_id: int,
                       session: AsyncSession = Depends(get_session)) -> BindingRead:
-    result = await session.execute(select(Binding).where(Binding.binding_id ==
-                                                         binding_id))
-    binding = result.scalars().first()
+    result = await session.exec(select(Binding).where(Binding.binding_id == binding_id))
+    binding = result.first()
     if not binding:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Binding not found")
     return binding
@@ -68,16 +67,15 @@ async def get_binding(binding_id: int,
               description="Update a binding")
 async def update_binding(binding_id: int,
                          binding: BindingUpdate,
-                         session: AsyncSession = Depends(get_session)) -> dict:
-    result = await session.execute(select(Binding).where(Binding.binding_id ==
-                                                         binding_id))
-    db_binding = result.scalars().first()
+                         session: AsyncSession = Depends(get_session)) -> dict[str, BindingRead | list[dict]]:
+    result = await session.exec(select(Binding).where(Binding.binding_id == binding_id))
+    db_binding = result.first()
     if not db_binding:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Binding not found")
     # record status in case it's changed
     old_status = db_binding.status
 
-    update_data = binding.dict(exclude_unset=True)
+    update_data = binding.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_binding, key, value)
     if db_binding.filter:
@@ -97,9 +95,9 @@ async def update_binding(binding_id: int,
         await session.commit()
         await session.refresh(processed_binding)
         response = {"binding": processed_binding, "tasks": tasks}
-        return response
     else:
-        return db_binding
+        response = {"binding": db_binding, "tasks": []}
+    return response
 
 
 @router.delete("/bindings/{binding_id}",
@@ -108,9 +106,8 @@ async def update_binding(binding_id: int,
                description="Delete a binding")
 async def delete_binding(binding_id: int,
                          session: AsyncSession = Depends(get_session)) -> dict:
-    result = await session.execute(select(Binding).where(Binding.binding_id ==
-                                                         binding_id))
-    binding = result.scalars().first()
+    result = await session.exec(select(Binding).where(Binding.binding_id == binding_id))
+    binding = result.first()
     if not binding:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Binding not found")
     await session.delete(binding)
