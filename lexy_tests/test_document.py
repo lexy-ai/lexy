@@ -51,8 +51,8 @@ class TestDocument:
         data = response.json()
         assert data["content"] == doc.content
         assert data["document_id"] == str(doc.document_id)
-        assert data["created_at"] == doc.created_at.isoformat()
-        assert data["updated_at"] == doc.updated_at.isoformat()
+        assert data["created_at"] == doc.created_at.isoformat().replace("+00:00", "Z")
+        assert data["updated_at"] == doc.updated_at.isoformat().replace("+00:00", "Z")
 
     @pytest.mark.asyncio
     async def test_add_documents(self, async_session, async_client):
@@ -78,14 +78,14 @@ class TestDocument:
         assert data[0]["content"] == "import this"
         assert data[0]["collection_id"] == "code"
         assert data[0]["document_id"] == str(doc1.document_id)
-        assert data[0]["created_at"] == doc1.created_at.isoformat()
-        assert data[0]["updated_at"] == doc1.updated_at.isoformat()
+        assert data[0]["created_at"] == doc1.created_at.isoformat().replace("+00:00", "Z")
+        assert data[0]["updated_at"] == doc1.updated_at.isoformat().replace("+00:00", "Z")
 
         assert data[1]["content"] == "export that"
         assert data[1]["collection_id"] == "code"
         assert data[1]["document_id"] == str(doc2.document_id)
-        assert data[1]["created_at"] == doc2.created_at.isoformat()
-        assert data[1]["updated_at"] == doc2.updated_at.isoformat()
+        assert data[1]["created_at"] == doc2.created_at.isoformat().replace("+00:00", "Z")
+        assert data[1]["updated_at"] == doc2.updated_at.isoformat().replace("+00:00", "Z")
 
     @pytest.mark.asyncio
     async def test_add_documents_with_async_client(self, async_client, celery_app, celery_worker):

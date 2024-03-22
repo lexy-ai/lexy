@@ -1,7 +1,9 @@
 import importlib
 import pkgutil
+from typing import Optional
 
-from pydantic import BaseSettings, EmailStr, Field, SecretStr, validator
+from pydantic import field_validator, EmailStr, Field, SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 def get_transformer_modules(transformer_pkg: str = 'lexy.transformers'):
@@ -43,25 +45,25 @@ class AppSettings(BaseSettings):
     #  fixed key, you would simply set the value of SECRET_KEY in your .env file. If you uncomment the next line,
     #  add `import secrets` to the top of this file.
     # SECRET_KEY: SecretStr = Field(default_factory=secrets.token_urlsafe, env="SECRET_KEY")
-    SECRET_KEY: SecretStr = Field(default="changethis", env="SECRET_KEY")
+    SECRET_KEY: SecretStr = Field(default="changethis", validation_alias="SECRET_KEY")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
 
     # Database settings
-    POSTGRES_USER: str = Field(default="postgres", env="POSTGRES_USER")
-    POSTGRES_PASSWORD: SecretStr = Field(default="postgres", env="POSTGRES_PASSWORD")
-    POSTGRES_HOST: str = Field(default="localhost", env="POSTGRES_HOST")
-    POSTGRES_DB: str = Field(default="lexy", env="POSTGRES_DB")
+    POSTGRES_USER: str = Field(default="postgres", validation_alias="POSTGRES_USER")
+    POSTGRES_PASSWORD: SecretStr = Field(default="postgres", validation_alias="POSTGRES_PASSWORD")
+    POSTGRES_HOST: str = Field(default="localhost", validation_alias="POSTGRES_HOST")
+    POSTGRES_DB: str = Field(default="lexy", validation_alias="POSTGRES_DB")
     DB_ECHO_LOG: bool = False
 
     # User settings
-    FIRST_SUPERUSER_EMAIL: EmailStr = Field("lexy@lexy.ai", env="FIRST_SUPERUSER_EMAIL")
-    FIRST_SUPERUSER_PASSWORD: SecretStr = Field("lexy", env="FIRST_SUPERUSER_PASSWORD")
+    FIRST_SUPERUSER_EMAIL: EmailStr = Field("lexy@lexy.ai", validation_alias="FIRST_SUPERUSER_EMAIL")
+    FIRST_SUPERUSER_PASSWORD: SecretStr = Field("lexy", validation_alias="FIRST_SUPERUSER_PASSWORD")
 
     # AWS settings & S3 storage settings
-    AWS_ACCESS_KEY_ID: str = Field(default=None, env="AWS_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY: SecretStr = Field(default=None, env="AWS_SECRET_ACCESS_KEY")
-    AWS_REGION: str = Field(default=None, env="AWS_REGION")
-    S3_BUCKET: str = Field(default=None, env="S3_BUCKET")
+    AWS_ACCESS_KEY_ID: Optional[str] = Field(default=None, validation_alias="AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY: Optional[SecretStr] = Field(default=None, validation_alias="AWS_SECRET_ACCESS_KEY")
+    AWS_REGION: Optional[str] = Field(default=None, validation_alias="AWS_REGION")
+    S3_BUCKET: Optional[str] = Field(default=None, validation_alias="S3_BUCKET")
 
     # Default config for Collection objects and images
     COLLECTION_DEFAULT_CONFIG: dict = {
@@ -111,29 +113,27 @@ class AppSettings(BaseSettings):
     def worker_transformer_imports(self):
         return expand_transformer_imports(self.LEXY_WORKER_TRANSFORMER_IMPORTS)
 
-    @validator('SECRET_KEY')
+    @field_validator('SECRET_KEY')
+    @classmethod
     def check_secret_key(cls, value):
         if value.get_secret_value() == "changethis":
             import logging
             logging.warning("Using default value of SECRET_KEY. Do NOT use this value for production!")
         return value
 
-    class Config:
-        case_sensitive = True
-        env_file = '.env'
-        env_file_encoding = 'utf-8'
+    model_config = SettingsConfigDict(case_sensitive=True, env_file='.env', env_file_encoding='utf-8', extra="allow")
 
 
 class TestAppSettings(AppSettings):
 
     # Database settings
-    POSTGRES_DB: str = Field(default="lexy_tests", env="POSTGRES_TEST_DB")
+    POSTGRES_DB: str = Field(default="lexy_tests", validation_alias="POSTGRES_TEST_DB")
     DB_ECHO_LOG: bool = False
 
     # User settings
     # without `env=` argument, this will revert to the environment value of FIRST_SUPERUSER_EMAIL
-    FIRST_SUPERUSER_EMAIL: EmailStr = Field("test@lexy.ai", env="TEST_SUPERUSER_EMAIL")
-    FIRST_SUPERUSER_PASSWORD: SecretStr = Field("test", env="TEST_SUPERUSER_PASSWORD")
+    FIRST_SUPERUSER_EMAIL: EmailStr = Field("test@lexy.ai", validation_alias="TEST_SUPERUSER_EMAIL")
+    FIRST_SUPERUSER_PASSWORD: SecretStr = Field("test", validation_alias="TEST_SUPERUSER_PASSWORD")
 
 
 settings = AppSettings()

@@ -1,7 +1,7 @@
 import pytest
 from sqlmodel import select
 
-from lexy.models.collection import Collection
+from lexy.models.collection import Collection, CollectionCreate
 
 
 class TestCollection:
@@ -49,8 +49,33 @@ class TestCollection:
         assert collection.created_at is not None
         assert collection.updated_at is not None
 
-        result = await async_session.exec(select(Collection).where(Collection.collection_id == "test_collection"))
+        result = await async_session.exec(
+            select(Collection).where(Collection.collection_id == "test_collection")
+        )
         collections = result.all()
         assert len(collections) == 1
         assert collections[0].collection_id == "test_collection"
         assert collections[0].description == "Test Collection"
+
+    @pytest.mark.asyncio
+    async def test_create_collection_with_model_validate(self, async_session):
+        collection = CollectionCreate(
+            collection_id="test_collection_validated", description="Test Collection Validated"
+        )
+
+        db_collection = Collection.model_validate(collection)
+        async_session.add(db_collection)
+        await async_session.commit()
+        await async_session.refresh(db_collection)
+        assert db_collection.collection_id == "test_collection_validated"
+        assert db_collection.description == "Test Collection Validated"
+        assert db_collection.created_at is not None
+        assert db_collection.updated_at is not None
+
+        result = await async_session.exec(
+            select(Collection).where(Collection.collection_id == "test_collection_validated")
+        )
+        collections = result.all()
+        assert len(collections) == 1
+        assert collections[0].collection_id == "test_collection_validated"
+        assert collections[0].description == "Test Collection Validated"

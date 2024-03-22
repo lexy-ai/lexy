@@ -29,6 +29,8 @@ class FilterCondition(BaseModel):
     value: Any = Field(..., description="The value to compare against")
     negate: bool = Field(False, description="Whether to negate the filter condition")
 
+    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
     @validator('value', pre=True)
     def validate_value(cls, v, values, **kwargs):
         operation = values.get('operation')

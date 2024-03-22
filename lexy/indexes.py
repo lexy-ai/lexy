@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime, date, time
-from typing import Dict, Literal, Optional, Type
+from typing import Dict, ForwardRef, Literal, Optional, Type
 from uuid import UUID, uuid1, uuid3, uuid4, uuid5
 
 from pydantic import create_model
@@ -12,6 +12,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine import Engine, Inspector
 from sqlmodel import SQLModel, Field, Session, select
+from sqlmodel.main import RelationshipInfo
 
 from lexy.models.index import Index
 from lexy.models.index_record import IndexRecordBaseTable
@@ -160,6 +161,9 @@ class IndexManager(object):
     def create_index_model(self, index: Index) -> Type[IndexRecordBaseTable]:
         index_table_name = index.index_table_name
         field_defs = self.get_field_definitions(index.index_fields)
+        # add the Document relationship, i.e., the equivalent of the following field:
+        #   document: "Document" = Relationship(back_populates="index_records")
+        field_defs["document"] = (ForwardRef("Document"), RelationshipInfo())
         if index_table_name in self.TBLNAME_TO_CLASS.keys():
             logger.warning(f"create_index_model -- Index table {index_table_name} exists in TBLNAME_TO_CLASS.keys().")
             index_model = self.TBLNAME_TO_CLASS.get(index_table_name)
