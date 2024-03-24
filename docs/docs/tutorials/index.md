@@ -109,7 +109,7 @@ Let's go through a longer example to see how Collections, Documents, Indexes, Bi
 
 ### Collections
 
-We can see that there are currently two collections, "**default**" and "**code**".
+We can see that there are currently three collections, "**default**", "**code**", and "**images_tutorial**".
 
 
 ```python
@@ -188,7 +188,9 @@ For our example, we'll use the "**text.embeddings.minilm**" transformer, which u
 
 ### Indexes
 
-Before we can bind this transformer to our collection, we need to create an **`Index`** for storing the resulting embeddings. Let's create a new index called "**bios_index**" with embeddings for our new collection. Our index will have a single field called "**bio_embedding**" that will store the embeddings output by the MiniLM sentence transformer.
+Before we can bind this transformer to our collection, we need to create an **`Index`** for storing the resulting embeddings.
+
+Let's create a new index called \"**bios_index**\" with embeddings for our new collection. Our index will have a single field called \"**bio_embedding**\" that will store the embeddings output from the MiniLM sentence transformer.
 
 
 ```python
@@ -214,7 +216,9 @@ index
 
 ### Bindings
 
-Now let's create a **`Binding`**. Our binding will feed the documents in our "**bios**" collection into the "**text.embeddings.minilm**" transformer, and insert the resulting output in our newly created index, "**bios_index**".
+Now let's create a **`Binding`**. Our binding will:
+1) Feed the documents in our "**bios**" collection into the "**text.embeddings.minilm**" transformer, then
+2) Insert the resulting output in our newly created index, "**bios_index**".
 <br>
 
 <div style="text-align: center;">
@@ -251,7 +255,7 @@ binding
 
 
 
-Our binding automatically runs asynchronous jobs to process our documents and store the results in our index as embeddings. We can now query our index for "_famous artists_" and see the results ranked by cosine similarity.
+We can now query our index for "_famous artists_" and see the results ranked by cosine similarity.
 
 ```python
 index.query(query_text='famous artists', query_field='bio_embedding', k=3)
@@ -280,7 +284,7 @@ index.query(query_text='famous artists', query_field='bio_embedding', k=3)
 ```
 
 
-Because our binding has status set to "`ON`", any new documents added to our collection will automatically be processed by our transformer and inserted into our index.
+Because our binding has status set to "`ON`", any new documents added to our collection will automatically be processed by our transformer and inserted into our index as embeddings.
  
 Let's add another document.
 
