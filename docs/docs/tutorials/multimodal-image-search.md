@@ -97,7 +97,7 @@ binding
 
 ## Upload images to the collection
 
-Let's upload some images from the [image-text-demo dataset](https://huggingface.co/datasets/jamescalam/image-text-demo) to the collection. This dataset is from HuggingFace datasets and requires the `datasets` package to be installed.
+Let's upload some images from the [image-text-demo dataset](https://huggingface.co/datasets/shabani1/image-text-demo) to the collection. This dataset is from HuggingFace datasets and requires the `datasets` package to be installed.
 
 
 ```python
@@ -109,7 +109,7 @@ Let's upload some images from the [image-text-demo dataset](https://huggingface.
 # import test data from HuggingFace datasets - requires `pip install datasets`
 
 from datasets import load_dataset
-data = load_dataset("jamescalam/image-text-demo", split="train")
+data = load_dataset("shabani1/image-text-demo", split="train")
 ```
 
 
