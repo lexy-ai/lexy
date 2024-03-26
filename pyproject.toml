@@ -27,6 +27,7 @@ classifiers = [
 python = "^3.10"
 fastapi = ">=0.109.0,<1.0.0"
 sqlmodel = "^0.0.16"
+sqlalchemy = "^2.0.29"
 pydantic = {extras = ["email"], version = "^2.6.4"}
 pydantic-settings = "^2.2.1"
 python-jose = {version = "^3.3.0", extras = ["cryptography"]}

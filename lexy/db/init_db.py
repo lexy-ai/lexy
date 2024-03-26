@@ -26,8 +26,7 @@ def add_default_data_to_db(session=db):
     else:
         for c in default_data["collections"]:
             session.add(models.Collection(**c))
-            # TODO: dedent after SQLAlchemy bugfix
-            session.commit()
+        session.commit()
 
     logger.info("Adding default transformers")
     if session.query(models.Transformer).count() > 0:
@@ -35,7 +34,7 @@ def add_default_data_to_db(session=db):
     else:
         for t in default_data["transformers"]:
             session.add(models.Transformer(**t))
-            session.commit()
+        session.commit()
 
     logger.info("Adding default indexes")
     if session.query(models.Index).count() > 0:
@@ -43,7 +42,7 @@ def add_default_data_to_db(session=db):
     else:
         for i in default_data["indexes"]:
             session.add(models.Index(**i))
-            session.commit()
+        session.commit()
 
     logger.info("Adding default bindings")
     if session.query(models.Binding).count() > 0:
@@ -51,7 +50,7 @@ def add_default_data_to_db(session=db):
     else:
         for b in default_data["bindings"]:
             session.add(models.Binding(**b))
-            session.commit()
+        session.commit()
 
 
 def add_sample_docs_to_db(session=db):
@@ -64,7 +63,7 @@ def add_sample_docs_to_db(session=db):
         # the default index and binding are created through appropriate crud endpoints
         for doc in sample_docs["code_collection_sample_docs"]:
             session.add(models.Document(**doc))
-            session.commit()
+        session.commit()
 
 
 def add_first_superuser_to_db(session=db, settings=app_settings):
