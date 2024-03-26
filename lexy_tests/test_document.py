@@ -59,11 +59,6 @@ class TestDocument:
         doc1 = Document(content="import this", collection_id='code')
         doc2 = Document(content="export that", collection_id='code')
         async_session.add(doc1)
-        # TODO: remove the next line and use only a single commit
-        #  Requires SQLModel to update the GUID class, or SQLAlchemy update to 2.0.29. See the issues below.
-        #  - SQLAlchemy: https://github.com/sqlalchemy/sqlalchemy/issues/11160
-        #  - SQLModel: https://github.com/tiangolo/sqlmodel/discussions/843
-        await async_session.commit()
         async_session.add(doc2)
         await async_session.commit()
 

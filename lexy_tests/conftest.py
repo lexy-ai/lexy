@@ -130,7 +130,7 @@ def seed_data(settings: TestAppSettings, sync_engine: Engine, create_test_databa
     ]
     for model in models_to_delete:
         # another way to do it
-        # sync_session.query(model).delete()
+        # local_session.query(model).delete()
         result = local_session.execute(delete(model))
         deleted_count = result.rowcount
         print(f"\tdeleting {deleted_count} {model.__name__} objects")
