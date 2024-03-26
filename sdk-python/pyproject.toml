@@ -1,15 +1,32 @@
 [tool.poetry]
 name = "lexy-py"
 version = "0.1.0"
-description = "A Python client for Lexy."
+description = "A Python client for Lexy. Lexy is a data platform for building AI applications."
 authors = ["Reza Shabani"]
 license = "Apache 2.0"
 readme = "README.md"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Database",
+    "Topic :: Database :: Database Engines/Servers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
 httpx = "^0.24.1"
-pydantic = "^1.10"
+pydantic = ">=2.0.0,<3.0.0"
 Pillow = "^10.0.1"
 
 [tool.poetry.group.test.dependencies]

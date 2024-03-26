@@ -1,6 +1,5 @@
 """ Client for interacting with the Transformer API. """
 
-import json
 from typing import Optional, TYPE_CHECKING
 
 import httpx
@@ -79,7 +78,10 @@ class TransformerClient:
         handle_response(r)
         return Transformer(**r.json(), client=self._lexy_client)
 
-    def add_transformer(self, transformer_id: str, path: str, description: Optional[str] = None) -> Transformer:
+    def add_transformer(self,
+                        transformer_id: str,
+                        path: str,
+                        description: Optional[str] = None) -> Transformer:
         """ Synchronously add a transformer.
 
         Args:
@@ -97,7 +99,10 @@ class TransformerClient:
         handle_response(r)
         return Transformer(**r.json(), client=self._lexy_client)
 
-    async def aadd_transformer(self, transformer_id: str, path: str, description: Optional[str] = None) -> Transformer:
+    async def aadd_transformer(self,
+                               transformer_id: str,
+                               path: str,
+                               description: Optional[str] = None) -> Transformer:
         """ Asynchronously add a transformer.
 
         Args:
@@ -115,7 +120,9 @@ class TransformerClient:
         handle_response(r)
         return Transformer(**r.json(), client=self._lexy_client)
 
-    def update_transformer(self, transformer_id: str, path: Optional[str] = None,
+    def update_transformer(self,
+                           transformer_id: str,
+                           path: Optional[str] = None,
                            description: Optional[str] = None) -> Transformer:
         """ Synchronously update a transformer.
 
@@ -128,11 +135,13 @@ class TransformerClient:
             Transformer: The updated transformer.
         """
         transformer = TransformerUpdate(path=path, description=description)
-        r = self.client.patch(f"/transformers/{transformer_id}", json=transformer.dict(exclude_none=True))
+        r = self.client.patch(f"/transformers/{transformer_id}", json=transformer.model_dump(exclude_none=True))
         handle_response(r)
         return Transformer(**r.json(), client=self._lexy_client)
 
-    async def aupdate_transformer(self, transformer_id: str, path: Optional[str] = None,
+    async def aupdate_transformer(self,
+                                  transformer_id: str,
+                                  path: Optional[str] = None,
                                   description: Optional[str] = None) -> Transformer:
         """ Asynchronously update a transformer.
 
@@ -145,7 +154,7 @@ class TransformerClient:
             Transformer: The updated transformer.
         """
         transformer = TransformerUpdate(path=path, description=description)
-        r = await self.aclient.patch(f"/transformers/{transformer_id}", json=transformer.dict(exclude_none=True))
+        r = await self.aclient.patch(f"/transformers/{transformer_id}", json=transformer.model_dump(exclude_none=True))
         handle_response(r)
         return Transformer(**r.json(), client=self._lexy_client)
 
@@ -194,8 +203,7 @@ class TransformerClient:
         """
         if isinstance(document, dict):
             document = Document(**document)
-        # TODO: use document.model_dump(mode='json') after updating to Pydantic 2.0
-        data = {"document": json.loads(document.json())}
+        data = {"document": document.model_dump(mode='json')}
         if transformer_params:
             data["transformer_params"] = transformer_params
         if content_only:

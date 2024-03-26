@@ -41,6 +41,7 @@ class Index(IndexBase, table=True):
         sa_relationship_kwargs={'cascade': 'all, delete-orphan'}
     )
     index_table_name: str = Field(
+        default=None,
         regex=r"^[a-z0-9_-]+$",
         sa_column=Column(String, default=default_index_table_name, nullable=False, unique=True),
     )

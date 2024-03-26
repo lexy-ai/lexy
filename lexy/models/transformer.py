@@ -42,6 +42,7 @@ class Transformer(TransformerBase, table=True):
     )
     bindings: list["Binding"] = Relationship(back_populates="transformer")
     celery_task_name: Optional[str] = Field(
+        default=None,
         sa_column=Column(String, default=default_celery_task_name, nullable=True, unique=True)
     )
 

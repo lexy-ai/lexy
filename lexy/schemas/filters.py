@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Iterable, TYPE_CHECKING
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 if TYPE_CHECKING:
     from lexy.models.document import Document
@@ -29,9 +29,9 @@ class FilterCondition(BaseModel):
     value: Any = Field(..., description="The value to compare against")
     negate: bool = Field(False, description="Whether to negate the filter condition")
 
-    @validator('value', pre=True)
-    def validate_value(cls, v, values, **kwargs):
-        operation = values.get('operation')
+    @field_validator('value')
+    def validate_value(cls, v: Any, info: ValidationInfo) -> Any:
+        operation = info.data.get('operation')
 
         # For numeric operations
         if operation in [Operation.LESS_THAN,
@@ -41,13 +41,13 @@ class FilterCondition(BaseModel):
             try:
                 return float(v)
             except ValueError:
-                raise ValueError(f"Value must be a number for operation {operation}")
+                raise ValueError(f"Value must be a number for operation '{operation}'")
 
         # For iterable operations
         if operation in [Operation.IN]:
             if not isinstance(v, Iterable):
                 raise ValueError(
-                    f"Value must be an iterable (list, tuple, set, or dict) for operation {operation}")
+                    f"Value must be an iterable (list, tuple, set, or dict) for operation '{operation}'")
 
         # For string operations
         if operation in [Operation.EQUALS_CI,
@@ -58,7 +58,7 @@ class FilterCondition(BaseModel):
                          Operation.ENDS_WITH,
                          Operation.ENDS_WITH_CI]:
             if not isinstance(v, str):
-                raise ValueError(f"Value must be a string for operation {operation}")
+                raise ValueError(f"Value must be a string for operation '{operation}'")
 
         return v
 

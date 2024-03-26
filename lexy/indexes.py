@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime, date, time
-from typing import Dict, Literal, Optional, Type
+from typing import Dict, ForwardRef, Literal, Optional, Type
 from uuid import UUID, uuid1, uuid3, uuid4, uuid5
 
 from pydantic import create_model
@@ -11,7 +11,8 @@ from sqlalchemy import Column, DDL, event, inspect
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine import Engine, Inspector
-from sqlmodel import SQLModel, Field, Session, select
+from sqlmodel import SQLModel, Field, ForeignKey, Session, select
+from sqlmodel.main import RelationshipInfo
 
 from lexy.models.index import Index
 from lexy.models.index_record import IndexRecordBaseTable
@@ -158,22 +159,57 @@ class IndexManager(object):
                     logger.warning(f"create_index_models -- Failed to create Index table {index.index_table_name}.")
 
     def create_index_model(self, index: Index) -> Type[IndexRecordBaseTable]:
+
         index_table_name = index.index_table_name
-        field_defs = self.get_field_definitions(index.index_fields)
+        model_name = index.index_table_schema.get("title", index_table_name)
+
+        # if index_table_name is already in SQLModel's _sa_registry, log a warning and return the existing model
         if index_table_name in self.TBLNAME_TO_CLASS.keys():
             logger.warning(f"create_index_model -- Index table {index_table_name} exists in TBLNAME_TO_CLASS.keys().")
             index_model = self.TBLNAME_TO_CLASS.get(index_table_name)
             self.index_models[index.index_id] = index_model
             return index_model
+
+        # index field definitions
+        field_defs = self.get_field_definitions(index.index_fields)
+
+        # set class vars and redefine foreign keys with the constraint `ondelete='CASCADE'`
+        class IndexRecordTable(IndexRecordBaseTable):
+            __tablename__ = index.index_table_name
+            __index_id__ = index.index_id
+            document_id: Optional[UUID] = Field(
+                sa_column_args=(ForeignKey('documents.document_id', ondelete='CASCADE'),),
+                index=True,
+                nullable=True
+            )
+            binding_id: Optional[int] = Field(
+                sa_column_args=(ForeignKey('bindings.binding_id', ondelete='CASCADE'),),
+                index=True,
+                nullable=True
+            )
+
+        # relationship definitions
+        relationship_defs = {
+            # add the Document relationship, i.e., the equivalent of the following field:
+            #   document: "Document" = Relationship(back_populates="index_records")
+            # TODO: add back_populates to RelationshipInfo() once index_records is added to Document
+            "document": (ForwardRef("Document"), RelationshipInfo()),
+
+            # add the Binding relationship, i.e., the equivalent of the following field:
+            #   binding: "Binding" = Relationship(back_populates="index_records")
+            # TODO: add back_populates to RelationshipInfo() once index_records is added to Binding
+            "binding": (ForwardRef("Binding"), RelationshipInfo())
+        }
+
         index_model = create_model(
-            index.index_table_schema.get("title", index_table_name),
-            __base__=(IndexRecordBaseTable,),
+            __model_name=model_name,
+            __base__=(IndexRecordTable,),
             __cls_kwargs__={"table": True},
             __module__=__name__,
             **field_defs,
-            **{"__tablename__": index.index_table_name,
-               "__index_id__": index.index_id},
+            **relationship_defs,
         )
+
         # attach event listener to create index on embedding fields
         embedding_ddl = self.get_ddl_for_embedding_fields(index.index_fields, index_table_name)
         for colname, ddl in embedding_ddl.items():
@@ -182,6 +218,7 @@ class IndexManager(object):
                 "after_create",
                 ddl,
             )
+
         self.index_models[index.index_id] = index_model
         return index_model
 
@@ -285,7 +322,7 @@ class IndexManager(object):
             raise ValueError("Index model must have a __tablename__ attribute")
         # if the table already exists, log a warning and return
         if self.table_exists(index_model.__tablename__):
-            logger.debug(f"Index table {index_model.__tablename__} already exists. Skipping creation.")
+            logger.warning(f"Index table {index_model.__tablename__} already exists. Skipping creation.")
             return False
         index_model.metadata.create_all(self.db.bind.engine)
         # clear the inspector cache to ensure that `self.table_exists` works as expected
@@ -293,7 +330,7 @@ class IndexManager(object):
         return True
 
     @staticmethod
-    def get_field_definitions(index_fields: dict) -> dict:
+    def get_field_definitions(index_fields: dict) -> dict[str, tuple[type, Field]]:
         """ Get field definitions from index fields
 
         Args:

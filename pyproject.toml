@@ -17,17 +17,18 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Topic :: Database",
     "Topic :: Database :: Database Engines/Servers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Software Development :: Libraries",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence"
 ]
 
 [tool.poetry.dependencies]
 python = "^3.10"
 fastapi = ">=0.109.0,<1.0.0"
 sqlmodel = "^0.0.16"
-pydantic = { version = "^1.10.0", extras = ["email", "dotenv"] }
+pydantic = {extras = ["email"], version = "^2.6.4"}
+pydantic-settings = "^2.2.1"
 python-jose = {version = "^3.3.0", extras = ["cryptography"]}
 passlib = {version = "^1.7.4", extras = ["bcrypt"]}
 psycopg2-binary = "^2.9.7"

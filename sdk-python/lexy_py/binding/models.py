@@ -76,9 +76,9 @@ class Binding(BindingModel):
     def __init__(self, **data: Any):
         super().__init__(**data)
         self._client = data.pop('client', None)
-        self.collection: Collection = Collection(**self.collection.dict(), client=self._client)
-        self.index: Index = Index(**self.index.dict(), client=self._client)
-        self.transformer: Transformer = Transformer(**self.transformer.dict(), client=self._client)
+        self.collection: Collection = Collection(**self.collection.model_dump(), client=self._client)
+        self.index: Index = Index(**self.index.model_dump(), client=self._client)
+        self.transformer: Transformer = Transformer(**self.transformer.model_dump(), client=self._client)
 
     @property
     def client(self) -> "LexyClient":

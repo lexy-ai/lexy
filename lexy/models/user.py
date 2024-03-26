@@ -3,13 +3,13 @@ from typing import Optional
 
 from pydantic import EmailStr
 from sqlalchemy import Column, DateTime, func
-from sqlmodel import Field, SQLModel
+from sqlmodel import AutoString, Field, SQLModel
 
 from lexy.core.security import get_password_hash
 
 
 class UserBase(SQLModel):
-    email: EmailStr = Field(index=True, nullable=False, unique=True)
+    email: EmailStr = Field(index=True, nullable=False, unique=True, sa_type=AutoString)
     full_name: Optional[str] = None
 
 

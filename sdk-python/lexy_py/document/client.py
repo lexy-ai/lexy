@@ -1,7 +1,6 @@
 """ Client for interacting with the Document API. """
 
 import io
-import json
 import mimetypes
 import os
 from typing import Optional, TYPE_CHECKING
@@ -196,7 +195,10 @@ class DocumentClient:
         handle_response(r)
         return Document(**r.json(), client=self._lexy_client)
 
-    def update_document(self, document_id: str, content: Optional[str] = None, meta: Optional[dict] = None) -> Document:
+    def update_document(self,
+                        document_id: str,
+                        content: Optional[str] = None,
+                        meta: Optional[dict] = None) -> Document:
         """ Synchronously update a document.
 
         Args:
@@ -208,11 +210,13 @@ class DocumentClient:
             Document: The updated document.
         """
         document = DocumentUpdate(content=content, meta=meta)
-        r = self.client.patch(f"/documents/{document_id}", json=document.dict(exclude_none=True))
+        r = self.client.patch(f"/documents/{document_id}", json=document.model_dump(exclude_none=True))
         handle_response(r)
         return Document(**r.json()['document'], client=self._lexy_client)
 
-    async def aupdate_document(self, document_id: str, content: Optional[str] = None,
+    async def aupdate_document(self,
+                               document_id: str,
+                               content: Optional[str] = None,
                                meta: Optional[dict] = None) -> Document:
         """ Asynchronously update a document.
 
@@ -225,7 +229,7 @@ class DocumentClient:
             Document: The updated document.
         """
         document = DocumentUpdate(content=content, meta=meta)
-        r = await self.aclient.patch(f"/documents/{document_id}", json=document.dict(exclude_none=True))
+        r = await self.aclient.patch(f"/documents/{document_id}", json=document.model_dump(exclude_none=True))
         handle_response(r)
         return Document(**r.json()['document'], client=self._lexy_client)
 
@@ -394,12 +398,10 @@ class DocumentClient:
 
         for doc in docs:
             if isinstance(doc, Document):
-                # TODO: use doc.model_dump(mode='json') after updating to Pydantic 2.0
-                processed_docs.append(json.loads(doc.json()))
+                processed_docs.append(doc.model_dump(mode='json'))
             elif isinstance(doc, dict):
                 doc = Document(**doc)
-                # TODO: use doc.model_dump(mode='json') after updating to Pydantic 2.0
-                processed_docs.append(json.loads(doc.json()))
+                processed_docs.append(doc.model_dump(mode='json'))
             else:
                 raise TypeError(f"Invalid type for doc item: {type(doc)} - must be Document or dict")
 

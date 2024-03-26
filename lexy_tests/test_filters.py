@@ -1,5 +1,9 @@
+import pytest
+
+from pydantic_core import ValidationError
+
 from lexy.models import Document
-from lexy.schemas.filters import Filter, FilterCondition, filter_documents, Operation
+from lexy.schemas.filters import Filter, FilterCondition, Operation, filter_documents
 
 
 documents = [
@@ -48,7 +52,7 @@ class TestFilters:
         assert len(filtered_docs) == 0
 
     def test_filter_documents_with_in_condition(self):
-        filter_obj = Filter.parse_obj({
+        filter_obj = Filter.model_validate({
             "conditions": [
                 {"field": "meta.size", "operation": "less_than", "value": 30000},
                 {"field": "meta.type", "operation": "in", "value": ["image", "video"]}
@@ -60,7 +64,7 @@ class TestFilters:
         assert filtered_docs[0] == documents[0]
 
     def test_filter_documents_with_exclude_in_condition(self):
-        filter_obj = Filter.parse_obj({
+        filter_obj = Filter.model_validate({
             "conditions": [
                 {"field": "meta.size", "operation": "less_than", "value": 30000},
                 {"field": "meta.type", "operation": "in", "value": ["image", "video"], "negate": True}
@@ -72,7 +76,7 @@ class TestFilters:
         assert filtered_docs[0] == documents[3]
 
     def test_filter_documents_with_isnull_condition(self):
-        filter_obj = Filter.parse_obj({
+        filter_obj = Filter.model_validate({
             "conditions": [
                 {"field": "meta.size", "operation": "equals", "value": None}
             ],
@@ -83,7 +87,7 @@ class TestFilters:
         assert filtered_docs[0] == documents[1]
 
     def test_filter_documents_with_notnull_condition(self):
-        filter_obj = Filter.parse_obj({
+        filter_obj = Filter.model_validate({
             "conditions": [
                 {"field": "meta.size", "operation": "equals", "value": None, "negate": True}
             ],
@@ -94,3 +98,21 @@ class TestFilters:
         assert filtered_docs[0] == documents[0]
         assert filtered_docs[1] == documents[2]
         assert filtered_docs[2] == documents[3]
+
+    def test_filter_with_invalid_value_type(self):
+        with pytest.raises(ValidationError) as exc_info:
+            Filter.model_validate({
+                "conditions": [
+                    {"field": "meta.size", "operation": "less_than", "value": "hello"}
+                ],
+                "combination": "AND"
+            })
+        assert exc_info.type == ValidationError
+        val_err = exc_info.value
+        assert isinstance(val_err, ValidationError)
+        errors = val_err.errors()
+        assert len(errors) == 1
+        assert errors[0]["type"] == "value_error"
+        assert errors[0]["loc"] == ("conditions", 0, "value")
+        assert errors[0]["msg"] == "Value error, Value must be a number for operation 'less_than'"
+        assert errors[0]["input"] == "hello"

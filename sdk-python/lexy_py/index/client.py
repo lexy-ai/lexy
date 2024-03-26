@@ -201,7 +201,7 @@ class IndexClient:
             index_table_schema=index_table_schema,
             index_fields=index_fields
         )
-        r = self.client.patch(f"/indexes/{index_id}", json=index.dict(exclude_none=True))
+        r = self.client.patch(f"/indexes/{index_id}", json=index.model_dump(exclude_none=True))
         handle_response(r)
         return Index(**r.json(), client=self._lexy_client)
 
@@ -224,7 +224,7 @@ class IndexClient:
             index_table_schema=index_table_schema,
             index_fields=index_fields
         )
-        r = await self.aclient.patch(f"/indexes/{index_id}", json=index.dict(exclude_none=True))
+        r = await self.aclient.patch(f"/indexes/{index_id}", json=index.model_dump(exclude_none=True))
         handle_response(r)
         return Index(**r.json(), client=self._lexy_client)
 
