@@ -107,7 +107,7 @@ class CollectionClient:
             description=description,
             config=config
         )
-        r = self.client.post("/collections", json=collection.dict(exclude_none=True))
+        r = self.client.post("/collections", json=collection.model_dump(exclude_none=True))
         handle_response(r)
         return Collection(**r.json(), client=self._lexy_client)
 
@@ -130,7 +130,7 @@ class CollectionClient:
             description=description,
             config=config
         )
-        r = await self.aclient.post("/collections", json=collection.dict(exclude_none=True))
+        r = await self.aclient.post("/collections", json=collection.model_dump(exclude_none=True))
         handle_response(r)
         return Collection(**r.json(), client=self._lexy_client)
 
@@ -152,7 +152,7 @@ class CollectionClient:
             description=description,
             config=config
         )
-        r = self.client.patch(f"/collections/{collection_id}", json=collection.dict(exclude_none=True))
+        r = self.client.patch(f"/collections/{collection_id}", json=collection.model_dump(exclude_none=True))
         handle_response(r)
         return Collection(**r.json(), client=self._lexy_client)
 
@@ -174,7 +174,7 @@ class CollectionClient:
             description=description,
             config=config
         )
-        r = await self.aclient.patch(f"/collections/{collection_id}", json=collection.dict(exclude_none=True))
+        r = await self.aclient.patch(f"/collections/{collection_id}", json=collection.model_dump(exclude_none=True))
         handle_response(r)
         return Collection(**r.json(), client=self._lexy_client)
 

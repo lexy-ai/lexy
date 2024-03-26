@@ -17,10 +17,10 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Topic :: Database",
     "Topic :: Database :: Database Engines/Servers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Software Development :: Libraries",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence"
 ]
 
 [tool.poetry.dependencies]

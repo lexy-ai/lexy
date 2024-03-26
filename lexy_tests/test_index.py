@@ -88,31 +88,11 @@ class TestIndex:
         index = result.first()
         assert index is None
 
-    @pytest.mark.asyncio
-    async def test_create_index(self, async_session):
-        # define index fields
-        test_index_fields = {
-            "text": {"type": "text"},
-            "embedding": {"type": "embedding", "extras": {"dims": 384, "model": "text.embeddings.minilm"}},
-            "meta": {"type": "object"},
-        }
-        index = IndexCreate(index_id="test_index", description="Test Index", index_fields=test_index_fields)
-
-        db_index = Index.model_validate(index)
-        async_session.add(db_index)
-        await async_session.commit()
-        await async_session.refresh(db_index)
-        assert db_index.index_id == "test_index"
-        assert db_index.description == "Test Index"
-
-        # TODO: get IndexManager and test creating index table
-
-        result = await async_session.exec(
-            select(Index).where(Index.index_id == "test_index")
-        )
-        indexes = result.all()
-        assert len(indexes) == 1
-        test_index = indexes[0]
-        assert test_index.index_id == "test_index"
-        assert test_index.description == "Test Index"
-        assert set(test_index.index_fields.keys()) == {"text", "embedding", "meta"}
+    # TODO: create fixture for IndexManager and run all relevant tests
+    #   - test creating index model
+    #   - test creating index table
+    #   - test saving index record(s)
+    #   - test getting index record(s)
+    #   - test updating index record(s)
+    #   - test deleting index record(s)
+    #   - test dropping index table

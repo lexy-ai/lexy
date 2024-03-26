@@ -11,6 +11,7 @@ def create_celery(settings=celery_settings):
     celery_app.config_from_object(settings, namespace='CELERY')
     celery_app.conf.update(task_track_started=True)
     celery_app.conf.update(worker_pool_restarts=True)
+    celery_app.conf.update(broker_connection_retry_on_startup=True)
 
     # # list of modules to import when the Celery worker starts.
     # celery_app.conf.update(imports=(

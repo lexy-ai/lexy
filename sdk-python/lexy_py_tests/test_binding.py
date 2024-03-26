@@ -2,6 +2,7 @@ import pytest
 
 from lexy_py.client import LexyClient
 from lexy_py.collection.models import Collection
+from lexy_py.exceptions import LexyAPIError
 from lexy_py.filters import FilterBuilder
 from lexy_py.index.models import Index
 from lexy_py.transformer.models import Transformer
@@ -120,3 +121,25 @@ class TestBindingClient:
             "msg": "Binding deleted",
             "binding_id": binding.binding_id
         }
+
+    def test_create_binding_with_invalid_filter(self, lx_client, celery_app, celery_worker):
+        # create filter with invalid conditions
+        my_filter = (FilterBuilder().include("meta.size", "less_than", "hello"))
+
+        with pytest.raises(LexyAPIError) as exc_info:
+            lx_client.create_binding(
+                collection_id="default",
+                index_id="default_text_embeddings",
+                transformer_id="text.embeddings.minilm",
+                description="Test Binding with Invalid Filter",
+                filters=my_filter
+            )
+        assert isinstance(exc_info.value, LexyAPIError)
+        assert exc_info.value.response_data["status_code"] == 422, exc_info.value.response_data
+        assert exc_info.value.response.status_code == 422
+        assert len(exc_info.value.response.json()["detail"]) == 1
+        error = exc_info.value.response.json()["detail"][0]
+        assert error["type"] == "value_error"
+        assert error["loc"] == ["body", "filter", "conditions", 0, "value"]
+        assert error["msg"] == "Value error, Value must be a number for operation 'less_than'"
+        assert error["input"] == "hello"

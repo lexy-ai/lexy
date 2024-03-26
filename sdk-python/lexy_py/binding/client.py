@@ -105,7 +105,7 @@ class BindingClient:
             filter=filters,
             status=status
         )
-        r = self.client.post("/bindings", json=binding.dict(exclude_none=True))
+        r = self.client.post("/bindings", json=binding.model_dump(exclude_none=True))
         handle_response(r)
         return Binding(**r.json()["binding"], client=self._lexy_client)
 
@@ -150,7 +150,7 @@ class BindingClient:
             filter=filters,
             status=status
         )
-        r = await self.aclient.post("/bindings", json=binding.dict(exclude_none=True))
+        r = await self.aclient.post("/bindings", json=binding.model_dump(exclude_none=True))
         handle_response(r)
         return Binding(**r.json()["binding"], client=self._lexy_client)
 
@@ -210,7 +210,7 @@ class BindingClient:
             filter=filters,
             status=status
         )
-        json_payload = binding.dict(exclude_none=True)
+        json_payload = binding.model_dump(exclude_none=True)
         if json_payload["filter"] == {}:  # explicitly removed filters
             json_payload["filter"] = None
         r = self.client.patch(f"/bindings/{binding_id}", json=json_payload)
@@ -247,7 +247,7 @@ class BindingClient:
             filter=filters,
             status=status
         )
-        json_payload = binding.dict(exclude_none=True)
+        json_payload = binding.model_dump(exclude_none=True)
         if json_payload["filter"] == {}:  # explicitly removed filters
             json_payload["filter"] = None
         r = await self.aclient.patch(f"/bindings/{binding_id}", json=json_payload)
