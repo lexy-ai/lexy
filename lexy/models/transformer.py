@@ -19,13 +19,17 @@ class TransformerBase(SQLModel):
         primary_key=True,
         min_length=1,
         max_length=255,
-        regex=r"^[a-zA-Z][a-zA-Z0-9_.-]+$"
+        # TODO: switch back to `regex=` (or `pattern=`) once SQLModel bug is fixed
+        #   https://github.com/tiangolo/sqlmodel/discussions/735
+        schema_extra={"pattern": r"^[a-zA-Z][a-zA-Z0-9_.-]+$"}
     )
     path: Optional[str] = Field(
         default=None,
         min_length=1,
         max_length=255,
-        regex=r"^[a-zA-Z][a-zA-Z0-9_.]+$"
+        # TODO: switch back to `regex=` (or `pattern=`) once SQLModel bug is fixed
+        #   https://github.com/tiangolo/sqlmodel/discussions/735
+        schema_extra={"pattern": r"^[a-zA-Z][a-zA-Z0-9_.]+$"}
     )
     description: Optional[str] = None
 

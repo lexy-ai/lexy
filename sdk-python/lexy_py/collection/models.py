@@ -14,8 +14,8 @@ class CollectionModel(BaseModel):
     """ Collection model """
     collection_id: str = Field(
         min_length=1,
-        max_length=255,
-        pattern=r"^[a-z0-9_-]+$"
+        max_length=56,
+        pattern="^[a-z_][a-z0-9_]{0,55}$",
     )
     description: Optional[str] = None
     config: Optional[dict[str, Any]] = Field(default={})

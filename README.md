@@ -12,28 +12,23 @@ git clone https://github.com/lexy-ai/lexy.git
 
 ### Install dependencies
 
-Python 3.11 or greater is required. 
+Lexy requires Python 3.11 or greater. You can check your Python version by running `python3 --version`.
+
+First create a virtual environment and install the dependencies.
 
 ```Shell
 # create a virtualenv
 python3 -m venv venv 
 source venv/bin/activate
+```
 
-# install poetry
-pip install poetry
+Then run the following to install the dev dependencies and build your docker containers.
 
-# install dev dependencies and extras
-poetry install --no-root --with test,docs,dev -E "lexy_transformers"
-
-# install lexy in editable mode
-pip install -e .
-pip install -e sdk-python
-
-# create .env file if it doesn't exist
-cp -n .env.example .env
-
-# build docker images
-docker-compose up --build -d
+```Shell
+# install dev dependencies
+make install-dev
+# build docker containers
+make build-dev
 ```
 
 ### Where to find services
@@ -68,7 +63,8 @@ Do this before building your docker containers. Or, if you've already run `docke
 following to rebuild the server and worker containers.
 
 ```shell
-docker-compose up --build -d --no-deps lexyserver lexyworker
+# rebuild the server and worker containers
+make rebuild-dev-containers
 ```
 
 ### Run the Dashboard
@@ -81,7 +77,6 @@ To start the dashboard, run:
 cd dashboard
 npm install
 npm run dev
-
 ```
 
 ### PyCharm issues

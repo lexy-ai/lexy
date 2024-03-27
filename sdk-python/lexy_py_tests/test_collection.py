@@ -124,3 +124,25 @@ class TestCollectionModel:
             collection_without_a_client.list_documents()
         assert isinstance(exc_info.value, ValueError)
         assert str(exc_info.value) == "API client has not been set."
+
+    def test_create_collection(self):
+        collection = Collection(collection_id="test_collection")
+        assert collection.collection_id == "test_collection"
+        collection = Collection(collection_id="_te5t")
+        assert collection.collection_id == "_te5t"
+        collection = Collection(collection_id="_mytable" * 7)
+        assert collection.collection_id == "_mytable" * 7
+
+    def test_create_collection_with_invalid_id(self):
+        with pytest.raises(ValueError):
+            Collection(collection_id="", description="Test Collection")  # blank
+        with pytest.raises(ValueError):
+            Collection(collection_id="test collection", description="Test Collection")  # space
+        with pytest.raises(ValueError):
+            Collection(collection_id="test-collection", description="Test Collection")  # hyphen
+        with pytest.raises(ValueError):
+            Collection(collection_id="Test", description="Test Collection")  # uppercase
+        with pytest.raises(ValueError):
+            Collection(collection_id="1abc", description="Test Collection")  # starts with number
+        with pytest.raises(ValueError):
+            Collection(collection_id="_mytable" * 8, description="Test Collection")  # too long

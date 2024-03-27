@@ -88,6 +88,8 @@ class TestIndex:
         index = result.first()
         assert index is None
 
+
+class TestIndexManager:
     # TODO: create fixture for IndexManager and run all relevant tests
     #   - test creating index model
     #   - test creating index table
@@ -96,3 +98,29 @@ class TestIndex:
     #   - test updating index record(s)
     #   - test deleting index record(s)
     #   - test dropping index table
+    pass
+
+
+class TestIndexModel:
+
+    def test_create_index(self):
+        index = IndexCreate(index_id="test_index")
+        assert index.index_id == "test_index"
+        index = IndexCreate(index_id="_te5t")
+        assert index.index_id == "_te5t"
+        index = IndexCreate(index_id="_myindex" * 7)
+        assert index.index_id == "_myindex" * 7
+
+    def test_create_index_with_invalid_id(self):
+        with pytest.raises(ValueError):
+            IndexCreate(index_id="", description="Test Index")  # blank
+        with pytest.raises(ValueError):
+            IndexCreate(index_id="test index", description="Test Index")  # space
+        with pytest.raises(ValueError):
+            IndexCreate(index_id="test-index", description="Test Index")  # hyphen
+        with pytest.raises(ValueError):
+            IndexCreate(index_id="Test", description="Test Index")  # uppercase
+        with pytest.raises(ValueError):
+            IndexCreate(index_id="1abc", description="Test Index")  # starts with number
+        with pytest.raises(ValueError):
+            IndexCreate(index_id="_myindex" * 8, description="Test Index")  # too long

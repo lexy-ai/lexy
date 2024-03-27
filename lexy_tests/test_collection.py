@@ -79,3 +79,28 @@ class TestCollection:
         assert len(collections) == 1
         assert collections[0].collection_id == "test_collection_validated"
         assert collections[0].description == "Test Collection Validated"
+
+
+class TestCollectionModel:
+
+    def test_create_collection(self):
+        collection = CollectionCreate(collection_id="test_collection")
+        assert collection.collection_id == "test_collection"
+        collection = CollectionCreate(collection_id="_te5t")
+        assert collection.collection_id == "_te5t"
+        collection = CollectionCreate(collection_id="_mytable" * 7)
+        assert collection.collection_id == "_mytable" * 7
+
+    def test_create_collection_with_invalid_id(self):
+        with pytest.raises(ValueError):
+            CollectionCreate(collection_id="", description="Test Collection")  # blank
+        with pytest.raises(ValueError):
+            CollectionCreate(collection_id="test collection", description="Test Collection")  # space
+        with pytest.raises(ValueError):
+            CollectionCreate(collection_id="test-collection", description="Test Collection")  # hyphen
+        with pytest.raises(ValueError):
+            CollectionCreate(collection_id="Test", description="Test Collection")  # uppercase
+        with pytest.raises(ValueError):
+            CollectionCreate(collection_id="1abc", description="Test Collection")  # starts with number
+        with pytest.raises(ValueError):
+            CollectionCreate(collection_id="_mytable" * 8, description="Test Collection")  # too long

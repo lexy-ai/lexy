@@ -1,6 +1,6 @@
 # Installation
 
-To run Lexy locally, you'll need [Docker](https://www.docker.com/get-started/) installed. You'll also need Python 3. We recommend Python 3.11 or greater.
+To run Lexy locally, you'll need [Docker](https://www.docker.com/get-started/) installed. You'll also need Python 3.11 or greater.
 
 ## Clone the repo
 
@@ -13,33 +13,28 @@ git clone https://github.com/lexy-ai/lexy.git
 
 ### Create a virtual env
 
+First create a virtual environment. Make sure that you're using Python 3.11 or greater. You can check your Python version by running `python3 --version`.
+
 ```Shell
 # create a virtualenv
-python3 -m venv venv
+python3 -m venv venv 
 source venv/bin/activate
 ```
 
-### Install Python dependencies
+### Install dev dependencies
+
+This will also create an `.env` file in the working directory if it doesn't exist already.
+
 ```Shell
-# install poetry
-pip install poetry
-
-# install dev dependencies and extras
-poetry install --no-root --with test,docs,dev -E "lexy_transformers"
-
-# install lexy in editable mode
-pip install -e .
-pip install -e sdk-python
+# install dev dependencies
+make install-dev
 ```
 
-### Build docker images
+### Build docker containers
 
 ```Shell
-# create .env file if it doesn't exist
-cp -n .env.example .env
-
-# build docker images
-docker-compose up --build -d
+# build docker containers
+make build-dev
 ```
 
 ### Configuring AWS
@@ -51,18 +46,48 @@ You'll also need to specify an S3 bucket for file storage (for which your AWS cr
 You can do so by adding `S3_BUCKET=<name-of-your-S3-bucket>` to your `.env` file, or by updating the value of 
 `S3_BUCKET` in `lexy/core/config.py`.
 
+### Using OpenAI transformers
+
+To use OpenAI embeddings in Lexy, you'll need to set the `OPENAI_API_KEY` environment variable. You can do so by adding 
+the following to your `.env` file:
+
+```Shell
+OPENAI_API_KEY=<your-openai-api-key>
+```
+
+Do this before building your docker containers. Or, if you've already run `docker-compose up`, you can run the 
+following to rebuild the server and worker containers.
+
+```shell
+# rebuild the server and worker containers
+make rebuild-dev-containers
+```
+
+### Run the Dashboard (WIP)
+
+Lexy comes with a built-in dashboard to visualize pipelines. This is still under development, but you can run it locally.
+
+To start the dashboard, run:
+
+```shell
+cd dashboard
+npm install
+npm run dev
+```
+
 ## Where to find services
 
 The server will be running at http://localhost:9900. In addition, you can find the following services.
 
 
-| Service      | URL                        | Notes                                                         |
-|--------------|----------------------------|---------------------------------------------------------------|
-| Lexy API     | http://localhost:9900/docs | Swagger API docs                                              |
-| Flower       | http://localhost:5556      | Celery task monitor                                           |
-| RabbitMQ     | http://localhost:15672     | Username: `guest`, Password: `guest`                          |
-| Postgres     | http://localhost:5432      | Database: `lexy`, Username: `postgres`, Password: `postgres`  |
-| Project docs | http://localhost:8000      | Run `make serve-docs`<br/>Username: `lexy`, Password: `guest` |
+| Service        | URL                        | Notes                                                         |
+|----------------|----------------------------|---------------------------------------------------------------|
+| Lexy API       | http://localhost:9900/docs | Swagger API docs                                              |
+| Flower         | http://localhost:5556      | Celery task monitor                                           |
+| RabbitMQ       | http://localhost:15672     | Username: `guest`, Password: `guest`                          |
+| Postgres       | http://localhost:5432      | Database: `lexy`, Username: `postgres`, Password: `postgres`  |
+| Project docs   | http://localhost:8000      | Run `make serve-docs`<br/>Username: `lexy`, Password: `guest` |
+| Lexy Dashboard | http://localhost:3000      | [WIP] Dashboard to show pipelines                             |
 
 
 ## Troubleshooting

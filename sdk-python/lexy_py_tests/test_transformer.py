@@ -1,6 +1,7 @@
 import pytest
 
 from lexy_py.exceptions import LexyAPIError
+from lexy_py.transformer.models import Transformer
 
 
 class TestTransformerClient:
@@ -63,3 +64,26 @@ class TestTransformerClient:
         assert exc_info.value.response_data["status_code"] == 400, exc_info.value.response_data
         assert exc_info.value.response.status_code == 400
         assert exc_info.value.response.json()["detail"] == "Transformer with that ID already exists"
+
+
+class TestTransformerModel:
+
+    def test_create_transformer(self):
+        transformer = Transformer(transformer_id="test_transformer")
+        assert transformer.transformer_id == "test_transformer"
+        transformer = Transformer(transformer_id="test-transformer")
+        assert transformer.transformer_id == "test-transformer"
+        transformer = Transformer(transformer_id="test.transformer")
+        assert transformer.transformer_id == "test.transformer"
+
+    def test_create_transformer_with_invalid_id(self):
+        with pytest.raises(ValueError):
+            Transformer(transformer_id="", description="Test Transformer")  # blank
+        with pytest.raises(ValueError):
+            Transformer(transformer_id="test transformer", description="Test Transformer")  # space
+        with pytest.raises(ValueError):
+            Transformer(transformer_id="_test", description="Test Transformer")  # starts with underscore
+        with pytest.raises(ValueError):
+            Transformer(transformer_id="1abc", description="Test Transformer")  # starts with number
+        with pytest.raises(ValueError):
+            Transformer(transformer_id="transformer" * 30, description="Test Transformer")  # too long
