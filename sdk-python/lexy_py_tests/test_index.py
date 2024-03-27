@@ -2,6 +2,7 @@ import pytest
 
 import lexy_py.document.models
 from lexy_py.exceptions import LexyAPIError, NotFoundError
+from lexy_py.index.models import Index
 
 
 class TestIndexClient:
@@ -138,3 +139,28 @@ class TestIndexClient:
         assert exc_info.value.response_data["status_code"] == 400, exc_info.value.response_data
         assert exc_info.value.response.status_code == 400
         assert exc_info.value.response.text == '{"detail":"Field \'not_a_document_field\' not found in document"}'
+
+
+class TestIndexModel:
+
+    def test_create_index(self):
+        index = Index(index_id="test_index")
+        assert index.index_id == "test_index"
+        index = Index(index_id="_te5t")
+        assert index.index_id == "_te5t"
+        index = Index(index_id="_myindex" * 7)
+        assert index.index_id == "_myindex" * 7
+
+    def test_create_index_with_invalid_id(self):
+        with pytest.raises(ValueError):
+            Index(index_id="", description="Test Index")  # blank
+        with pytest.raises(ValueError):
+            Index(index_id="test index", description="Test Index")  # space
+        with pytest.raises(ValueError):
+            Index(index_id="test-index", description="Test Index")  # hyphen
+        with pytest.raises(ValueError):
+            Index(index_id="Test", description="Test Index")  # uppercase
+        with pytest.raises(ValueError):
+            Index(index_id="1abc", description="Test Index")  # starts with number
+        with pytest.raises(ValueError):
+            Index(index_id="_myindex" * 8, description="Test Index")  # too long

@@ -31,7 +31,7 @@ You should add environment variables **before** building your docker containers.
 containers, you can run the following to rebuild the server and worker containers. 
 
 ```bash
-make update-dev-containers
+make rebuild-dev-containers
 ```
 
 Verify that your new environment variable has been added to the server and worker containers.
@@ -58,5 +58,5 @@ are confident that we can optimize performance using C/C++ bindings. And if that
 
 ## I think the name Lexy is super cool.
 
-We agree with you! The name comes from "lexicon," defined as the vocabulary of a person, language, or branch of
+Technically this isn't a question, but we agree with you! The name comes from "lexicon," defined as the vocabulary of a person, language, or branch of
 knowledge.

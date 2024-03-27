@@ -10,7 +10,13 @@ if TYPE_CHECKING:
 
 class IndexModel(BaseModel):
     """ Index model """
-    index_id: str = Field(..., min_length=1, description="The ID of the index.")
+    index_id: str = Field(
+        default=...,
+        min_length=1,
+        max_length=56,
+        pattern="^[a-z_][a-z0-9_]{0,55}$",
+        description="The ID of the index."
+    )
     description: Optional[str] = None
     index_table_schema: Optional[dict[str, Any]] = Field(default={})
     index_fields: Optional[dict[str, Any]] = Field(default={})

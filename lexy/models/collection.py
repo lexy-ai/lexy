@@ -17,8 +17,11 @@ class CollectionBase(SQLModel):
         default=None,
         primary_key=True,
         min_length=1,
-        max_length=255,
-        regex=r"^[A-Za-z0-9_-]+$"
+        max_length=56,
+        # Postgres identifiers are limited to 63 characters (so 63 - len('zzcol__') = 56)
+        # TODO: switch back to `regex=` (or `pattern=`) once SQLModel bug is fixed
+        #   https://github.com/tiangolo/sqlmodel/discussions/735
+        schema_extra={"pattern": r"^[a-z_][a-z0-9_]{0,55}$"}
     )
     description: Optional[str] = None
     config: Optional[dict[str, Any]] = Field(sa_column=Column(JSONB), default=settings.COLLECTION_DEFAULT_CONFIG)
@@ -36,11 +39,11 @@ class Collection(CollectionBase, table=True):
     )
     documents: list["Document"] = Relationship(
         back_populates="collection",
-        sa_relationship_kwargs={'lazy': 'select'}
+        sa_relationship_kwargs={"lazy": "select"}
     )
     bindings: list["Binding"] = Relationship(
         back_populates="collection",
-        sa_relationship_kwargs={'lazy': 'selectin', 'cascade': 'all, delete-orphan'}
+        sa_relationship_kwargs={"lazy": "selectin", "cascade": "all, delete-orphan"}
     )
 
 

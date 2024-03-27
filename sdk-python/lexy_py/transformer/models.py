@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 class TransformerModel(BaseModel):
     """ Transformer model """
     transformer_id: str = Field(..., min_length=1, max_length=255, pattern=r"^[a-zA-Z][a-zA-Z0-9_.-]+$")
-    path: Optional[str] = Field(..., min_length=1, max_length=255, pattern=r"^[a-zA-Z][a-zA-Z0-9_.]+$")
+    path: Optional[str] = Field(default=None, min_length=1, max_length=255, pattern=r"^[a-zA-Z][a-zA-Z0-9_.]+$")
     description: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None

@@ -18,8 +18,11 @@ class IndexBase(SQLModel):
         default=None,
         primary_key=True,
         min_length=1,
-        max_length=255,
-        regex=r"^[a-z0-9_-]+$"
+        max_length=56,
+        # Postgres identifiers are limited to 63 characters (so 63 - len('zzidx__') = 56)
+        # TODO: switch back to `regex=` (or `pattern=`) once SQLModel bug is fixed
+        #   https://github.com/tiangolo/sqlmodel/discussions/735
+        schema_extra={"pattern": r"^[a-z_][a-z0-9_]{0,55}$"}
     )
     description: Optional[str] = None
     index_table_schema: Optional[dict[str, Any]] = Field(sa_column=Column(JSON, nullable=False), default={})
@@ -38,11 +41,14 @@ class Index(IndexBase, table=True):
     )
     bindings: list["Binding"] = Relationship(
         back_populates="index",
-        sa_relationship_kwargs={'cascade': 'all, delete-orphan'}
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )
     index_table_name: str = Field(
         default=None,
-        regex=r"^[a-z0-9_-]+$",
+        # Postgres identifiers are limited to 63 characters
+        # TODO: switch back to `regex=` (or `pattern=`) once SQLModel bug is fixed
+        #   https://github.com/tiangolo/sqlmodel/discussions/735
+        schema_extra={"pattern": r"^[a-z_][a-z0-9_]{0,62}$"},
         sa_column=Column(String, default=default_index_table_name, nullable=False, unique=True),
     )
 

@@ -80,3 +80,26 @@ class TestTransformer:
         )
         transformer = result.first()
         assert transformer is None
+
+
+class TestTransformerModel:
+
+    def test_create_transformer(self):
+        transformer = TransformerCreate(transformer_id="test_transformer")
+        assert transformer.transformer_id == "test_transformer"
+        transformer = TransformerCreate(transformer_id="test-transformer")
+        assert transformer.transformer_id == "test-transformer"
+        transformer = TransformerCreate(transformer_id="test.transformer")
+        assert transformer.transformer_id == "test.transformer"
+
+    def test_create_transformer_with_invalid_id(self):
+        with pytest.raises(ValueError):
+            TransformerCreate(transformer_id="", description="Test Transformer")  # blank
+        with pytest.raises(ValueError):
+            TransformerCreate(transformer_id="test transformer", description="Test Transformer")  # space
+        with pytest.raises(ValueError):
+            TransformerCreate(transformer_id="_test", description="Test Transformer")  # starts with underscore
+        with pytest.raises(ValueError):
+            TransformerCreate(transformer_id="1abc", description="Test Transformer")  # starts with number
+        with pytest.raises(ValueError):
+            TransformerCreate(transformer_id="transformer" * 30, description="Test Transformer")  # too long
