@@ -63,6 +63,10 @@ update-dev-containers: rebuild-dev-containers run-migrations
 
 update-dev: update-dev-env update-dev-containers
 
+update-doc-reqs: check-env
+	# update docs/requirements-docs.txt
+	poetry export --only=docs --without-hashes -f requirements.txt --output docs/requirements-docs.txt
+
 run-tests: check-env
 	pytest lexy_tests
 	pytest sdk-python
