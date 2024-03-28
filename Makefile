@@ -46,10 +46,7 @@ build-dev:
 
 update-dev-env: check-env
 	# update dev dependencies and extras
-	poetry update --with test,docs,dev -E "lexy_transformers"
-	# update lexy in editable mode
-	pip install -e .
-	pip install -e sdk-python
+	poetry install --no-root --with test,docs,dev -E "lexy_transformers"
 
 restart-dev-containers:
 	docker-compose restart lexyserver lexyworker

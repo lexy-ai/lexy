@@ -37,7 +37,7 @@ def parse_code(content):
     ]
 
 
-@lexy_transformer(name='code.extract_comments.v1')  # (1)
+@lexy_transformer(name='code.extract_comments.v1')  # (1)!
 def get_comments(doc: Document) -> list[dict]:
     comments = []
     for c in parse_code(doc.content):
@@ -92,13 +92,13 @@ to include your new module.
 
 class GlobalConfig(BaseConfig):
     ...
-    lexy_server_transformer_imports = { # (1)
+    lexy_server_transformer_imports = { # (1)!
 		'lexy.transformers.code',
 		'lexy.transformers.counter',
 		'lexy.transformers.embeddings',
         'lexy.transformers.multimodal',
     }
-    lexy_worker_transformer_imports = { # (2)
+    lexy_worker_transformer_imports = { # (2)!
 		'lexy.transformers.code',
 		'lexy.transformers.counter',
 		'lexy.transformers.embeddings',
