@@ -8,7 +8,8 @@ from sqlmodel import SQLModel  # ADDED
 
 from alembic import context
 
-from lexy.db import base  # noqa -- ADDED
+from lexy.core.config import settings  # ADDED
+from lexy import models  # noqa -- ADDED
 from lexy.api.deps import index_manager  # noqa -- ADDED
 
 # this is the Alembic Config object, which provides
@@ -32,8 +33,23 @@ target_metadata = SQLModel.metadata  # UPDATED
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-IGNORE_TABLES = ["celery_taskmeta", "celery_tasksetmeta"]
-IGNORE_TABLE_PREFIXES = ["zzidx__"]
+IGNORE_TABLES = [
+    # Celery tables
+    "celery_taskmeta",
+    "celery_tasksetmeta"
+]
+IGNORE_TABLE_PREFIXES = [
+    # IndexManager tables
+    "zzidx__"
+]
+
+
+def get_sync_url():
+    return settings.sync_database_url
+
+
+def get_async_url():
+    return settings.async_database_url
 
 
 def include_object(object, name, type_, reflected, compare_to):
@@ -57,7 +73,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = get_async_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -86,9 +102,11 @@ async def run_async_migrations() -> None:
     and associate a connection with the context.
 
     """
+    configuration = config.get_section(config.config_ini_section, {})
+    configuration["sqlalchemy.url"] = get_async_url()
 
     connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
