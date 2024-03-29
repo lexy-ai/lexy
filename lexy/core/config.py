@@ -94,14 +94,16 @@ class AppSettings(BaseSettings):
     @property
     def sync_database_url(self) -> str:
         return (f"postgresql://"
-                f"{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD.get_secret_value()}"
+                f"{self.POSTGRES_USER}"
+                f":{self.POSTGRES_PASSWORD.get_secret_value()}"
                 f"@{self.POSTGRES_HOST}"
                 f"/{self.POSTGRES_DB}")
 
     @property
     def async_database_url(self) -> str:
         return (f"postgresql+asyncpg://"
-                f"{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD.get_secret_value()}"
+                f"{self.POSTGRES_USER}"
+                f":{self.POSTGRES_PASSWORD.get_secret_value()}"
                 f"@{self.POSTGRES_HOST}"
                 f"/{self.POSTGRES_DB}")
 

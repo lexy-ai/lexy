@@ -27,7 +27,7 @@ class BindingBase(SQLModel):
         default="default",
         nullable=True
     )
-    transformer_id: str = Field(default=None, foreign_key="transformers.transformer_id")
+    transformer_id: str = Field(default=None, foreign_key="transformers.transformer_id", nullable=True)
     # TODO: update ON DELETE behavior to switch to "detached" instead of deleting
     index_id: str = Field(
         sa_column_args=(ForeignKey('indexes.index_id', ondelete='CASCADE'),),
