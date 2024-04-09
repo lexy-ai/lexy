@@ -91,8 +91,13 @@ class Document(DocumentBase, table=True):
         default=None,
         sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
     )
-    collection_id: str = Field(default="default", foreign_key="collections.collection_id")
-    collection: Collection = Relationship(back_populates="documents", sa_relationship_kwargs={'lazy': 'selectin'})
+    collection_id: str = Field(default=None, foreign_key="collections.collection_id")
+    collection: Collection = Relationship(
+        back_populates="documents",
+        sa_relationship_kwargs={
+            'lazy': 'selectin'
+        }
+    )
 
 
 class DocumentCreate(DocumentBase):
@@ -102,7 +107,3 @@ class DocumentCreate(DocumentBase):
 class DocumentUpdate(DocumentBase):
     content: Optional[str] = None
     meta: Optional[dict[Any, Any]] = None
-
-
-# class DocumentInDB(DocumentBase):
-#     pass

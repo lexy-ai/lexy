@@ -98,14 +98,16 @@ class IndexClient:
             Index: The index.
 
         Examples:
+            >>> from lexy_py import LexyClient
+            >>> lx = LexyClient()
             >>> code_index_fields = {
             ...     "code": {"type": "text"},
             ...     "code_embedding": {"type": "embedding", "extras": {"dims": 384, "model": "text.embeddings.minilm"}},
             ...     "n_lines": {"type": "int"},
             ... }
-            >>> index = lexy.index.add_index(index_id="code_index",
-            ...                              description="Code embedding index",
-            ...                              index_fields=code_index_fields)
+            >>> index = lx.index.add_index(index_id="code_index",
+            ...                            description="Code embedding index",
+            ...                            index_fields=code_index_fields)
         """
         if index_table_schema is None:
             index_table_schema = {}
@@ -137,14 +139,16 @@ class IndexClient:
             Index: The index.
 
         Examples:
+            >>> from lexy_py import LexyClient
+            >>> lx = LexyClient()
             >>> code_index_fields = {
             ...     "code": {"type": "text"},
             ...     "code_embedding": {"type": "embedding", "extras": {"dims": 384, "model": "text.embeddings.minilm"}},
             ...     "n_lines": {"type": "int"},
             ... }
-            >>> index = await lexy.index.aadd_index(index_id="code_index",
-            ...                                     description="Code embedding index",
-            ...                                     index_fields=code_index_fields)
+            >>> index = await lx.index.aadd_index(index_id="code_index",
+            ...                                   description="Code embedding index",
+            ...                                   index_fields=code_index_fields)
         """
         if index_table_schema is None:
             index_table_schema = {}
@@ -290,18 +294,18 @@ class IndexClient:
 
         Examples:
             >>> from lexy_py import LexyClient
-            >>> lexy = LexyClient()
-            >>> lexy.query_index(query_text="Test Query")
+            >>> lx = LexyClient()
+            >>> lx.query_index(query_text="Test Query")
 
-            >>> lexy.query_index(query_text="Test Query", return_fields=["my_index_field", "document.content"])
+            >>> lx.query_index(query_text="Test Query", return_fields=["my_index_field", "document.content"])
 
-            >>> lexy.query_index(query_image="test_image.jpg", index_id="my_image_index")
+            >>> lx.query_index(query_image="test_image.jpg", index_id="my_image_index")
 
             >>> import httpx
             >>> from PIL import Image
             >>> img_url = 'https://getlexy.com/assets/images/dalle-agi.jpeg'
             >>> image = Image.open(httpx.get(img_url))
-            >>> lexy.query_index(query_image=image, index_id="my_image_index", k=3)
+            >>> lx.query_index(query_image=image, index_id="my_image_index", k=3)
         """
         files, params = self._process_query_params(query_text=query_text,
                                                    query_image=query_image,

@@ -36,92 +36,149 @@ class DocumentClient:
         return self._lexy_client.client
 
     def list_documents(self,
-                       collection_id: str = "default",
+                       *,
+                       collection_name: str | None = "default",
+                       collection_id: str = None,
                        limit: int = 100,
                        offset: int = 0) -> list[Document]:
         """ Synchronously get a list of documents in a collection.
 
+        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
+
         Args:
-            collection_id (str): The ID of the collection to get documents from. Defaults to "default".
+            collection_name (str): The name of the collection to get documents from. Defaults to "default".
+            collection_id (str): The ID of the collection to get documents from. Defaults to None. If provided,
+                `collection_name` will be ignored.
             limit (int): The maximum number of documents to return. Defaults to 100. Maximum allowed is 1000.
             offset (int): The offset to start from. Defaults to 0.
 
         Returns:
             Documents: A list of documents in a collection.
         """
-        r = self.client.get("/documents",
-                            params={
-                                "collection_id": collection_id,
-                                "limit": limit,
-                                "offset": offset
-                            })
+        if collection_id is not None:
+            r = self.client.get(f"/collections/{collection_id}/documents",
+                                params={"limit": limit, "offset": offset})
+        else:
+            r = self.client.get("/documents",
+                                params={
+                                    "collection_name": collection_name,
+                                    "limit": limit,
+                                    "offset": offset
+                                })
         handle_response(r)
         return [Document(**document, client=self._lexy_client) for document in r.json()]
 
     async def alist_documents(self,
-                              collection_id: str = "default",
+                              *,
+                              collection_name: str = "default",
+                              collection_id: str = None,
                               limit: int = 100,
                               offset: int = 0) -> list[Document]:
         """ Asynchronously get a list of documents in a collection.
 
+        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
+
         Args:
-            collection_id (str): The ID of the collection to get documents from. Defaults to "default".
+            collection_name (str): The name of the collection to get documents from. Defaults to "default".
+            collection_id (str): The ID of the collection to get documents from. Defaults to None. If provided,
+                `collection_name` will be ignored.
             limit (int): The maximum number of documents to return. Defaults to 100. Maximum allowed is 1000.
             offset (int): The offset to start from. Defaults to 0.
 
         Returns:
             Documents: A list of documents in a collection.
         """
-        r = await self.aclient.get("/documents",
-                                   params={
-                                       "collection_id": collection_id,
-                                       "limit": limit,
-                                       "offset": offset
-                                   })
+        if collection_id is not None:
+            r = await self.aclient.get(f"/collections/{collection_id}/documents",
+                                       params={"limit": limit, "offset": offset})
+        else:
+            r = await self.aclient.get("/documents",
+                                       params={
+                                           "collection_name": collection_name,
+                                           "limit": limit,
+                                           "offset": offset
+                                       })
         handle_response(r)
         return [Document(**document, client=self._lexy_client) for document in r.json()]
 
     def add_documents(self,
                       docs: Document | dict | list[Document | dict],
-                      collection_id: str = "default",
+                      *,
+                      collection_name: str = "default",
+                      collection_id: str = None,
                       batch_size: int = 100) -> list[Document]:
         """ Synchronously add documents to a collection in batches.
 
+        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
+
         Args:
             docs (Document | dict | list[Document | dict]): The documents to add.
-            collection_id (str): The ID of the collection to add the documents to. Defaults to "default".
+            collection_name (str): The name of the collection to add the documents to. Defaults to "default".
+            collection_id (str): The ID of the collection to add the documents to. Defaults to None. If provided,
+                `collection_name` will be ignored.
             batch_size (int): The number of documents to add in each batch. Defaults to 100.
 
         Returns:
             Documents: A list of created documents.
 
         Examples:
+            Add documents to the default collection:
+
             >>> from lexy_py import LexyClient
-            >>> lexy = LexyClient()
-            >>> docs_added = lexy.add_documents(docs=[
+            >>> lx = LexyClient()
+            >>> docs_added = lx.add_documents(docs=[
+            ...     {"content": "Default document 1"},
+            ...     {"content": "Default document 2"}
+            ... ])
+
+            Add documents to a specific collection by name:
+
+            >>> my_new_collection = lx.create_collection("my_new_collection")
+            >>> docs_added = lx.add_documents(docs=[
             ...     {"content": "My first document"},
             ...     {"content": "My second document"}
-            ... ], collection_id="my_collection")
+            ... ], collection_name="my_new_collection")
+
+            Add documents to a specific collection by ID:
+
+            >>> docs_added = lx.add_documents(docs=[
+            ...     {"content": "My third document"},
+            ...     {"content": "My fourth document"}
+            ... ], collection_id=my_new_collection.collection_id)
+
         """
         created_docs = []
         processed_docs = self._process_docs(docs)
 
         for i in range(0, len(processed_docs), batch_size):
             batch_docs = processed_docs[i:i + batch_size]
-            r = self.client.post("/documents", json=batch_docs, params={"collection_id": collection_id})
+
+            if collection_id is not None:
+                r = self.client.post(f"/collections/{collection_id}/documents", json=batch_docs)
+            else:
+                r = self.client.post("/documents", json=batch_docs, params={"collection_name": collection_name})
+
             handle_response(r)
-            created_docs.extend([Document(**document['document'], client=self._lexy_client) for document in r.json()])
+            created_docs.extend(
+                [Document(**document['document'], client=self._lexy_client) for document in r.json()]
+            )
         return created_docs
 
     async def aadd_documents(self,
                              docs: Document | dict | list[Document | dict],
-                             collection_id: str = "default",
+                             *,
+                             collection_name: str = "default",
+                             collection_id: str = None,
                              batch_size: int = 100) -> list[Document]:
         """ Asynchronously add documents to a collection in batches.
 
+        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
+
         Args:
             docs (Document | dict | list[Document | dict]): The documents to add.
-            collection_id (str): The ID of the collection to add the documents to. Defaults to "default".
+            collection_name (str): The name of the collection to add the documents to. Defaults to "default".
+            collection_id (str): The ID of the collection to add the documents to. Defaults to None. If provided,
+                `collection_name` will be ignored.
             batch_size (int): The number of documents to add in each batch. Defaults to 100.
 
         Returns:
@@ -132,40 +189,73 @@ class DocumentClient:
 
         for i in range(0, len(processed_docs), batch_size):
             batch_docs = processed_docs[i:i + batch_size]
-            r = await self.aclient.post("/documents", json=batch_docs, params={"collection_id": collection_id})
+
+            if collection_id is not None:
+                r = await self.aclient.post(f"/collections/{collection_id}/documents", json=batch_docs)
+            else:
+                r = await self.aclient.post("/documents", json=batch_docs,
+                                            params={"collection_name": collection_name})
+
             handle_response(r)
-            created_docs.extend([Document(**document['document'], client=self._lexy_client) for document in r.json()])
+            created_docs.extend(
+                [Document(**document['document'], client=self._lexy_client) for document in r.json()]
+            )
         return created_docs
 
-    def add_document(self, doc: Document | dict, collection_id: str) -> Document:
+    def add_document(self,
+                     doc: Document | dict,
+                     *,
+                     collection_name: str = "default",
+                     collection_id: str = None) -> Document:
         """ Synchronously add a document to a collection.
+
+        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
 
         Args:
             doc (Document | dict): The document to add.
-            collection_id (str): The ID of the collection to add the document to.
+            collection_name (str): The name of the collection to add the document to. Defaults to "default".
+            collection_id (str): The ID of the collection to add the document to. If provided, `collection_name` will
+                be ignored.
 
         Returns:
             Document: The created document.
         """
         processed_docs = self._process_docs(doc)
 
-        r = self.client.post("/documents", json=processed_docs, params={"collection_id": collection_id})
+        if collection_id is not None:
+            r = self.client.post(f"/collections/{collection_id}/documents", json=processed_docs)
+        else:
+            r = self.client.post("/documents", json=processed_docs, params={"collection_name": collection_name})
+
         handle_response(r)
         return Document(**r.json()[0]['document'], client=self._lexy_client)
 
-    async def aadd_document(self, doc: Document | dict, collection_id: str) -> Document:
+    async def aadd_document(self,
+                            doc: Document | dict,
+                            *,
+                            collection_name: str = "default",
+                            collection_id: str = None) -> Document:
         """ Asynchronously add a document to a collection.
+
+        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
 
         Args:
             doc (Document | dict): The document to add.
-            collection_id (str): The ID of the collection to add the document to.
+            collection_name (str): The name of the collection to add the document to. Defaults to "default".
+            collection_id (str): The ID of the collection to add the document to. If provided, `collection_name` will
+                be ignored.
 
         Returns:
             Document: The created document.
         """
         processed_docs = self._process_docs(doc)
 
-        r = await self.aclient.post("/documents", json=processed_docs, params={"collection_id": collection_id})
+        if collection_id is not None:
+            r = await self.aclient.post(f"/collections/{collection_id}/documents", json=processed_docs)
+        else:
+            r = await self.aclient.post("/documents", json=processed_docs,
+                                        params={"collection_name": collection_name})
+
         handle_response(r)
         return Document(**r.json()[0]['document'], client=self._lexy_client)
 
@@ -197,6 +287,7 @@ class DocumentClient:
 
     def update_document(self,
                         document_id: str,
+                        *,
                         content: Optional[str] = None,
                         meta: Optional[dict] = None) -> Document:
         """ Synchronously update a document.
@@ -216,6 +307,7 @@ class DocumentClient:
 
     async def aupdate_document(self,
                                document_id: str,
+                               *,
                                content: Optional[str] = None,
                                meta: Optional[dict] = None) -> Document:
         """ Asynchronously update a document.
@@ -253,28 +345,49 @@ class DocumentClient:
         handle_response(r)
         return r.json()
 
-    def bulk_delete_documents(self, collection_id: str) -> dict:
+    def bulk_delete_documents(self,
+                              *,
+                              collection_name: str = None,
+                              collection_id: str = None) -> dict:
         """ Synchronously delete all documents from a collection.
 
+        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
+
         Args:
-            collection_id (str): The ID of the collection to delete documents from.
+            collection_name (str): The name of the collection to delete documents from.
+            collection_id (str): The ID of the collection to delete documents from. If provided, `collection_name`
+                will be ignored.
+
+        Raises:
+            ValueError: If neither `collection_name` nor `collection_id` are provided.
         """
-        r = self.client.delete("/documents", params={"collection_id": collection_id})
+        if collection_id:
+            r = self.client.delete(f"/collections/{collection_id}/documents")
+        elif collection_name:
+            r = self.client.delete("/documents", params={"collection_name": collection_name})
+        else:
+            raise ValueError("Either 'collection_name' or 'collection_id' must be provided")
         handle_response(r)
         return r.json()
 
     def upload_documents(self,
                          files: Image.Image | str | list[Image.Image | str],
                          filenames: str | list[str] = None,
-                         collection_id: str = "default",
+                         *,
+                         collection_name: str = "default",
+                         collection_id: str = None,
                          batch_size: int = 5) -> list[Document]:
         """ Synchronously upload files to a collection in batches.
+
+        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
 
         Args:
             files (Image.Image | str | list[Image.Image | str]): The files to upload. Can be a list or single instance
                 of either an Image file or a string containing the path to an Image file.
             filenames (str | list[str], optional): The filenames of the files to upload. Defaults to None.
-            collection_id (str): The ID of the collection to upload the files to. Defaults to "default".
+            collection_name (str): The name of the collection to upload the files to. Defaults to "default".
+            collection_id (str): The ID of the collection to upload the files to. Defaults to None. If provided,
+                `collection_name` will be ignored.
             batch_size (int): The number of files to upload in each batch. Defaults to 5.
 
         Returns:
@@ -288,25 +401,39 @@ class DocumentClient:
             batch_files = files[i:i + batch_size]
             batch_filenames = filenames[i:i + batch_size]
             processed_images = self._process_images(batch_files, filenames=batch_filenames)
-            r = self.client.post("/documents/upload",
-                                 files=processed_images,
-                                 params={"collection_id": collection_id})
+
+            if collection_id is not None:
+                r = self.client.post(f"/collections/{collection_id}/documents/upload",
+                                     files=processed_images)
+            else:
+                r = self.client.post("/documents/upload",
+                                     files=processed_images,
+                                     params={"collection_name": collection_name})
+
             handle_response(r)
-            created_docs.extend([Document(**document['document'], client=self._lexy_client) for document in r.json()])
+            created_docs.extend(
+                [Document(**document['document'], client=self._lexy_client) for document in r.json()]
+            )
         return created_docs
 
     async def aupload_documents(self,
                                 files: Image.Image | str | list[Image.Image | str],
                                 filenames: str | list[str] = None,
-                                collection_id: str = "default",
+                                *,
+                                collection_name: str = "default",
+                                collection_id: str = None,
                                 batch_size: int = 5) -> list[Document]:
         """ Asynchronously upload files to a collection in batches.
+
+        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
 
         Args:
             files (Image.Image | str | list[Image.Image | str]): The files to upload. Can be a list or single instance
                 of either an Image file or a string containing the path to an Image file.
             filenames (str | list[str], optional): The filenames of the files to upload. Defaults to None.
-            collection_id (str): The ID of the collection to upload the files to. Defaults to "default".
+            collection_name (str): The name of the collection to upload the files to. Defaults to "default".
+            collection_id (str): The ID of the collection to upload the files to. Defaults to None. If provided,
+                `collection_name` will be ignored.
             batch_size (int): The number of files to upload in each batch. Defaults to 5.
 
         Returns:
@@ -320,14 +447,22 @@ class DocumentClient:
             batch_files = files[i:i + batch_size]
             batch_filenames = filenames[i:i + batch_size]
             processed_images = self._process_images(batch_files, filenames=batch_filenames)
-            r = await self.aclient.post("/documents/upload",
-                                        files=processed_images,
-                                        params={"collection_id": collection_id})
+
+            if collection_id is not None:
+                r = await self.aclient.post(f"/collections/{collection_id}/documents/upload",
+                                            files=processed_images)
+            else:
+                r = await self.aclient.post("/documents/upload",
+                                            files=processed_images,
+                                            params={"collection_name": collection_name})
+
             handle_response(r)
-            created_docs.extend([Document(**document['document'], client=self._lexy_client) for document in r.json()])
+            created_docs.extend(
+                [Document(**document['document'], client=self._lexy_client) for document in r.json()]
+            )
         return created_docs
 
-    def get_document_urls(self, document_id: str, expiration: int = 3600) -> dict:
+    def get_document_urls(self, document_id: str, *, expiration: int = 3600) -> dict:
         """ Synchronously get presigned URLs for a document.
 
         Args:
@@ -339,9 +474,9 @@ class DocumentClient:
 
         Examples:
             >>> from lexy_py import LexyClient
-            >>> lexy = LexyClient()
-            >>> my_image_document = lexy.list_documents('my-image-collection', limit=1)[0]
-            >>> lexy.document.get_document_urls(document_id=my_image_document.document_id)
+            >>> lx = LexyClient()
+            >>> my_image_document = lx.list_documents('my_image_collection', limit=1)[0]
+            >>> lx.document.get_document_urls(document_id=my_image_document.document_id)
             {
                 "object": "https://my-bucket.s3.amazonaws.com/path/to/object?...",
                 "thumbnails": {
@@ -349,8 +484,8 @@ class DocumentClient:
                 }
             }
 
-            >>> my_pdf_document = lexy.list_documents('pdf-collection', limit=1)[0]
-            >>> lexy.document.get_document_urls(document_id=my_pdf_document.document_id)
+            >>> my_pdf_document = lx.list_documents('pdf_collection', limit=1)[0]
+            >>> lx.document.get_document_urls(document_id=my_pdf_document.document_id)
             {
                 "object": "https://my-bucket.s3.amazonaws.com/path/to/object?...",
             }
@@ -359,7 +494,7 @@ class DocumentClient:
         handle_response(r)
         return r.json()
 
-    async def aget_document_urls(self, document_id: str, expiration: int = 3600) -> dict:
+    async def aget_document_urls(self, document_id: str, *, expiration: int = 3600) -> dict:
         """ Asynchronously get presigned URLs for a document.
 
         Args:

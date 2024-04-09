@@ -12,7 +12,9 @@ if TYPE_CHECKING:
 
 class CollectionModel(BaseModel):
     """ Collection model """
-    collection_id: str = Field(
+    collection_name: str = Field(
+        title="Collection Name",
+        description="The name of the collection. Must be unique across collections.",
         min_length=1,
         max_length=56,
         pattern="^[a-z_][a-z0-9_]{0,55}$",
@@ -21,13 +23,22 @@ class CollectionModel(BaseModel):
     config: Optional[dict[str, Any]] = Field(default={})
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    collection_id: Optional[str] = None
 
     def __repr__(self):
-        return f"<Collection('{self.collection_id}', description='{self.description}')>"
+        return f"<Collection('{self.collection_name}', id='{self.collection_id}', description='{self.description}')>"
 
 
 class CollectionUpdate(BaseModel):
     """ Collection update model """
+    collection_name: Optional[str] = Field(
+        default=None,
+        title="Collection Name",
+        description="The name of the collection. Must be unique across collections.",
+        min_length=1,
+        max_length=56,
+        pattern="^[a-z_][a-z0-9_]{0,55}$",
+    )
     description: Optional[str] = None
     config: Optional[dict[str, Any]] = None
 
@@ -48,6 +59,7 @@ class Collection(CollectionModel):
 
     def add_documents(self,
                       docs: Document | dict | list[Document | dict],
+                      *,
                       batch_size: int = 100) -> list[Document]:
         """ Synchronously add documents to the collection in batches.
 
@@ -61,7 +73,7 @@ class Collection(CollectionModel):
         return self.client.document.add_documents(docs, collection_id=self.collection_id, batch_size=batch_size)
 
     # TODO: add pagination
-    def list_documents(self, limit: int = 100, offset: int = 0) -> list[Document]:
+    def list_documents(self, *, limit: int = 100, offset: int = 0) -> list[Document]:
         """ Synchronously get a list of documents in the collection.
 
         Args:
@@ -71,11 +83,12 @@ class Collection(CollectionModel):
         Returns:
             Documents: A list of documents in the collection.
         """
-        return self.client.document.list_documents(self.collection_id, limit=limit, offset=offset)
+        return self.client.document.list_documents(collection_id=self.collection_id, limit=limit, offset=offset)
 
     def upload_documents(self,
                          files: Image.Image | str | list[Image.Image | str],
                          filenames: str | list[str] = None,
+                         *,
                          batch_size: int = 5) -> list[Document]:
         """ Synchronously upload files to the collection in batches.
 

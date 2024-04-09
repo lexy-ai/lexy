@@ -154,3 +154,5 @@ class FilterBuilder:
             "conditions": self.conditions,
             "combination": self.combination
         })
+
+    # TODO: implement from_dict and from_json methods to load an existing filter and modify it

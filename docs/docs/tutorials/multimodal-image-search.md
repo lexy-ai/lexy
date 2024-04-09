@@ -6,17 +6,17 @@ In this tutorial, we'll walk through how to use Lexy to create a multimodal sear
 ```python
 from lexy_py import LexyClient
 
-lexy = LexyClient()
+lx = LexyClient()
 ```
 
 ## Create collection
 
-Let's first create a collection to store our images. We'll use the `images_tutorial` collection for this tutorial.
+Let's first create a collection to store our images. We'll use the **`images_tutorial`** collection for this tutorial.
 
 
 ```python
 # create a new collection
-images_tutorial = lexy.create_collection('images_tutorial')
+images_tutorial = lx.create_collection('images_tutorial')
 images_tutorial
 ```
 
@@ -31,7 +31,9 @@ images_tutorial
 
 ### Define index
 
-First we'll define our index to store our embedded images. We use `*.embeddings.clip` as the transformer model name to indicate that we want to use the CLIP embeddings model, but that the embedding field can use any model that matches this pattern, including `image.embeddings.clip` and `text.embeddings.clip`. 
+First we'll define our index to store our embedded images. We use **`*.embeddings.clip`** as the transformer model name 
+to indicate that we want to use the CLIP embeddings model, but that the embedding field can use any model that matches 
+this pattern, including **`image.embeddings.clip`** and **`text.embeddings.clip`**. 
 
 
 ```python
@@ -41,7 +43,7 @@ index_fields = {
 }
 
 # create index
-idx = lexy.create_index(
+idx = lx.create_index(
     index_id='image_tutorial_index', 
     description='Index for images tutorial',
     index_fields=index_fields
@@ -62,28 +64,33 @@ The CLIP model is a transformer model that was trained on a large dataset of ima
 
 
 ```python
-lexy.transformers
+lx.transformers
 ```
 
 
 
 ```{ .text .no-copy .result #code-output }
-[<Transformer('text.embeddings.minilm', description='Text embeddings using "sentence-transformers/all-MiniLM-L6-v2"')>,
- <Transformer('text.counter.word_counter', description='Returns count of words and the longest word')>,
- <Transformer('image.embeddings.clip', description='Embed images using 'openai/clip-vit-base-patch32'.')>,
- <Transformer('text.embeddings.clip', description='Embed text using 'openai/clip-vit-base-patch32'.')>]
+[<Transformer('image.embeddings.clip', description='Embed images using 'openai/clip-vit-base-patch32'.')>,
+ <Transformer('text.embeddings.clip', description='Embed text using 'openai/clip-vit-base-patch32'.')>,
+ <Transformer('text.embeddings.minilm', description='Text embeddings using "sentence-transformers/all-MiniLM-L6-v2"')>,
+ <Transformer('text.embeddings.openai-3-large', description='Text embeddings using OpenAI's "text-embedding-3-large" model')>,
+ <Transformer('text.embeddings.openai-3-small', description='Text embeddings using OpenAI's "text-embedding-3-small" model')>,
+ <Transformer('text.embeddings.openai-ada-002', description='OpenAI text embeddings using model text-embedding-ada-002')>]
 ```
 
 
 ### Create binding
 
-We'll create a binding that will process images added to our `images_tutorial` collection using the CLIP image embeddings transformer, and store the results in `image_tutorial_index`.
+We'll create a binding that will process images added to our **`images_tutorial`** collection using the CLIP image 
+embeddings transformer, and store the results in **`image_tutorial_index`**.
 
 
 ```python
-binding = lexy.create_binding(collection_id='images_tutorial',
-                              transformer_id='image.embeddings.clip',
-                              index_id='image_tutorial_index')
+binding = lx.create_binding(
+    collection_name='images_tutorial',
+    transformer_id='image.embeddings.clip',
+    index_id='image_tutorial_index'
+)
 binding
 ```
 
@@ -97,7 +104,8 @@ binding
 
 ## Upload images to the collection
 
-Let's upload some images from the [image-text-demo dataset](https://huggingface.co/datasets/shabani1/image-text-demo) to the collection. This dataset is from HuggingFace datasets and requires the `datasets` package to be installed.
+Let's upload some images from the [image-text-demo dataset](https://huggingface.co/datasets/shabani1/image-text-demo) to the collection. This dataset is from HuggingFace 
+datasets and requires the `datasets` package to be installed.
 
 
 ```python
@@ -129,9 +137,9 @@ len(data)
 # add documents to the collection
 for i, row in enumerate(data, start=1):
     print(i, row['text'])
-    lexy.upload_documents(files=row['image'], 
-                          filenames=row['text'] + '.jpg', 
-                          collection_id='images_tutorial')
+    lx.upload_documents(files=row['image'], 
+                        filenames=row['text'] + '.jpg', 
+                        collection_name='images_tutorial')
 ```
 
 ```{ .text .no-copy .result #code-output }

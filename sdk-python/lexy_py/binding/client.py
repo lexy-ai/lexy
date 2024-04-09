@@ -53,9 +53,13 @@ class BindingClient:
         return [Binding(**binding, client=self._lexy_client) for binding in r.json()]
 
     def add_binding(self,
-                    collection_id: str,
-                    transformer_id: str,
-                    index_id: str,
+                    *,
+                    collection_name: str = None,
+                    collection_id: str = None,
+                    transformer_name: str = None,
+                    transformer_id: str = None,
+                    index_name: str = None,
+                    index_id: str = None,
                     description: Optional[str] = None,
                     execution_params: Optional[dict] = None,
                     transformer_params: Optional[dict] = None,
@@ -63,9 +67,15 @@ class BindingClient:
                     status: Optional[str] = None) -> Binding:
         """ Synchronously add a new binding.
 
+        One of either `_name` or `_id` is required for each of `collection`, `transformer`, and `index`. If both
+        `_name` and `_id` are provided, `_id` will be used.
+
         Args:
+            collection_name (str): The name of the collection containing the source documents.
             collection_id (str): The ID of the collection containing the source documents.
+            transformer_name (str): The name of the transformer that the binding will run.
             transformer_id (str): The ID of the transformer that the binding will run.
+            index_name (str): The name of the index in which the binding will store its output.
             index_id (str): The ID of the index in which the binding will store its output.
             description (str, optional): A description of the binding.
             execution_params (dict, optional): Parameters to pass to the binding's execution function.
@@ -77,27 +87,34 @@ class BindingClient:
         Returns:
             Binding: The created binding.
 
+        Raises:
+            ValueError: If neither `_name` nor `_id` is provided for each of `collection`, `transformer`, and `index`.
+
         Examples:
             Create a binding that runs the transformer with ID "image.embeddings.clip" on all image documents in
-            the collection with ID "my_collection" and stores the output in the index with ID "image_embeddings".
+            the collection named "my_collection" and stores the output in the index with ID "image_embeddings".
 
             >>> from lexy_py import LexyClient, FilterBuilder
-            >>> lexy = LexyClient()
+            >>> lx = LexyClient()
             >>> image_filter = FilterBuilder().include("meta.type", "equals", "image")
-            >>> binding = lexy.create_binding(collection_id="my_collection",
-            ...                               transformer_id="image.embeddings.clip",
-            ...                               index_id="image_embeddings",
-            ...                               filters=image_filter)
+            >>> binding = lx.create_binding(
+            ...     collection_name="my_collection",
+            ...     transformer_id="image.embeddings.clip",
+            ...     index_id="image_embeddings",
+            ...     filters=image_filter
+            ... )
         """
+        # TODO: move execution_params and transformer_params logic to BindingCreate model
         if execution_params is None:
             execution_params = {}
         if transformer_params is None:
             transformer_params = {}
-        if isinstance(filters, FilterBuilder):
-            filters = filters.to_dict()
         binding = BindingCreate(
+            collection_name=collection_name,
             collection_id=collection_id,
+            transformer_name=transformer_name,
             transformer_id=transformer_id,
+            index_name=index_name,
             index_id=index_id,
             description=description,
             execution_params=execution_params,
@@ -110,9 +127,13 @@ class BindingClient:
         return Binding(**r.json()["binding"], client=self._lexy_client)
 
     async def aadd_binding(self,
-                           collection_id: str,
-                           transformer_id: str,
-                           index_id: str,
+                           *,
+                           collection_name: str = None,
+                           collection_id: str = None,
+                           transformer_name: str = None,
+                           transformer_id: str = None,
+                           index_name: str = None,
+                           index_id: str = None,
                            description: Optional[str] = None,
                            execution_params: Optional[dict] = None,
                            transformer_params: Optional[dict] = None,
@@ -120,9 +141,15 @@ class BindingClient:
                            status: Optional[str] = None) -> Binding:
         """ Asynchronously add a new binding.
 
+        One of either `_name` or `_id` is required for each of `collection`, `transformer`, and `index`. If both
+        `_name` and `_id` are provided, `_id` will be used.
+
         Args:
+            collection_name (str): The name of the collection containing the source documents.
             collection_id (str): The ID of the collection containing the source documents.
+            transformer_name (str): The name of the transformer that the binding will run.
             transformer_id (str): The ID of the transformer that the binding will run.
+            index_name (str): The name of the index in which the binding will store its output.
             index_id (str): The ID of the index in which the binding will store its output.
             description (str, optional): A description of the binding.
             execution_params (dict, optional): Parameters to pass to the binding's execution function.
@@ -133,16 +160,21 @@ class BindingClient:
 
         Returns:
             Binding: The created binding.
+
+        Raises:
+            ValueError: If neither `_name` nor `_id` is provided for each of `collection`, `transformer`, and `index`.
         """
+        # TODO: move execution_params and transformer_params logic to BindingCreate model
         if execution_params is None:
             execution_params = {}
         if transformer_params is None:
             transformer_params = {}
-        if isinstance(filters, FilterBuilder):
-            filters = filters.to_dict()
         binding = BindingCreate(
+            collection_name=collection_name,
             collection_id=collection_id,
+            transformer_name=transformer_name,
             transformer_id=transformer_id,
+            index_name=index_name,
             index_id=index_id,
             description=description,
             execution_params=execution_params,
@@ -182,6 +214,7 @@ class BindingClient:
 
     def update_binding(self,
                        binding_id: int,
+                       *,
                        description: Optional[str] = None,
                        execution_params: Optional[dict] = None,
                        transformer_params: Optional[dict] = None,
@@ -201,8 +234,6 @@ class BindingClient:
         Returns:
             Binding: The updated binding.
         """
-        if isinstance(filters, FilterBuilder):
-            filters = filters.to_dict()
         binding = BindingUpdate(
             description=description,
             execution_params=execution_params,
@@ -218,6 +249,7 @@ class BindingClient:
         return Binding(**r.json()["binding"], client=self._lexy_client)
 
     async def aupdate_binding(self,
+                              *,
                               binding_id: int,
                               description: Optional[str] = None,
                               execution_params: Optional[dict] = None,
@@ -238,8 +270,6 @@ class BindingClient:
         Returns:
             Binding: The updated binding.
         """
-        if isinstance(filters, FilterBuilder):
-            filters = filters.to_dict()
         binding = BindingUpdate(
             description=description,
             execution_params=execution_params,

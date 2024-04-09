@@ -2,19 +2,20 @@
 
 ## First steps
 
-Let's get started by instantiating the Lexy client. By default, this will connect to the Lexy server running at `http://localhost:9900`.
+Let's get started by instantiating the Lexy client. By default, this will connect to the Lexy server running at 
+`http://localhost:9900`. You can visit the OpenAPI documentation for the server at [`http://localhost:9900/docs`](http://localhost:9900/docs).
 
 ```python
 from lexy_py import LexyClient
 
-lexy = LexyClient()
+lx = LexyClient()
 ```
 
 We can get more information about the Lexy server by calling the `info` method. Here we see existing Collections, Indexes, Transformers, and Bindings.
 
 
 ```python
-lexy.info()
+lx.info()
 ```
 
 
@@ -27,19 +28,22 @@ Lexy server <http://localhost:9900/api>
     - <Collection('code', description='Github code repos')>
 1 Indexes
     - <Index('default_text_embeddings', description='Text embeddings for default collection')>
-2 Transformers
-    - <Transformer('text.embeddings.minilm', description='Text embeddings using "sentence-transformers/all-MiniLM-L6-v2"')>
-    - <Transformer('text.counter.word_counter', description='Returns count of words and the longest word')>
+6 Transformers
+    - <Transformer('image.embeddings.clip', description='Embed images using 'openai/clip-vit-base-patch32'.')>,
+    - <Transformer('text.embeddings.clip', description='Embed text using 'openai/clip-vit-base-patch32'.')>,
+    - <Transformer('text.embeddings.minilm', description='Text embeddings using "sentence-transformers/all-MiniLM-L6-v2"')>,
+    - <...additional transformers...>
 1 Bindings
     - <Binding(id=1, status=ON, collection='default', transformer='text.embeddings.minilm', index='default_text_embeddings')>
 ```
 
 
-Let's add some documents to our "**default**" collection. We can add them using the `add_documents` method.
+Let's add some documents to our "**default**" collection. We can add them using the [`LexyClient.add_documents`](../reference/lexy_py/document.md#lexy_py.document.client.DocumentClient.add_documents) 
+method.
 
 
 ```python
-lexy.add_documents([
+lx.add_documents([
     {"content": "This is my first document! It's great!"},
     {"content": "Starlink is a satellite internet constellation operated by American aerospace company SpaceX, providing coverage to over 60 countries."},
     {"content": "A latent space is an embedding of a set of items within a manifold in which items resembling each other are positioned closer to one another."}
@@ -78,7 +82,7 @@ We can query the default index for "_what is deep learning_" and see our documen
 
 
 ```python
-lexy.query_index('what is deep learning')
+lx.query_index('what is deep learning')
 ```
 
 ```{ .text .no-copy .result #code-output }
@@ -105,15 +109,17 @@ lexy.query_index('what is deep learning')
 
 ## Example: Famous biographies
 
-Let's go through a longer example to see how Collections, Documents, Indexes, Bindings, and Transformers interact with one another. We'll use Lexy to create and query embeddings for a new collection of documents.
+Let's go through a longer example to see how **Collections**, **Documents**, **Indexes**, **Bindings**, and 
+**Transformers** interact with one another. We'll use Lexy to create and query embeddings for a new collection of 
+documents.
 
 ### Collections
 
-We can see that there are currently three collections, "**default**", "**code**", and "**images_tutorial**".
+We can see that there are currently two collections, "**default**" and "**code**".
 
 
 ```python
-lexy.collections
+lx.collections
 ```
 
 
@@ -125,7 +131,7 @@ lexy.collections
 Let's create a new "**bios**" collection for famous biographies.
 
 ```python
-bios = lexy.create_collection('bios', description='Famous biographies')
+bios = lx.create_collection('bios', description='Famous biographies')
 bios
 ```
 
@@ -137,7 +143,8 @@ bios
 
 ### Documents
 
-We can use the `list_documents` method to see that our new collection is empty.
+We can use the [`Collection.list_documents`](../reference/lexy_py/collection.md#lexy_py.collection.models.Collection.list_documents) 
+method to see that our new collection is empty.
 
 ```python
 bios.list_documents()
@@ -150,7 +157,7 @@ bios.list_documents()
 ```
 
 
-Let's add a few documents to our new collection.
+Let's add a few documents to our collection.
 
 
 ```python
@@ -170,17 +177,24 @@ bios.add_documents([
 
 ### Transformers
 
-Now we want to create embeddings for the documents in our new collection. We'll use a **`Transformer`** to generate embeddings for our documents. We can use the `.transformers` property to see the available transformers.
+Now we want to create embeddings for the documents in our new collection. We'll use a **`Transformer`** to generate 
+embeddings for our documents. We can use the [`LexyClient.transformers`](../reference/lexy_py/client.md#lexy_py.client.LexyClient.transformers) property to see a list of available 
+transformers.
 
 
 ```python
-lexy.transformers
+# list of available transformers
+lx.transformers
 ```
 
 
 ```{ .text .no-copy .result #code-output }
-[<Transformer('text.embeddings.minilm', description='Text embeddings using "sentence-transformers/all-MiniLM-L6-v2"')>,
- <Transformer('text.counter.word_counter', description='Returns count of words and the longest word')>]
+[<Transformer('image.embeddings.clip', description='Embed images using 'openai/clip-vit-base-patch32'.')>,
+ <Transformer('text.embeddings.clip', description='Embed text using 'openai/clip-vit-base-patch32'.')>,
+ <Transformer('text.embeddings.minilm', description='Text embeddings using "sentence-transformers/all-MiniLM-L6-v2"')>,
+ <Transformer('text.embeddings.openai-3-large', description='Text embeddings using OpenAI's "text-embedding-3-large" model')>,
+ <Transformer('text.embeddings.openai-3-small', description='Text embeddings using OpenAI's "text-embedding-3-small" model')>,
+ <Transformer('text.embeddings.openai-ada-002', description='OpenAI text embeddings using model text-embedding-ada-002')>]
 ```
 
 
@@ -188,9 +202,11 @@ For our example, we'll use the "**text.embeddings.minilm**" transformer, which u
 
 ### Indexes
 
-Before we can bind this transformer to our collection, we need to create an **`Index`** for storing the resulting embeddings.
+Before we can bind this transformer to our collection, we need to create an **`Index`** for storing the resulting 
+embeddings.
 
-Let's create a new index called \"**bios_index**\" with embeddings for our new collection. Our index will have a single field called \"**bio_embedding**\" that will store the embeddings output from the MiniLM sentence transformer.
+Let's create a new index called "**bios_index**" with embeddings for our new collection. Our index will have a single 
+field called **`bio_embedding`** that will store the embeddings output from the MiniLM sentence transformer.
 
 
 ```python
@@ -202,9 +218,11 @@ index_fields = {
 }
 
 # create index
-index = lexy.create_index(index_id='bios_index', 
-                          description='Biography embeddings', 
-                          index_fields=index_fields)
+index = lx.create_index(
+    index_id='bios_index', 
+    description='Biography embeddings', 
+    index_fields=index_fields
+)
 index
 ```
 
@@ -242,9 +260,11 @@ flowchart LR
 
 
 ```python
-binding = lexy.create_binding(collection_id='bios',
-                              transformer_id='text.embeddings.minilm',
-                              index_id='bios_index')
+binding = lx.create_binding(
+    collection_name='bios',
+    transformer_id='text.embeddings.minilm',
+    index_id='bios_index'
+)
 binding
 ```
 

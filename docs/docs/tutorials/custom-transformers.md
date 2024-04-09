@@ -84,29 +84,32 @@ lexy_transformers = ["transformers", "sentence-transformers", "<your_package>"]
 
 ## Update configuration
 
-In `lexy.core.config`, update the values for `lexy_server_transformer_imports` and `lexy_worker_transformer_imports` 
+In `lexy.core.config`, update the values for `LEXY_SERVER_TRANSFORMER_IMPORTS` and `LEXY_WORKER_TRANSFORMER_IMPORTS` 
 to include your new module.
 
-```python hl_lines="6 12" title="lexy/core/config.py"
-...
+```python hl_lines="8 15" title="lexy/core/config.py"
+# code omitted above...
 
-class GlobalConfig(BaseConfig):
-    ...
-    lexy_server_transformer_imports = { # (1)!
-		'lexy.transformers.code',
-		'lexy.transformers.counter',
-		'lexy.transformers.embeddings',
-        'lexy.transformers.multimodal',
-    }
-    lexy_worker_transformer_imports = { # (2)!
-		'lexy.transformers.code',
-		'lexy.transformers.counter',
-		'lexy.transformers.embeddings',
-        'lexy.transformers.multimodal',
-    }
-    ...
+class AppSettings(BaseSettings):
+
+    # other settings...
     
-...
+    LEXY_SERVER_TRANSFORMER_IMPORTS: set[str] = { # (1)!
+        'lexy.transformers.code',  # add your module here
+        'lexy.transformers.counter',
+        'lexy.transformers.embeddings',
+        'lexy.transformers.multimodal',
+        'lexy.transformers.openai',
+    }
+    LEXY_WORKER_TRANSFORMER_IMPORTS: set[str] = { # (2)!
+        'lexy.transformers.code',  # add your module here
+        'lexy.transformers.counter',
+        'lexy.transformers.embeddings',
+        'lexy.transformers.multimodal',
+        'lexy.transformers.openai',
+    }
+    
+    # more settings...
 ```
 
 1.  These modules are imported by the Lexy server at startup. If the transformer requires significant resources, you 
@@ -122,14 +125,15 @@ docker compose restart lexyserver lexyworker
 ## Create transformer
 
 Finally, create your transformer so that it's stored in the database and available to the Lexy server. You can do this 
-by calling the `create_transformer` method.
+by calling the [`create_transformer`](../reference/lexy_py/transformer.md#lexy_py.transformer.client.TransformerClient.add_transformer) 
+method.
 
 ```python
 from lexy_py import LexyClient
 
-lexy = LexyClient()
+lx = LexyClient()
 
-lexy.create_transformer(
+lx.create_transformer(
     transformer_id='code.extract_comments.v1', 
     path='lexy.transformers.code.get_comments',
     description='Parse comments and docstrings.'
@@ -140,17 +144,19 @@ lexy.create_transformer(
 <Transformer('code.extract_comments.v1', description='Parse comments and docstrings')>
 ```
 
-Now when you call the `.transformers` property of the Lexy client, you'll be able to see your transformer listed. 
+Now when you call the [`.transformers`](../reference/lexy_py/client.md#lexy_py.client.LexyClient.transformers) property of the Lexy client, you'll be able to see your transformer listed. 
 
 ```python
-lexy.transformers
+lx.transformers
 ```
 
 ```{ .text .no-copy .result #code-output }
-[<Transformer('text.embeddings.minilm', description='Text embeddings using "sentence-transformers/all-MiniLM-L6-v2"')>,
- <Transformer('text.counter.word_counter', description='Returns count of words and the longest word')>,
- <Transformer('image.embeddings.clip', description='Embed images using 'openai/clip-vit-base-patch32'.')>,
+[<Transformer('image.embeddings.clip', description='Embed images using 'openai/clip-vit-base-patch32'.')>,
  <Transformer('text.embeddings.clip', description='Embed text using 'openai/clip-vit-base-patch32'.')>,
+ <Transformer('text.embeddings.minilm', description='Text embeddings using "sentence-transformers/all-MiniLM-L6-v2"')>,
+ <Transformer('text.embeddings.openai-3-large', description='Text embeddings using OpenAI's "text-embedding-3-large" model')>,
+ <Transformer('text.embeddings.openai-3-small', description='Text embeddings using OpenAI's "text-embedding-3-small" model')>,
+ <Transformer('text.embeddings.openai-ada-002', description='OpenAI text embeddings using model text-embedding-ada-002')>,
  <Transformer('code.extract_comments.v1', description='Parse comments and docstrings')>]
 ```
 
@@ -158,10 +164,11 @@ You're now ready to use your custom transformer to process documents!
 
 ### Testing with sample documents
 
-You can use the `transform_document` method of the `Transformer` class to test your transformer on sample documents.
+You can use the [`transform_document`](../reference/lexy_py/transformer.md#lexy_py.transformer.client.TransformerClient.transform_document) 
+method of the `Transformer` class to test your transformer on sample documents.
 
 ```python
-code_transformer = lexy.get_transformer('code.extract_comments.v1')
+code_transformer = lx.get_transformer('code.extract_comments.v1')
 
 sample_doc = {
     'content': 'print("hello world")', 
