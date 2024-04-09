@@ -15,23 +15,23 @@ class TestDocumentClient:
         assert response.json() == {"Say": "Hello!"}
 
     def test_documents(self, lx_client):
-
         # create a test collection for test documents
-        tmp_collection = lx_client.create_collection("tmp_collection", "Temp collection")
-        assert tmp_collection.collection_id == "tmp_collection"
+        tmp_collection = lx_client.create_collection("test_documents", description="Temp collection")
+        assert tmp_collection.collection_name == "test_documents"
+        tmp_collection_id = tmp_collection.uid
 
         # add documents to the test collection
         docs_added = lx_client.add_documents(docs=[
             {"content": "Test Document 1 Content"},
             {"content": "Test Document 2 Content", "meta": {"my_date": datetime.now()}}
-        ], collection_id="tmp_collection")
+        ], collection_name="test_documents")
         assert len(docs_added) == 2
         assert docs_added[0].content == "Test Document 1 Content"
         assert docs_added[1].content == "Test Document 2 Content"
         assert docs_added[0].document_id is not None
         assert docs_added[0].created_at is not None
         assert docs_added[0].image is None
-        assert docs_added[0].collection_id == "tmp_collection"
+        assert docs_added[0].collection_id == tmp_collection_id
 
         # get test document
         test_document = lx_client.get_document(docs_added[0].document_id)
@@ -59,22 +59,28 @@ class TestDocumentClient:
         assert response.get("document_id") == docs_added[1].document_id
 
         # verify that there are no documents in the test collection
-        documents = lx_client.list_documents(collection_id="tmp_collection")
+        documents = lx_client.list_documents(collection_name="test_documents")
         assert len(documents) == 0
 
         # delete test collection
-        response = lx_client.delete_collection("tmp_collection")
-        assert response.get("msg") == "Collection deleted"
+        response = lx_client.delete_collection(collection_name="test_documents")
+        assert response == {
+            "msg": "Collection deleted",
+            "collection_id": tmp_collection_id,
+            "documents_deleted": 0
+        }
 
     def test_duplicate_documents(self, lx_client):
         # create a test collection for testing duplicate documents
-        tmp_collection = lx_client.create_collection("tmp_collection", "Temp collection")
-        assert tmp_collection.collection_id == "tmp_collection"
+        tmp_collection = lx_client.create_collection("test_duplicate_documents",
+                                                     description="Temp collection")
+        assert tmp_collection.collection_name == "test_duplicate_documents"
+        tmp_collection_id = tmp_collection.uid
 
         # add documents to the test collection
         docs_added = lx_client.add_documents(docs=[
             {"content": "What's up doc?"}
-        ], collection_id="tmp_collection")
+        ], collection_name="test_duplicate_documents")
         assert len(docs_added) == 1
         doc_added = docs_added[0]
         assert doc_added.document_id is not None
@@ -91,18 +97,24 @@ class TestDocumentClient:
         assert exc_info.value.response.json()['detail']['document_id'] == doc_added.document_id
 
         # delete test documents
-        response = lx_client.document.bulk_delete_documents(collection_id="tmp_collection")
-        assert response.get("msg") == "Documents deleted"
-        assert response.get("deleted_count") == 1
+        response = lx_client.document.bulk_delete_documents(collection_name="test_duplicate_documents")
+        assert response == {
+            "msg": "Documents deleted",
+            "collection_id": tmp_collection_id,
+            "deleted_count": 1
+        }
 
         # delete test collection
-        response = lx_client.collection.delete_collection("tmp_collection")
+        response = lx_client.collection.delete_collection(collection_name="test_duplicate_documents")
         assert response.get("msg") == "Collection deleted"
+        assert response.get("collection_id") == tmp_collection_id
 
     def test_add_documents_in_batches(self, lx_client):
         # create a test collection for testing adding documents in batches
-        tmp_collection = lx_client.create_collection("tmp_collection", "Temp collection")
-        assert tmp_collection.collection_id == "tmp_collection"
+        tmp_collection = lx_client.create_collection("test_add_documents_in_batches",
+                                                     description="Temp collection")
+        assert tmp_collection.collection_name == "test_add_documents_in_batches"
+        tmp_collection_id = tmp_collection.uid
 
         # add documents to the test collection
         docs_added = lx_client.add_documents(
@@ -111,24 +123,25 @@ class TestDocumentClient:
                 {"content": "Test Document 2 Content"},
                 {"content": "Test Document 3 Content"},
             ],
-            collection_id="tmp_collection",
+            collection_name="test_add_documents_in_batches",
             batch_size=2)
         assert len(docs_added) == 3
         assert docs_added[-1].document_id is not None
         assert docs_added[-1].content == "Test Document 3 Content"
 
         # delete test documents
-        response = lx_client.document.bulk_delete_documents(collection_id="tmp_collection")
+        response = lx_client.document.bulk_delete_documents(collection_name="test_add_documents_in_batches")
         assert response.get("msg") == "Documents deleted"
         assert response.get("deleted_count") == 3
 
         # delete test collection
-        response = lx_client.delete_collection("tmp_collection")
+        response = lx_client.delete_collection(collection_name="test_add_documents_in_batches")
         assert response.get("msg") == "Collection deleted"
-        assert response.get("collection_id") == "tmp_collection"
+        assert response.get("collection_id") == tmp_collection_id
 
     @pytest.mark.asyncio
     async def test_add_documents(self, lx_client, celery_app, celery_worker):
+        default_collection = lx_client.get_collection(collection_name="default")
         doc_added = lx_client.add_documents([
             {"content": "hello from lexy_py!"}
         ])
@@ -138,11 +151,11 @@ class TestDocumentClient:
         assert doc_added[0].document_id is not None
         assert doc_added[0].created_at is not None
         assert doc_added[0].updated_at is not None
-        assert doc_added[0].collection_id == "default"
+        assert doc_added[0].collection_id == default_collection.uid
         assert doc_added[0].image is None
 
         # wait for the celery worker to finish the task
-        await asyncio.sleep(1)
+        await asyncio.sleep(2)
 
         index_records = lx_client.index.list_index_records(
             index_id="default_text_embeddings",
@@ -152,6 +165,7 @@ class TestDocumentClient:
 
     @pytest.mark.asyncio
     async def test_aadd_documents(self, lx_async_client, celery_app, celery_worker):
+        default_collection = await lx_async_client.collection.aget_collection(collection_name="default")
         doc_added = await lx_async_client.document.aadd_documents([
             {"content": "an async hello from lexy_py!"}
         ])
@@ -161,7 +175,7 @@ class TestDocumentClient:
         assert doc_added[0].document_id is not None
         assert doc_added[0].created_at is not None
         assert doc_added[0].updated_at is not None
-        assert doc_added[0].collection_id == "default"
+        assert doc_added[0].collection_id == default_collection.uid
         # FIXME: Uncomment the following line after fixing the simultaneous clients issue.
         #    The issue is caused by the following line when trying to access the image property:
         #      r = self.client.get(f"/documents/{document_id}/urls", params={"expiration": expiration})
@@ -178,13 +192,20 @@ class TestDocumentClient:
         assert len(index_records) == 1
 
     def test_list_documents(self, lx_client):
-        documents = lx_client.document.list_documents(collection_id='default')
+        documents = lx_client.document.list_documents(collection_name='default')
         assert len(documents) > 0
 
     @pytest.mark.asyncio
     async def test_alist_documents(self, lx_async_client):
-        documents = await lx_async_client.document.alist_documents(collection_id='default')
+        documents = await lx_async_client.document.alist_documents(collection_name='default')
         assert len(documents) > 0
+
+    def test_list_documents_without_collection_name_or_id(self, lx_client):
+        with pytest.raises(LexyAPIError) as exc_info:
+            lx_client.document.list_documents(collection_name=None, collection_id=None)
+        assert isinstance(exc_info.value, LexyAPIError)
+        assert exc_info.value.response.status_code == 404
+        assert exc_info.value.response.json()['detail'] == 'Collection not found'
 
 
 class TestDocumentModel:
@@ -208,3 +229,9 @@ class TestDocumentModel:
             _ = doc.object_url
         assert isinstance(exc_info.value, ValueError)
         assert str(exc_info.value) == "API client has not been set."
+
+        # first argument to Document sets the content attribute
+        another_doc = Document("Another Document", meta={"key": "value"})
+        assert another_doc.content == "Another Document"
+        assert another_doc.meta == {"key": "value"}
+        assert repr(another_doc) == '<Document("Another Document")>'

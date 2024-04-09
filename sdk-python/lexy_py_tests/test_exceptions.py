@@ -12,11 +12,11 @@ class TestClientExceptions:
 
     def test_not_found(self, lx_client):
         with pytest.raises(NotFoundError):
-            lx_client.collection.get_collection("nonexistent_collection")
+            lx_client.collection.get_collection(collection_name="nonexistent_collection")
 
     def test_not_found_with_response(self, lx_client):
         with pytest.raises(NotFoundError) as exc_info:
-            lx_client.collection.get_collection("nonexistent_collection")
+            lx_client.collection.get_collection(collection_name="nonexistent_collection")
         assert exc_info.value.response_data["status_code"] == 404, exc_info.value.response_data
         assert exc_info.value.response.status_code == 404
         assert exc_info.value.response.text == '{"detail":"Collection not found"}'

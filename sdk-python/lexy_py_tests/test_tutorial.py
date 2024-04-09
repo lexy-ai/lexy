@@ -16,10 +16,10 @@ class TestTutorial:
 
     # make sure that default collection is empty
     def test_bulk_delete_documents(self, lx_client):
-        response = lx_client.bulk_delete_documents(collection_id="default")
+        response = lx_client.bulk_delete_documents(collection_name="default")
         assert response.get("msg") == "Documents deleted"
 
-        default_collection = lx_client.get_collection("default")
+        default_collection = lx_client.get_collection(collection_name="default")
         docs = default_collection.list_documents()
         assert len(docs) == 0
 
@@ -56,7 +56,7 @@ class TestTutorial:
         bios = lx_client.create_collection("bios", description="Famous Biographies")
         assert isinstance(bios, Collection)
         assert isinstance(bios.client, LexyClient)
-        assert bios.collection_id == "bios"
+        assert bios.collection_name == "bios"
         assert bios.description == "Famous Biographies"
 
         # show empty collection
@@ -99,13 +99,13 @@ class TestTutorial:
 
         # create a binding
         binding = lx_client.create_binding(
-            collection_id="bios",
+            collection_name="bios",
             transformer_id="text.embeddings.minilm",
             index_id="bios_index",
         )
         assert isinstance(binding, Binding)
         assert isinstance(binding.client, LexyClient)
-        assert binding.collection.collection_id == "bios"
+        assert binding.collection.collection_name == "bios"
         assert binding.index.index_id == "bios_index"
         assert binding.transformer.transformer_id == "text.embeddings.minilm"
         assert binding.status == "on"
@@ -127,6 +127,8 @@ class TestTutorial:
 
         # check that the taylor swift document is the top result
         assert response[0]["document_id"] == bio_taylor_swift.document_id
+        # check that the rock document is the second result
+        assert response[1]["document_id"] == bio_the_rock.document_id
 
         # add a new document
         doc_added = bios.add_documents([
@@ -143,3 +145,10 @@ class TestTutorial:
         assert len(response) == 3
         document_ids = [doc["document_id"] for doc in response]
         assert beyonce_doc.document_id in document_ids
+
+        # check that the taylor swift document is the top result
+        assert response[0]["document_id"] == bio_taylor_swift.document_id
+        # check that the beyonce document is the second result
+        assert response[1]["document_id"] == beyonce_doc.document_id
+        # check that the rock document is the third result
+        assert response[2]["document_id"] == bio_the_rock.document_id

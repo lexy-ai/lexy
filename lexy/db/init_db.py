@@ -49,7 +49,10 @@ def add_default_data_to_db(session=db):
         logger.warning("Binding data already exists - skipping binding data")
     else:
         for b in default_data["bindings"]:
-            session.add(models.Binding(**b))
+            c = session.query(models.Collection).filter(
+                models.Collection.collection_name == b["collection_name"]
+            ).first()
+            session.add(models.Binding(**b, collection_id=c.uid))
         session.commit()
 
 
@@ -62,7 +65,10 @@ def add_sample_docs_to_db(session=db):
         # adding sample documents for code collection only - will add sample documents for default collection once
         # the default index and binding are created through appropriate crud endpoints
         for doc in sample_docs["code_collection_sample_docs"]:
-            session.add(models.Document(**doc))
+            c = session.query(models.Collection).filter(
+                models.Collection.collection_name == doc["collection_name"]
+            ).first()
+            session.add(models.Document(**doc, collection_id=c.uid))
         session.commit()
 
 

@@ -1,13 +1,17 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from lexy import crud
 from lexy.db.session import get_session
-from lexy.models.binding import Binding, BindingCreate, BindingUpdate, BindingRead
+from lexy.models.binding import Binding, BindingCreate, BindingRead, BindingUpdate
 from lexy.core.events import process_new_binding
 
-
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 router = APIRouter()
 
 
@@ -30,18 +34,32 @@ async def get_bindings(session: AsyncSession = Depends(get_session)) -> list[Bin
              description="Create a new binding")
 async def add_binding(binding: BindingCreate,
                       session: AsyncSession = Depends(get_session)) -> dict[str, BindingRead | list[dict]]:
-    binding = Binding(**binding.model_dump())
-    if binding.filter:
-        binding.filter = jsonable_encoder(binding.filter)
-    session.add(binding)
+    # set collection_id based on collection_id or collection_name
+    if binding.collection_id:
+        collection = await crud.get_collection_by_id(session=session, collection_id=binding.collection_id)
+    else:
+        # BindingCreate model validator ensures that one of the two is provided (id or name)
+        collection = await crud.get_collection_by_name(session=session, collection_name=binding.collection_name)
+    if not collection:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
+    binding.collection_id = collection.uid
+
+    # TODO: switch to pattern `db_binding = Binding.model_validate(binding)` once issue is resolved.
+    #  Currently SQLModel is not serializing the nested model, leading to the error 'Filter is not JSON
+    #  Serializable'. But using `Binding(**binding.model_dump())` leaves binding.filter as a dict type.
+    #  See issue: https://github.com/tiangolo/sqlmodel/issues/63
+    db_binding = Binding(**binding.model_dump())
+    session.add(db_binding)
     await session.commit()
-    await session.refresh(binding)
+    await session.refresh(db_binding)
+
     # process the binding and generate document tasks
-    processed_binding, tasks = await session.run_sync(process_new_binding, binding)
+    processed_binding, tasks = await session.run_sync(process_new_binding, db_binding)
     # now commit the binding again and refresh it - status should be updated
     session.add(processed_binding)
     await session.commit()
     await session.refresh(processed_binding)
+
     response = {"binding": processed_binding, "tasks": tasks}
     return response
 

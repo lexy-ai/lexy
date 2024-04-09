@@ -6,6 +6,7 @@ from PIL import Image
 from sqlmodel import delete, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from lexy import crud
 from lexy.db.session import get_session
 from lexy.storage.client import get_s3_client, generate_presigned_urls_for_document
 from lexy.models.collection import Collection
@@ -58,15 +59,24 @@ def create_thumbnails_s3(image, sizes, s3_client, s3_bucket, s3_base_path, docum
             response_model=list[Document],
             status_code=status.HTTP_200_OK,
             name="get_documents",
-            description="Get all documents in a collection")
-async def get_documents(collection_id: str | None = "default",
+            description="Get documents in a collection")
+async def get_documents(collection_name: str = "default",
                         limit: int = Query(100, gt=0, le=1000),
                         offset: int = 0,
                         session: AsyncSession = Depends(get_session)) -> list[Document]:
-    result = await session.exec(select(Document)
-                                .where(Document.collection_id == collection_id)
-                                .limit(limit)
-                                .offset(offset))
+    # get the collection
+    result = await session.exec(
+        select(Collection).where(Collection.collection_name == collection_name)
+    )
+    collection = result.first()
+    # collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
+    if not collection:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
+
+    # get documents
+    result = await session.exec(
+        select(Document).where(Document.collection_id == collection.uid).limit(limit).offset(offset)
+    )
     documents = result.all()
     return documents
 
@@ -76,8 +86,17 @@ async def get_documents(collection_id: str | None = "default",
              name="add_documents",
              description="Add documents to a collection")
 async def add_documents(documents: list[DocumentCreate],
-                        collection_id: str | None = "default",
+                        collection_name: str = "default",
                         session: AsyncSession = Depends(get_session)) -> list[dict]:
+    # get the collection
+    result = await session.exec(
+        select(Collection).where(Collection.collection_name == collection_name)
+    )
+    collection = result.first()
+    # collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
+    if not collection:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
+
     docs_added = []
     for doc in documents:
         # Check if a document_id is provided and if it already exists
@@ -89,7 +108,7 @@ async def add_documents(documents: list[DocumentCreate],
                                         "msg": f"A document with this ID already exists: {doc.document_id}.",
                                         "document_id": str(doc.document_id),
                                     })
-        document = Document(**doc.model_dump(), collection_id=collection_id)
+        document = Document(**doc.model_dump(), collection_id=collection.uid)
         session.add(document)
         await session.commit()
         await session.refresh(document)
@@ -105,15 +124,20 @@ async def add_documents(documents: list[DocumentCreate],
              name="upload_documents",
              description="Upload documents to a collection")
 async def upload_documents(files: list[UploadFile],
-                           collection_id: str = "default",
+                           collection_name: str = "default",
                            session: AsyncSession = Depends(get_session),
                            s3_client: boto3.client = Depends(get_s3_client)) -> list[dict]:
-    upload_files = []
-
-    collection = await session.exec(select(Collection).where(Collection.collection_id == collection_id))
-    collection = collection.first()
+    # get the collection
+    result = await session.exec(
+        select(Collection).where(Collection.collection_name == collection_name)
+    )
+    collection = result.first()
+    # collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
+    collection_id = collection.uid
+
+    upload_files = []
 
     for file in files:
 
@@ -223,13 +247,26 @@ async def upload_documents(files: list[UploadFile],
                status_code=status.HTTP_200_OK,
                name="bulk_delete_documents",
                description="Bulk delete all documents in a collection")
-async def bulk_delete_documents(collection_id: str,
+async def bulk_delete_documents(collection_name: str,
                                 session: AsyncSession = Depends(get_session)) -> dict:
-    statement = delete(Document).where(Document.collection_id == collection_id)
+    # get the collection
+    result = await session.exec(
+        select(Collection).where(Collection.collection_name == collection_name)
+    )
+    collection = result.first()
+    # collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
+    if not collection:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
+    # delete documents
+    statement = delete(Document).where(Document.collection_id == collection.uid)
     result = await session.exec(statement)
     deleted_count = result.rowcount
     await session.commit()
-    return {"msg": "Documents deleted", "deleted_count": deleted_count}
+    return {
+        "msg": "Documents deleted",
+        "collection_id": collection.uid,
+        "deleted_count": deleted_count
+    }
 
 
 @router.get("/documents/{document_id}",
@@ -287,7 +324,8 @@ async def update_document(document_id: str,
                status_code=status.HTTP_200_OK,
                name="delete_document",
                description="Delete a document")
-async def delete_document(document_id: str, session: AsyncSession = Depends(get_session)) -> dict:
+async def delete_document(document_id: str,
+                          session: AsyncSession = Depends(get_session)) -> dict:
     result = await session.exec(select(Document).where(Document.document_id == document_id))
     document = result.first()
     if not document:

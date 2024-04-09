@@ -58,8 +58,8 @@ class Transformer(TransformerModel):
 
         Examples:
             >>> from lexy_py import LexyClient
-            >>> lexy = LexyClient()
-            >>> minilm = lexy.get_transformer('text.embeddings.minilm')
+            >>> lx = LexyClient()
+            >>> minilm = lx.get_transformer('text.embeddings.minilm')
             >>> minilm.transform_document({'content': 'Good morning!'})
             {'task_id': '449d9d79-4a57-4191-95d3-9c38955c8ced',
              'result': [-0.03085244633257389, 0.028894789516925812, ...]}

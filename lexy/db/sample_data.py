@@ -1,11 +1,11 @@
 default_data = {
     "collections": [
         {
-            "collection_id": "default",
+            "collection_name": "default",
             "description": "Default collection"
         },
         {
-            "collection_id": "code",
+            "collection_name": "code",
             "description": "Github code repos"
         }
     ],
@@ -129,7 +129,7 @@ default_data = {
     ],
     "bindings": [
         {
-            "collection_id": "default",
+            "collection_name": "default",
             "transformer_id": "text.embeddings.minilm",
             "index_id": "default_text_embeddings",
             "description": "Default binding",
@@ -149,23 +149,23 @@ sample_docs = {
     "default_collection_sample_docs": [
         {
             "content": "This is my first document! It's great!",
-            "collection_id": "default"
+            "collection_name": "default"
         },
         {
             "content": "Starlink is a satellite internet constellation operated by American aerospace company SpaceX, "
                        "providing coverage to over 60 countries.",
-            "collection_id": "default"
+            "collection_name": "default"
         },
         {
             "content": "A latent space is an embedding of a set of items within a manifold in which items resembling "
                        "each other are positioned closer to one another.",
-            "collection_id": "default"
+            "collection_name": "default"
         }
     ],
     "code_collection_sample_docs": [
         {
+            "collection_name": "code",
             "content": "import this",
-            "collection_id": "code",
             "meta": {
                 "filename": "main.py",
                 "file_extension": "py",
@@ -173,13 +173,13 @@ sample_docs = {
             }
         },
         {
+            "collection_name": "code",
             "content": "def multiply(a, b):"
                        "    return a * b"
                        ""
                        ""
                        "if __name__ == '__main__':"
                        "    print(multiply(2, 3))",
-            "collection_id": "code",
             "meta": {
                 "filename": "multiply.py",
                 "file_extension": "py",

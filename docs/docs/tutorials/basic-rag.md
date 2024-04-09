@@ -83,14 +83,14 @@ Let's instantiate a Lexy client and create a new collection for our documents.
 ```python
 from lexy_py import LexyClient
 
-lexy = LexyClient()
+lx = LexyClient()
 ```
 
 
 ```python
 # create a new collection
-collection = lexy.create_collection(
-    collection_id="house_of_the_dragon", 
+collection = lx.create_collection(
+    collection_name="house_of_the_dragon", 
     description="House of the Dragon characters"
 )
 collection
@@ -145,7 +145,7 @@ We'll create a binding to embed each document, and an index to store the resulti
 index_fields = {
     "embedding": {"type": "embedding", "extras": {"dims": 1536, "model": "text.embeddings.openai-3-small"}}
 }
-index = lexy.create_index(
+index = lx.create_index(
     index_id="hotd_embeddings", 
     description="Text embeddings for House of the Dragon collection",
     index_fields=index_fields
@@ -162,7 +162,7 @@ list of available transformers.
 
 ```python
 # list of available transformers
-lexy.transformers
+lx.transformers
 ```
 
 ```{ .text .no-copy .result #code-output }
@@ -178,8 +178,8 @@ For this example, we'll use `text.embeddings.openai-3-small`. Let's create our b
 
 ```python
 # create a binding
-binding = lexy.create_binding(
-    collection_id="house_of_the_dragon",
+binding = lx.create_binding(
+    collection_name="house_of_the_dragon",
     index_id="hotd_embeddings",
     transformer_id="text.embeddings.openai-3-small"
 )

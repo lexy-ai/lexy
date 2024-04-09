@@ -197,8 +197,8 @@ class TransformerClient:
 
         Examples:
             >>> from lexy_py import LexyClient
-            >>> lexy = LexyClient()
-            >>> lexy.transformer.transform_document("text.counter.word_counter", {"content": "Hello world!"})
+            >>> lx = LexyClient()
+            >>> lx.transformer.transform_document("text.counter.word_counter", {"content": "Hello world!"})
             {'task_id': '65ecd2f7-bac4-4747-9e65-a6d21a72f585', 'result': [2, 'world!']}
         """
         if isinstance(document, dict):

@@ -32,6 +32,7 @@ install-dev: check-env
 	cp -n .env.example .env
 	# install poetry
 	pip install poetry
+	poetry config virtualenvs.create false
 	# install dev dependencies and extras
 	poetry install --no-root --with test,docs,dev -E "lexy_transformers"
 	# install lexy in editable mode

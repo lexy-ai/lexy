@@ -14,4 +14,4 @@ else
 fi
 
 # start server
-exec poetry run uvicorn lexy.main:app --host 0.0.0.0 --port 9900 --reload
+exec poetry run uvicorn lexy.main:app --host 0.0.0.0 --port 9900 --reload --reload-dir /home/app/lexy
