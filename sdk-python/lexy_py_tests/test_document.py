@@ -18,7 +18,7 @@ class TestDocumentClient:
         # create a test collection for test documents
         tmp_collection = lx_client.create_collection("test_documents", description="Temp collection")
         assert tmp_collection.collection_name == "test_documents"
-        tmp_collection_id = tmp_collection.uid
+        tmp_collection_id = tmp_collection.collection_id
 
         # add documents to the test collection
         docs_added = lx_client.add_documents(docs=[
@@ -75,7 +75,7 @@ class TestDocumentClient:
         tmp_collection = lx_client.create_collection("test_duplicate_documents",
                                                      description="Temp collection")
         assert tmp_collection.collection_name == "test_duplicate_documents"
-        tmp_collection_id = tmp_collection.uid
+        tmp_collection_id = tmp_collection.collection_id
 
         # add documents to the test collection
         docs_added = lx_client.add_documents(docs=[
@@ -114,7 +114,7 @@ class TestDocumentClient:
         tmp_collection = lx_client.create_collection("test_add_documents_in_batches",
                                                      description="Temp collection")
         assert tmp_collection.collection_name == "test_add_documents_in_batches"
-        tmp_collection_id = tmp_collection.uid
+        tmp_collection_id = tmp_collection.collection_id
 
         # add documents to the test collection
         docs_added = lx_client.add_documents(
@@ -151,7 +151,7 @@ class TestDocumentClient:
         assert doc_added[0].document_id is not None
         assert doc_added[0].created_at is not None
         assert doc_added[0].updated_at is not None
-        assert doc_added[0].collection_id == default_collection.uid
+        assert doc_added[0].collection_id == default_collection.collection_id
         assert doc_added[0].image is None
 
         # wait for the celery worker to finish the task
@@ -175,7 +175,7 @@ class TestDocumentClient:
         assert doc_added[0].document_id is not None
         assert doc_added[0].created_at is not None
         assert doc_added[0].updated_at is not None
-        assert doc_added[0].collection_id == default_collection.uid
+        assert doc_added[0].collection_id == default_collection.collection_id
         # FIXME: Uncomment the following line after fixing the simultaneous clients issue.
         #    The issue is caused by the following line when trying to access the image property:
         #      r = self.client.get(f"/documents/{document_id}/urls", params={"expiration": expiration})

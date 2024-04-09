@@ -42,7 +42,7 @@ async def add_binding(binding: BindingCreate,
         collection = await crud.get_collection_by_name(session=session, collection_name=binding.collection_name)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
-    binding.collection_id = collection.uid
+    binding.collection_id = collection.collection_id
 
     # TODO: switch to pattern `db_binding = Binding.model_validate(binding)` once issue is resolved.
     #  Currently SQLModel is not serializing the nested model, leading to the error 'Filter is not JSON

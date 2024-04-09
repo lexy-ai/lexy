@@ -17,7 +17,7 @@ class TestDocument:
             select(Collection).where(Collection.collection_name == "default")
         )
         default_collection = result.first()
-        document = Document(content="Test Content", collection_id=default_collection.uid)
+        document = Document(content="Test Content", collection_id=default_collection.collection_id)
 
         async_session.add(document)
         await async_session.commit()
@@ -49,7 +49,7 @@ class TestDocument:
             select(Collection).where(Collection.collection_name == "default")
         )
         default_collection = result.first()
-        doc = Document(content="a shiny new document", collection_id=default_collection.uid)
+        doc = Document(content="a shiny new document", collection_id=default_collection.collection_id)
         async_session.add(doc)
         await async_session.commit()
 
@@ -70,8 +70,8 @@ class TestDocument:
             select(Collection).where(Collection.collection_name == "code")
         )
         code_collection = result.first()
-        doc1 = Document(content="import this", collection_id=code_collection.uid)
-        doc2 = Document(content="export that", collection_id=code_collection.uid)
+        doc1 = Document(content="import this", collection_id=code_collection.collection_id)
+        doc2 = Document(content="export that", collection_id=code_collection.collection_id)
         async_session.add(doc1)
         async_session.add(doc2)
         await async_session.commit()
@@ -85,13 +85,13 @@ class TestDocument:
         assert len(data) == 2
 
         assert data[0]["content"] == "import this"
-        assert data[0]["collection_id"] == code_collection.uid
+        assert data[0]["collection_id"] == code_collection.collection_id
         assert data[0]["document_id"] == str(doc1.document_id)
         assert data[0]["created_at"] == doc1.created_at.isoformat().replace("+00:00", "Z")
         assert data[0]["updated_at"] == doc1.updated_at.isoformat().replace("+00:00", "Z")
 
         assert data[1]["content"] == "export that"
-        assert data[1]["collection_id"] == code_collection.uid
+        assert data[1]["collection_id"] == code_collection.collection_id
         assert data[1]["document_id"] == str(doc2.document_id)
         assert data[1]["created_at"] == doc2.created_at.isoformat().replace("+00:00", "Z")
         assert data[1]["updated_at"] == doc2.updated_at.isoformat().replace("+00:00", "Z")
@@ -105,16 +105,13 @@ class TestDocument:
         default_collection = result.first()
 
         # create document
-        # FIXME: DocumentCreate(collection_id='test') does not work - should decide what happens when the client
-        #  passes DocumentCreate objects to the server with collection_ids specified. <-- this is the correct
-        #  behavior, since the server should be the one to assign the collection_id.
         document = DocumentCreate(content="Test Document CRUD")
-        db_document = Document(**document.model_dump(), collection_id=default_collection.uid)
+        db_document = Document(**document.model_dump(), collection_id=default_collection.collection_id)
         async_session.add(db_document)
         await async_session.commit()
         await async_session.refresh(db_document)
         assert db_document.content == "Test Document CRUD"
-        assert db_document.collection_id == default_collection.uid
+        assert db_document.collection_id == default_collection.collection_id
         assert db_document.document_id is not None
         assert db_document.created_at is not None
         assert db_document.updated_at is not None

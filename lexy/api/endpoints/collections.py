@@ -75,7 +75,7 @@ async def delete_collection_by_name(collection_name: str,
     # collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
-    collection_id = collection.uid
+    collection_id = collection.collection_id
 
     # delete any documents in the collection
     deleted_count = 0
@@ -110,7 +110,7 @@ async def delete_collection_by_name(collection_name: str,
             description="Get a collection by ID")
 async def get_collection(collection_id: str,
                          session: AsyncSession = Depends(get_session)) -> Collection:
-    result = await session.exec(select(Collection).where(Collection.uid == collection_id))
+    result = await session.exec(select(Collection).where(Collection.collection_id == collection_id))
     collection = result.first()
     # collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
     if not collection:
@@ -126,7 +126,7 @@ async def get_collection(collection_id: str,
 async def update_collection(collection_id: str,
                             collection: CollectionUpdate,
                             session: AsyncSession = Depends(get_session)) -> Collection:
-    result = await session.exec(select(Collection).where(Collection.uid == collection_id))
+    result = await session.exec(select(Collection).where(Collection.collection_id == collection_id))
     db_collection = result.first()
     # db_collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
     if not db_collection:
@@ -159,7 +159,7 @@ async def delete_collection(collection_id: str,
                             delete_documents: bool = False,
                             session: AsyncSession = Depends(get_session)) -> dict:
     # get the collection
-    result = await session.exec(select(Collection).where(Collection.uid == collection_id))
+    result = await session.exec(select(Collection).where(Collection.collection_id == collection_id))
     collection = result.first()
     # collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
     if not collection:
@@ -201,7 +201,7 @@ async def get_collection_documents(collection_id: str,
                                    offset: int = 0,
                                    session: AsyncSession = Depends(get_session)) -> list[Document]:
     # get the collection
-    result = await session.exec(select(Collection).where(Collection.uid == collection_id))
+    result = await session.exec(select(Collection).where(Collection.collection_id == collection_id))
     collection = result.first()
     # collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
     if not collection:
@@ -222,7 +222,7 @@ async def add_collection_documents(collection_id: str,
                                    documents: list[DocumentCreate],
                                    session: AsyncSession = Depends(get_session)) -> list[dict]:
     # get the collection
-    result = await session.exec(select(Collection).where(Collection.uid == collection_id))
+    result = await session.exec(select(Collection).where(Collection.collection_id == collection_id))
     collection = result.first()
     # collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
     if not collection:
@@ -239,7 +239,7 @@ async def add_collection_documents(collection_id: str,
                                         "msg": f"A document with this ID already exists: {doc.document_id}.",
                                         "document_id": str(doc.document_id),
                                     })
-        document = Document(**doc.model_dump(), collection_id=collection.uid)
+        document = Document(**doc.model_dump(), collection_id=collection.collection_id)
         session.add(document)
         await session.commit()
         await session.refresh(document)
@@ -280,7 +280,7 @@ async def upload_collection_documents(collection_id: str,
 async def delete_collection_documents(collection_id: str,
                                       session: AsyncSession = Depends(get_session)) -> dict:
     # get the collection
-    result = await session.exec(select(Collection).where(Collection.uid == collection_id))
+    result = await session.exec(select(Collection).where(Collection.collection_id == collection_id))
     collection = result.first()
     # collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
     if not collection:

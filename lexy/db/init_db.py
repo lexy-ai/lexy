@@ -52,7 +52,7 @@ def add_default_data_to_db(session=db):
             c = session.query(models.Collection).filter(
                 models.Collection.collection_name == b["collection_name"]
             ).first()
-            session.add(models.Binding(**b, collection_id=c.uid))
+            session.add(models.Binding(**b, collection_id=c.collection_id))
         session.commit()
 
 
@@ -68,7 +68,7 @@ def add_sample_docs_to_db(session=db):
             c = session.query(models.Collection).filter(
                 models.Collection.collection_name == doc["collection_name"]
             ).first()
-            session.add(models.Document(**doc, collection_id=c.uid))
+            session.add(models.Document(**doc, collection_id=c.collection_id))
         session.commit()
 
 

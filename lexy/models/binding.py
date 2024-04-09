@@ -52,7 +52,7 @@ class Binding(BindingBase, table=True):
     )
     status: str = Field(default=BindingStatus.PENDING, nullable=False)
     collection_id: str = Field(
-        sa_column_args=(ForeignKey('collections.uid', ondelete='CASCADE'),),
+        sa_column_args=(ForeignKey('collections.collection_id', ondelete='CASCADE'),),
     )
     collection: "Collection" = Relationship(
         back_populates="bindings",

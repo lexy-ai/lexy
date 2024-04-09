@@ -107,15 +107,10 @@ class TestBinding:
             session=async_session, collection_name=b.collection_name
         )
         assert collection is not None
-        assert collection.uid is not None
+        assert collection.collection_id is not None
         assert collection.collection_name == "default"
-        b.collection_id = collection.uid
-        # b = BindingCreate(
-        #     collection_name="default",
-        #     index_id="default_text_embeddings",
-        #     transformer_id="text.embeddings.minilm",
-        #     description="Test Binding with Filter",
-        # )
+        b.collection_id = collection.collection_id
+        
         binding = Binding(**b.model_dump())
         async_session.add(binding)
         await async_session.commit()
@@ -124,7 +119,7 @@ class TestBinding:
         assert binding.description == "Test binding with filter"
         assert binding.created_at is not None
         assert binding.updated_at is not None
-        assert binding.collection_id == collection.uid
+        assert binding.collection_id == collection.collection_id
 
         result = await async_session.exec(
             select(Binding).where(Binding.binding_id == binding.binding_id)
@@ -143,29 +138,6 @@ class TestBinding:
         )
         bindings = result.all()
         assert len(bindings) == 0
-
-    # @pytest.mark.asyncio
-    # async def test_create_binding_with_model_validate(self, async_session):
-    #     binding = BindingCreate(
-    #         binding_id="test_binding_validated", description="Test Binding Validated"
-    #     )
-    #
-    #     db_binding = Binding.model_validate(binding)
-    #     async_session.add(db_binding)
-    #     await async_session.commit()
-    #     await async_session.refresh(db_binding)
-    #     assert db_binding.binding_id == "test_binding_validated"
-    #     assert db_binding.description == "Test Binding Validated"
-    #     assert db_binding.created_at is not None
-    #     assert db_binding.updated_at is not None
-    #
-    #     result = await async_session.exec(
-    #         select(Binding).where(Binding.binding_id == "test_binding_validated")
-    #     )
-    #     bindings = result.all()
-    #     assert len(bindings) == 1
-    #     assert bindings[0].binding_id == "test_binding_validated"
-    #     assert bindings[0].description == "Test Binding Validated"
 
 
 class TestBindingModel:

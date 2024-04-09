@@ -20,14 +20,14 @@ class TestCollectionClient:
 
         # create test collection
         test_collection = lx_client.create_collection("test_collection", description="Test Collection")
-        test_collection_id = test_collection.uid
+        test_collection_id = test_collection.collection_id
         assert test_collection_id is not None
         assert test_collection.collection_name == "test_collection"
         assert test_collection.description == "Test Collection"
 
         # get test collection
         test_collection = lx_client.get_collection(collection_name="test_collection")
-        assert test_collection.uid == test_collection_id
+        assert test_collection.collection_id == test_collection_id
         assert test_collection.collection_name == "test_collection"
         assert test_collection.description == "Test Collection"
 
@@ -72,7 +72,7 @@ class TestCollectionClient:
         collection = lx_client.get_collection(collection_name="default")
         assert collection.collection_name == "default"
         assert isinstance(collection.client, LexyClient)
-        collection_by_id = lx_client.get_collection(collection_id=collection.uid)
+        collection_by_id = lx_client.get_collection(collection_id=collection.collection_id)
         assert collection_by_id.collection_name == "default"
         assert isinstance(collection_by_id.client, LexyClient)
 
@@ -81,7 +81,7 @@ class TestCollectionClient:
         collection = await lx_async_client.collection.aget_collection(collection_name="default")
         assert collection.collection_name == "default"
         assert isinstance(collection.client, LexyClient)
-        collection_by_id = await lx_async_client.collection.aget_collection(collection_id=collection.uid)
+        collection_by_id = await lx_async_client.collection.aget_collection(collection_id=collection.collection_id)
         assert collection_by_id.collection_name == "default"
         assert isinstance(collection_by_id.client, LexyClient)
 
@@ -104,9 +104,9 @@ class TestCollectionClient:
         docs_added = lx_client.add_documents([
             {"content": "Test Document 1 Content"},
             {"content": "Test Document 2 Content"}
-        ], collection_id=test_collection.uid)
-        assert docs_added[0].collection_id == test_collection.uid
-        assert docs_added[1].collection_id == test_collection.uid
+        ], collection_id=test_collection.collection_id)
+        assert docs_added[0].collection_id == test_collection.collection_id
+        assert docs_added[1].collection_id == test_collection.collection_id
         assert docs_added[0].document_id is not None
         assert docs_added[0].created_at is not None
 
@@ -123,7 +123,7 @@ class TestCollectionClient:
         response = lx_client.delete_collection(collection_name="test_delete_collection", delete_documents=True)
         assert response == {
             "msg": "Collection deleted",
-            "collection_id": test_collection.uid,
+            "collection_id": test_collection.collection_id,
             "documents_deleted": 2
         }, response
 
@@ -139,7 +139,7 @@ class TestCollectionClient:
         # create test collection
         test_collection = lx_client.create_collection("test_update_collection",
                                                       description="Test Update Collection")
-        test_collection_id = test_collection.uid
+        test_collection_id = test_collection.collection_id
         assert test_collection_id is not None
         assert test_collection.collection_name == "test_update_collection"
         assert test_collection.description == "Test Update Collection"
@@ -158,7 +158,7 @@ class TestCollectionClient:
 
         # check that the collection was not updated
         test_collection = lx_client.get_collection(collection_name="test_update_collection")
-        assert test_collection.uid == test_collection_id
+        assert test_collection.collection_id == test_collection_id
         assert test_collection.collection_name == "test_update_collection"
         assert test_collection.description == "Test Update Collection"
         assert test_collection.updated_at == test_collection.created_at
@@ -166,7 +166,7 @@ class TestCollectionClient:
         # update collection description
         test_collection = lx_client.update_collection(collection_id=test_collection_id,
                                                       description="A brand new description")
-        assert test_collection.uid == test_collection_id
+        assert test_collection.collection_id == test_collection_id
         assert test_collection.collection_name == "test_update_collection"
         assert test_collection.description == "A brand new description"
         assert test_collection.updated_at > test_collection.created_at
@@ -175,7 +175,7 @@ class TestCollectionClient:
         # update collection name
         test_collection = lx_client.update_collection(collection_id=test_collection_id,
                                                       collection_name="test_update_collection_updated")
-        assert test_collection.uid == test_collection_id
+        assert test_collection.collection_id == test_collection_id
         assert test_collection.collection_name == "test_update_collection_updated"
         assert test_collection.description == "A brand new description"
         assert test_collection.updated_at > test_collection_updated_at
@@ -193,7 +193,7 @@ class TestCollectionModel:
 
     def test_collection_model(self):
         collection = Collection(collection_name="test_collection", description="Test Collection")
-        assert collection.uid is None
+        assert collection.collection_id is None
         assert collection.collection_name == "test_collection"
         assert collection.description == "Test Collection"
 

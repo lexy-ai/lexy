@@ -33,7 +33,7 @@ class CollectionBase(SQLModel):
 
 class Collection(CollectionBase, table=True):
     __tablename__ = "collections"
-    uid: str = Field(
+    collection_id: str = Field(
         default=None,
         sa_column=Column(String(length=8), default=generate_short_uid, primary_key=True, unique=True)
     )

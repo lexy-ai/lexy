@@ -44,7 +44,7 @@ class TestCollection:
         async_session.add(collection)
         await async_session.commit()
         await async_session.refresh(collection)
-        assert collection.uid is not None
+        assert collection.collection_id is not None
         assert collection.collection_name == "test_collection"
         assert collection.description == "Test Collection"
         assert collection.created_at is not None
@@ -68,7 +68,7 @@ class TestCollection:
         async_session.add(db_collection)
         await async_session.commit()
         await async_session.refresh(db_collection)
-        assert db_collection.uid is not None
+        assert db_collection.collection_id is not None
         assert db_collection.collection_name == "test_collection_validated"
         assert db_collection.description == "Test Collection Validated"
         assert db_collection.created_at is not None
@@ -92,7 +92,7 @@ class TestCollection:
         async_session.add(db_collection)
         await async_session.commit()
         await async_session.refresh(db_collection)
-        assert db_collection.uid is not None
+        assert db_collection.collection_id is not None
         assert db_collection.collection_name == "test_collection_crud"
         assert db_collection.description == "Test Collection CRUD"
         assert db_collection.created_at is not None
@@ -115,7 +115,7 @@ class TestCollection:
         async_session.add(db_collection)
         await async_session.commit()
         await async_session.refresh(db_collection)
-        assert db_collection.uid is not None
+        assert db_collection.collection_id is not None
         assert db_collection.collection_name == "test_collection_crud"
         assert db_collection.description == "Test Collection CRUD Updated"
         assert db_collection.created_at is not None

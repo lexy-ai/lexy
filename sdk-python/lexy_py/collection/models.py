@@ -23,10 +23,10 @@ class CollectionModel(BaseModel):
     config: Optional[dict[str, Any]] = Field(default={})
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-    uid: Optional[str] = None
+    collection_id: Optional[str] = None
 
     def __repr__(self):
-        return f"<Collection('{self.collection_name}', id='{self.uid}', description='{self.description}')>"
+        return f"<Collection('{self.collection_name}', id='{self.collection_id}', description='{self.description}')>"
 
 
 class CollectionUpdate(BaseModel):
@@ -70,7 +70,7 @@ class Collection(CollectionModel):
         Returns:
             Documents: A list of created documents.
         """
-        return self.client.document.add_documents(docs, collection_id=self.uid, batch_size=batch_size)
+        return self.client.document.add_documents(docs, collection_id=self.collection_id, batch_size=batch_size)
 
     # TODO: add pagination
     def list_documents(self, *, limit: int = 100, offset: int = 0) -> list[Document]:
@@ -83,7 +83,7 @@ class Collection(CollectionModel):
         Returns:
             Documents: A list of documents in the collection.
         """
-        return self.client.document.list_documents(collection_id=self.uid, limit=limit, offset=offset)
+        return self.client.document.list_documents(collection_id=self.collection_id, limit=limit, offset=offset)
 
     def upload_documents(self,
                          files: Image.Image | str | list[Image.Image | str],
@@ -103,5 +103,5 @@ class Collection(CollectionModel):
         """
         return self.client.document.upload_documents(files=files,
                                                      filenames=filenames,
-                                                     collection_id=self.uid,
+                                                     collection_id=self.collection_id,
                                                      batch_size=batch_size)

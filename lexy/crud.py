@@ -9,7 +9,7 @@ from lexy.models import Collection
 async def get_collection_by_id(*, session: AsyncSession, collection_id: str) -> Collection | None:
     """Get a collection by id."""
     result = await session.exec(
-        select(Collection).where(Collection.uid == collection_id)
+        select(Collection).where(Collection.collection_id == collection_id)
     )
     collection = result.first()
     return collection

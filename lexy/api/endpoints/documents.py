@@ -75,7 +75,7 @@ async def get_documents(collection_name: str = "default",
 
     # get documents
     result = await session.exec(
-        select(Document).where(Document.collection_id == collection.uid).limit(limit).offset(offset)
+        select(Document).where(Document.collection_id == collection.collection_id).limit(limit).offset(offset)
     )
     documents = result.all()
     return documents
@@ -108,7 +108,7 @@ async def add_documents(documents: list[DocumentCreate],
                                         "msg": f"A document with this ID already exists: {doc.document_id}.",
                                         "document_id": str(doc.document_id),
                                     })
-        document = Document(**doc.model_dump(), collection_id=collection.uid)
+        document = Document(**doc.model_dump(), collection_id=collection.collection_id)
         session.add(document)
         await session.commit()
         await session.refresh(document)
@@ -135,7 +135,7 @@ async def upload_documents(files: list[UploadFile],
     # collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
-    collection_id = collection.uid
+    collection_id = collection.collection_id
 
     upload_files = []
 
@@ -258,13 +258,13 @@ async def bulk_delete_documents(collection_name: str,
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
     # delete documents
-    statement = delete(Document).where(Document.collection_id == collection.uid)
+    statement = delete(Document).where(Document.collection_id == collection.collection_id)
     result = await session.exec(statement)
     deleted_count = result.rowcount
     await session.commit()
     return {
         "msg": "Documents deleted",
-        "collection_id": collection.uid,
+        "collection_id": collection.collection_id,
         "deleted_count": deleted_count
     }
 

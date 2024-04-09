@@ -91,7 +91,7 @@ class Document(DocumentBase, table=True):
         default=None,
         sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
     )
-    collection_id: str = Field(default=None, foreign_key="collections.uid")
+    collection_id: str = Field(default=None, foreign_key="collections.collection_id")
     collection: Collection = Relationship(
         back_populates="documents",
         sa_relationship_kwargs={

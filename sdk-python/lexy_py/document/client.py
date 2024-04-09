@@ -144,7 +144,7 @@ class DocumentClient:
             >>> docs_added = lx.add_documents(docs=[
             ...     {"content": "My third document"},
             ...     {"content": "My fourth document"}
-            ... ], collection_id=my_new_collection.uid)
+            ... ], collection_id=my_new_collection.collection_id)
 
         """
         created_docs = []
