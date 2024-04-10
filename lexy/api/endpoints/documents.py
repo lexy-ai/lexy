@@ -65,11 +65,7 @@ async def get_documents(collection_name: str = "default",
                         offset: int = 0,
                         session: AsyncSession = Depends(get_session)) -> list[Document]:
     # get the collection
-    result = await session.exec(
-        select(Collection).where(Collection.collection_name == collection_name)
-    )
-    collection = result.first()
-    # collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
+    collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
 
@@ -89,11 +85,7 @@ async def add_documents(documents: list[DocumentCreate],
                         collection_name: str = "default",
                         session: AsyncSession = Depends(get_session)) -> list[dict]:
     # get the collection
-    result = await session.exec(
-        select(Collection).where(Collection.collection_name == collection_name)
-    )
-    collection = result.first()
-    # collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
+    collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
 
@@ -128,11 +120,7 @@ async def upload_documents(files: list[UploadFile],
                            session: AsyncSession = Depends(get_session),
                            s3_client: boto3.client = Depends(get_s3_client)) -> list[dict]:
     # get the collection
-    result = await session.exec(
-        select(Collection).where(Collection.collection_name == collection_name)
-    )
-    collection = result.first()
-    # collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
+    collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
     collection_id = collection.collection_id
@@ -160,9 +148,11 @@ async def upload_documents(files: list[UploadFile],
             file_dict["type"] = 'image'
 
             # check for duplicates first
-            result = await session.exec(select(Document)
-                                        .where(Document.content == f"<Image({file.filename})>")
-                                        .where(Document.collection_id == collection_id))
+            result = await session.exec(
+                select(Document)
+                .where(Document.content == f"<Image({file.filename})>")
+                .where(Document.collection_id == collection_id)
+            )
             document = result.first()
             if document:
                 file_dict['document'] = document
@@ -219,11 +209,41 @@ async def upload_documents(files: list[UploadFile],
         elif file.content_type.startswith('application/pdf'):
             # logic for pdf files
             file_dict["type"] = 'pdf'
+
+            # check for duplicates first
+            result = await session.exec(
+                select(Document)
+                .where(Document.content == f"<PDF({file.filename})>")
+                .where(Document.collection_id == collection_id)
+            )
+            document = result.first()
+            if document:
+                file_dict['document'] = document
+                upload_files.append(file_dict)
+                continue
+
+            # Upload the file to S3
+            if collection.config.get('store_files'):
+                # TODO: replace file.filename with the unique document id
+                s3_key = f"collections/{collection_id}/documents/{file.filename}"
+                file.file.seek(0)
+                s3_client.upload_fileobj(file.file, settings.S3_BUCKET, s3_key)
+
+                file_dict["s3_bucket"] = settings.S3_BUCKET
+                file_dict["s3_key"] = s3_key
+                file_dict["s3_url"] = f"https://{settings.S3_BUCKET}.s3.amazonaws.com/{s3_key}"
+                file_dict["s3_uri"] = f"s3://{settings.S3_BUCKET}/{s3_key}"
+
             document = Document(content=f"<PDF({file.filename})>", meta=file_dict, collection_id=collection_id)
-            # session.add(document)
-            # await session.commit()
-            # await session.refresh(document)
+            session.add(document)
+            await session.commit()
+            await session.refresh(document)
             file_dict['document'] = document
+
+            # generate tasks
+            tasks = await generate_tasks_for_document(document, s3_client=s3_client)
+            file_dict["document"] = document
+            file_dict["tasks"] = tasks
 
         elif file.content_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
             # logic for docx files
@@ -250,11 +270,7 @@ async def upload_documents(files: list[UploadFile],
 async def bulk_delete_documents(collection_name: str,
                                 session: AsyncSession = Depends(get_session)) -> dict:
     # get the collection
-    result = await session.exec(
-        select(Collection).where(Collection.collection_name == collection_name)
-    )
-    collection = result.first()
-    # collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
+    collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
     # delete documents

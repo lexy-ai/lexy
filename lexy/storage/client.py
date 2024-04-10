@@ -33,8 +33,8 @@ def generate_presigned_urls_for_document(document: "Document",
 
     Examples:
         >>> from lexy_py import LexyClient
-        >>> lexy = LexyClient()
-        >>> my_image_document = lexy.list_documents('my-image-collection', limit=1)[0]
+        >>> lx = LexyClient()
+        >>> my_image_document = lx.list_documents(collection_name='my_image_collection', limit=1)[0]
         >>> generate_presigned_urls_for_document(my_image_document, s3_client=s3_client)
         {
             "object": "https://my-bucket.s3.amazonaws.com/path/to/object?...",
@@ -42,7 +42,7 @@ def generate_presigned_urls_for_document(document: "Document",
                 "256x256": "https://my-bucket.s3.amazonaws.com/path/to/thumbnail?..."
             }
         }
-        >>> my_pdf_document = lexy.list_documents('pdf-collection', limit=1)[0]
+        >>> my_pdf_document = lx.list_documents(collection_name='pdf_collection', limit=1)[0]
         >>> generate_presigned_urls_for_document(my_pdf_document, s3_client=s3_client)
         {
             "object": "https://my-bucket.s3.amazonaws.com/path/to/object?...",

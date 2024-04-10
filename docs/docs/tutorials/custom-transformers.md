@@ -20,7 +20,8 @@ lexy
     ├── code.py
     ├── counter.py
     ├── embeddings.py
-    └── multimodal.py
+    ├── multimodal.py
+    └── openai.py
 ```
 
 And your file `code.py` should look something like this:
