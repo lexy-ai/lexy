@@ -1,5 +1,6 @@
 import logging
 
+import boto3
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from sqlmodel import select
@@ -7,6 +8,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from lexy import crud
 from lexy.db.session import get_session
+from lexy.storage.client import get_s3_client
 from lexy.models.binding import Binding, BindingCreate, BindingRead, BindingUpdate
 from lexy.core.events import process_new_binding
 
@@ -33,7 +35,8 @@ async def get_bindings(session: AsyncSession = Depends(get_session)) -> list[Bin
              name="add_binding",
              description="Create a new binding")
 async def add_binding(binding: BindingCreate,
-                      session: AsyncSession = Depends(get_session)) -> dict[str, BindingRead | list[dict]]:
+                      session: AsyncSession = Depends(get_session),
+                      s3_client: boto3.client = Depends(get_s3_client)) -> dict[str, BindingRead | list[dict]]:
     # set collection_id based on collection_id or collection_name
     if binding.collection_id:
         collection = await crud.get_collection_by_id(session=session, collection_id=binding.collection_id)
@@ -54,7 +57,7 @@ async def add_binding(binding: BindingCreate,
     await session.refresh(db_binding)
 
     # process the binding and generate document tasks
-    processed_binding, tasks = await session.run_sync(process_new_binding, db_binding)
+    processed_binding, tasks = await session.run_sync(process_new_binding, db_binding, s3_client=s3_client)
     # now commit the binding again and refresh it - status should be updated
     session.add(processed_binding)
     await session.commit()
@@ -85,7 +88,8 @@ async def get_binding(binding_id: int,
               description="Update a binding")
 async def update_binding(binding_id: int,
                          binding: BindingUpdate,
-                         session: AsyncSession = Depends(get_session)) -> dict[str, BindingRead | list[dict]]:
+                         session: AsyncSession = Depends(get_session),
+                         s3_client: boto3.client = Depends(get_s3_client)) -> dict[str, BindingRead | list[dict]]:
     result = await session.exec(select(Binding).where(Binding.binding_id == binding_id))
     db_binding = result.first()
     if not db_binding:
@@ -107,7 +111,7 @@ async def update_binding(binding_id: int,
         # TODO: this portion needs to be updated to reflect time stamps of tasks
         #  or to simply become part of an init script
         print(f"Binding status changed from '{old_status}' to 'on' - processing binding")
-        processed_binding, tasks = await session.run_sync(process_new_binding, binding)
+        processed_binding, tasks = await session.run_sync(process_new_binding, db_binding, s3_client=s3_client)
         # now commit the binding again and refresh it - status should be updated
         session.add(processed_binding)
         await session.commit()

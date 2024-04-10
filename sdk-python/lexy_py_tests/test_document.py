@@ -183,7 +183,7 @@ class TestDocumentClient:
         # assert doc_added[0].image is None
 
         # wait for the celery worker to finish the task
-        await asyncio.sleep(1)
+        await asyncio.sleep(2)
 
         index_records = await lx_async_client.index.alist_index_records(
             index_id="default_text_embeddings",
