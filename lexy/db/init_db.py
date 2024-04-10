@@ -52,7 +52,11 @@ def add_default_data_to_db(session=db):
             c = session.query(models.Collection).filter(
                 models.Collection.collection_name == b["collection_name"]
             ).first()
-            session.add(models.Binding(**b, collection_id=c.collection_id))
+            if c:
+                session.add(models.Binding(**b, collection_id=c.collection_id))
+            else:
+                logger.warning(f"Collection '{b['collection_name']}' not found for binding "
+                               f"'{b['binding_name']}' - skipping binding")
         session.commit()
 
 
