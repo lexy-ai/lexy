@@ -56,7 +56,7 @@ def add_default_data_to_db(session=db):
                 session.add(models.Binding(**b, collection_id=c.collection_id))
             else:
                 logger.warning(f"Collection '{b['collection_name']}' not found for seed binding "
-                               f"'{b['binding_name']}' - skipping binding")
+                               f"- skipping binding")
         session.commit()
 
 
