@@ -55,8 +55,8 @@ def add_default_data_to_db(session=db):
             if c:
                 session.add(models.Binding(**b, collection_id=c.collection_id))
             else:
-                logger.warning(f"Collection '{b['collection_name']}' not found for seed binding "
-                               f"- skipping binding")
+                logger.warning(f"Collection '{b['collection_name']}' not found for seed "
+                               f"binding - skipping binding")
         session.commit()
 
 
@@ -68,12 +68,17 @@ def add_sample_docs_to_db(session=db):
     else:
         # adding sample documents for code collection only - will add sample documents for default collection once
         # the default index and binding are created through appropriate crud endpoints
+
         for doc in sample_docs["code_collection_sample_docs"]:
             c = session.query(models.Collection).filter(
                 models.Collection.collection_name == doc["collection_name"]
             ).first()
-            session.add(models.Document(**doc, collection_id=c.collection_id))
-        session.commit()
+            if c:
+                session.add(models.Document(**doc, collection_id=c.collection_id))
+                session.commit()
+            else:
+                logger.warning(f"Collection '{doc['collection_name']}' not found for sample "
+                               f"document - skipping sample document")
 
 
 def add_first_superuser_to_db(session=db, settings=app_settings):
