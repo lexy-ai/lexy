@@ -22,11 +22,7 @@ router = APIRouter()
 async def get_collections(collection_name: str | None = None,
                           session: AsyncSession = Depends(get_session)) -> Collection | list[Collection]:
     if collection_name:
-        result = await session.exec(
-            select(Collection).where(Collection.collection_name == collection_name)
-        )
-        collection = result.first()
-        # collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
+        collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
         if not collection:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
         return collection
@@ -43,13 +39,9 @@ async def get_collections(collection_name: str | None = None,
 async def add_collection(collection: CollectionCreate,
                          session: AsyncSession = Depends(get_session)) -> Collection:
     # check if collection with that name already exists
-    result = await session.exec(
-        select(Collection).where(Collection.collection_name == collection.collection_name)
+    existing_collection = await crud.get_collection_by_name(
+        session=session, collection_name=collection.collection_name
     )
-    existing_collection = result.first()
-    # existing_collection = await crud.get_collection_by_name(
-    #     session=session, collection_name=collection.collection_name
-    # )
     if existing_collection:
         raise HTTPException(status_code=400, detail="Collection with that name already exists")
 
@@ -68,11 +60,7 @@ async def delete_collection_by_name(collection_name: str,
                                     delete_documents: bool = False,
                                     session: AsyncSession = Depends(get_session)) -> dict:
     # get the collection
-    result = await session.exec(
-        select(Collection).where(Collection.collection_name == collection_name)
-    )
-    collection = result.first()
-    # collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
+    collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
     collection_id = collection.collection_id
@@ -110,9 +98,7 @@ async def delete_collection_by_name(collection_name: str,
             description="Get a collection by ID")
 async def get_collection(collection_id: str,
                          session: AsyncSession = Depends(get_session)) -> Collection:
-    result = await session.exec(select(Collection).where(Collection.collection_id == collection_id))
-    collection = result.first()
-    # collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
+    collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
     return collection
@@ -126,21 +112,15 @@ async def get_collection(collection_id: str,
 async def update_collection(collection_id: str,
                             collection: CollectionUpdate,
                             session: AsyncSession = Depends(get_session)) -> Collection:
-    result = await session.exec(select(Collection).where(Collection.collection_id == collection_id))
-    db_collection = result.first()
-    # db_collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
+    db_collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
     if not db_collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
     collection_data = collection.model_dump(exclude_unset=True)
     # if collection_name is being updated, check if a collection with that name already exists
     if "collection_name" in collection_data:
-        result = await session.exec(
-            select(Collection).where(Collection.collection_name == collection_data["collection_name"])
+        existing_collection = await crud.get_collection_by_name(
+            session=session, collection_name=collection_data["collection_name"]
         )
-        existing_collection = result.first()
-        # existing_collection = await crud.get_collection_by_name(
-        #     session=session, collection_name=collection_data["collection_name"]
-        # )
         if existing_collection:
             raise HTTPException(status_code=400, detail="Collection with that name already exists")
     for key, value in collection_data.items():
@@ -159,9 +139,7 @@ async def delete_collection(collection_id: str,
                             delete_documents: bool = False,
                             session: AsyncSession = Depends(get_session)) -> dict:
     # get the collection
-    result = await session.exec(select(Collection).where(Collection.collection_id == collection_id))
-    collection = result.first()
-    # collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
+    collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
 
@@ -201,9 +179,7 @@ async def get_collection_documents(collection_id: str,
                                    offset: int = 0,
                                    session: AsyncSession = Depends(get_session)) -> list[Document]:
     # get the collection
-    result = await session.exec(select(Collection).where(Collection.collection_id == collection_id))
-    collection = result.first()
-    # collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
+    collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
     # get documents in the collection
@@ -222,9 +198,7 @@ async def add_collection_documents(collection_id: str,
                                    documents: list[DocumentCreate],
                                    session: AsyncSession = Depends(get_session)) -> list[dict]:
     # get the collection
-    result = await session.exec(select(Collection).where(Collection.collection_id == collection_id))
-    collection = result.first()
-    # collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
+    collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
     # add documents
@@ -280,9 +254,7 @@ async def upload_collection_documents(collection_id: str,
 async def delete_collection_documents(collection_id: str,
                                       session: AsyncSession = Depends(get_session)) -> dict:
     # get the collection
-    result = await session.exec(select(Collection).where(Collection.collection_id == collection_id))
-    collection = result.first()
-    # collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
+    collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
     # delete the documents

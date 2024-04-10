@@ -65,11 +65,7 @@ async def get_documents(collection_name: str = "default",
                         offset: int = 0,
                         session: AsyncSession = Depends(get_session)) -> list[Document]:
     # get the collection
-    result = await session.exec(
-        select(Collection).where(Collection.collection_name == collection_name)
-    )
-    collection = result.first()
-    # collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
+    collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
 
@@ -89,11 +85,7 @@ async def add_documents(documents: list[DocumentCreate],
                         collection_name: str = "default",
                         session: AsyncSession = Depends(get_session)) -> list[dict]:
     # get the collection
-    result = await session.exec(
-        select(Collection).where(Collection.collection_name == collection_name)
-    )
-    collection = result.first()
-    # collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
+    collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
 
@@ -128,11 +120,7 @@ async def upload_documents(files: list[UploadFile],
                            session: AsyncSession = Depends(get_session),
                            s3_client: boto3.client = Depends(get_s3_client)) -> list[dict]:
     # get the collection
-    result = await session.exec(
-        select(Collection).where(Collection.collection_name == collection_name)
-    )
-    collection = result.first()
-    # collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
+    collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
     collection_id = collection.collection_id
@@ -282,11 +270,7 @@ async def upload_documents(files: list[UploadFile],
 async def bulk_delete_documents(collection_name: str,
                                 session: AsyncSession = Depends(get_session)) -> dict:
     # get the collection
-    result = await session.exec(
-        select(Collection).where(Collection.collection_name == collection_name)
-    )
-    collection = result.first()
-    # collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
+    collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
     # delete documents
