@@ -22,7 +22,8 @@ const DataLists: React.FC<Props> = ({ collections, indexes, bindings }) => {
           {collections.map((collection) => (
             <li key={collection.collection_id} className="py-4">
                 {/* Render your collection details here */}
-                <p className="text-sm font-semibold leading-6 text-gray-900">{collection.collection_id}</p>
+                <p className="text-sm font-semibold leading-6 text-gray-900">{collection.collection_name}</p>
+                <p className="mt-1 truncate text-xs leading-5 text-gray-500">ID: {collection.collection_id}</p>
                 <p className="mt-1 truncate text-xs leading-5 text-gray-500">Description: {collection.description}</p>
                 <p className="mt-1 truncate text-xs leading-5 text-gray-500">Created At: {new Date(collection.created_at).toLocaleString()}</p>
                 <p className="mt-1 truncate text-xs leading-5 text-gray-500">Updated At: {new Date(collection.updated_at).toLocaleString()}</p>
@@ -82,7 +83,7 @@ const DataLists: React.FC<Props> = ({ collections, indexes, bindings }) => {
             </div>
             {/* Right Column: Collection, Transformer, and Index */}
             <div className="flex-1 mt-4 md:mt-0">
-              <p className="mt-1 truncate text-xs leading-5 text-gray-500">Collection: <span className="font-medium text-gray-900">{binding.collection_id}</span></p>
+              <p className="mt-1 truncate text-xs leading-5 text-gray-500">Collection: <span className="font-medium text-gray-900">{binding.collection.collection_name}</span></p>
               <p className="mt-1 truncate text-xs leading-5 text-gray-500">Transformer: <span className="font-medium text-gray-900">{binding.transformer_id}</span></p>
               <p className="mt-1 truncate text-xs leading-5 text-gray-500">Index: <span className="font-medium text-gray-900">{binding.index_id}</span></p>
               {/* Include other details as necessary */}
