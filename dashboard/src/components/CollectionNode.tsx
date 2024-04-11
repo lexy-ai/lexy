@@ -32,7 +32,7 @@ const CollectionNode: React.FC<CollectionNodeProps> = ({data,}) => {
             </NodeToolbar>
             <div className="flex items-center justify-center">
                 <CircleStackIcon className="h-4 w-4 text-indigo-600 mr-2"/>
-                <span className="text-xs font-semibold">{collection.collection_id}</span>
+                <span className="text-xs font-semibold">{collection.collection_name}</span>
             </div>
             <Handle type="source" position={Position.Right}/>
 
