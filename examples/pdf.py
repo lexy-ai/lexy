@@ -9,7 +9,7 @@ from lexy.transformers.embeddings import text_embeddings
 
 
 def pdf_reader_from_url(url: str) -> pypdf.PdfReader:
-    response = httpx.get(url)
+    response = httpx.get(url, follow_redirects=True)
     return pypdf.PdfReader(BytesIO(response.content))
 
 

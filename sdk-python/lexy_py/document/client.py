@@ -1,8 +1,8 @@
 """ Client for interacting with the Document API. """
 
-import io
 import mimetypes
 import os
+from io import BytesIO
 from typing import Optional, TYPE_CHECKING
 
 import httpx
@@ -371,7 +371,7 @@ class DocumentClient:
         return r.json()
 
     def upload_documents(self,
-                         files: Image.Image | str | list[Image.Image | str],
+                         files: str | Image.Image | list[str | Image.Image],
                          filenames: str | list[str] = None,
                          *,
                          collection_name: str = "default",
@@ -382,8 +382,8 @@ class DocumentClient:
         If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
 
         Args:
-            files (Image.Image | str | list[Image.Image | str]): The files to upload. Can be a list or single instance
-                of either an Image file or a string containing the path to an Image file.
+            files (str | Image.Image | list[str | Image.Image]): The files to upload. Can be a single instance or a
+                list of a string containing the path to a file or an `Image.Image` object.
             filenames (str | list[str], optional): The filenames of the files to upload. Defaults to None.
             collection_name (str): The name of the collection to upload the files to. Defaults to "default".
             collection_id (str): The ID of the collection to upload the files to. Defaults to None. If provided,
@@ -392,6 +392,26 @@ class DocumentClient:
 
         Returns:
             Documents: A list of created documents.
+
+        Raises:
+            TypeError: If an input file type is invalid.
+            ValueError: If the length of the filenames list does not match the length of the files list.
+
+        Examples:
+
+            >>> from lexy_py import LexyClient
+            >>> lx = LexyClient()
+            >>> lx.document.upload_documents(
+            ...     files=[
+            ...         'lexy/sample_data/images/lexy-dalle.jpeg',
+            ...         'lexy/sample_data/images/lexy.png',
+            ...         'dais2023-233180.pdf',
+            ...         'gwdemo30.mp4',
+            ...         'kindle2.html',
+            ...     ],
+            ...     collection_name='my_file_collection',
+            ... )
+
         """
         created_docs = []
         files, filenames = self._align_filenames(files, filenames)
@@ -400,14 +420,14 @@ class DocumentClient:
         for i in range(0, len(files), batch_size):
             batch_files = files[i:i + batch_size]
             batch_filenames = filenames[i:i + batch_size]
-            processed_images = self._process_images(batch_files, filenames=batch_filenames)
+            processed_files = self._process_files(batch_files, filenames=batch_filenames)
 
             if collection_id is not None:
                 r = self.client.post(f"/collections/{collection_id}/documents/upload",
-                                     files=processed_images)
+                                     files=processed_files)
             else:
                 r = self.client.post("/documents/upload",
-                                     files=processed_images,
+                                     files=processed_files,
                                      params={"collection_name": collection_name})
 
             handle_response(r)
@@ -417,7 +437,7 @@ class DocumentClient:
         return created_docs
 
     async def aupload_documents(self,
-                                files: Image.Image | str | list[Image.Image | str],
+                                files: str | Image.Image | list[str | Image.Image],
                                 filenames: str | list[str] = None,
                                 *,
                                 collection_name: str = "default",
@@ -428,8 +448,8 @@ class DocumentClient:
         If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
 
         Args:
-            files (Image.Image | str | list[Image.Image | str]): The files to upload. Can be a list or single instance
-                of either an Image file or a string containing the path to an Image file.
+            files (str | Image.Image | list[str | Image.Image]): The files to upload. Can be a single instance or a
+                list of a string containing the path to a file or an `Image.Image` object.
             filenames (str | list[str], optional): The filenames of the files to upload. Defaults to None.
             collection_name (str): The name of the collection to upload the files to. Defaults to "default".
             collection_id (str): The ID of the collection to upload the files to. Defaults to None. If provided,
@@ -438,6 +458,10 @@ class DocumentClient:
 
         Returns:
             Documents: A list of created documents.
+
+        Raises:
+            TypeError: If an input file type is invalid.
+            ValueError: If the length of the filenames list does not match the length of the files list.
         """
         created_docs = []
         files, filenames = self._align_filenames(files, filenames)
@@ -446,14 +470,14 @@ class DocumentClient:
         for i in range(0, len(files), batch_size):
             batch_files = files[i:i + batch_size]
             batch_filenames = filenames[i:i + batch_size]
-            processed_images = self._process_images(batch_files, filenames=batch_filenames)
+            processed_files = self._process_files(batch_files, filenames=batch_filenames)
 
             if collection_id is not None:
                 r = await self.aclient.post(f"/collections/{collection_id}/documents/upload",
-                                            files=processed_images)
+                                            files=processed_files)
             else:
                 r = await self.aclient.post("/documents/upload",
-                                            files=processed_images,
+                                            files=processed_files,
                                             params={"collection_name": collection_name})
 
             handle_response(r)
@@ -543,29 +567,30 @@ class DocumentClient:
         return processed_docs
 
     @staticmethod
-    def _process_images(images: Image.Image | str | list[Image.Image | str],
-                        filenames: str | list[str] = None) -> list:
+    def _process_files(files: str | Image.Image | list[str | Image.Image],
+                       filenames: str | list[str] = None) -> list:
+        processed_files = []
+        files, filenames = DocumentClient._align_filenames(files, filenames)
 
-        processed_images = []
-        images, filenames = DocumentClient._align_filenames(images, filenames)
-
-        for img, filename in zip(images, filenames):
-            if isinstance(img, str):
-                image = Image.open(img)
+        for file, filename in zip(files, filenames):
+            if isinstance(file, str):
+                with open(file, 'rb') as f:
+                    file_content = f.read()
                 if not filename:
-                    filename = os.path.basename(img)
-            elif isinstance(img, Image.Image):
-                image = img
+                    filename = os.path.basename(file)
+            elif isinstance(file, Image.Image):
+                buffer = BytesIO()
+                image_format = file.format or 'jpg'
+                file.save(buffer, format=image_format)
+                buffer.seek(0)
+                file_content = buffer.getvalue()
                 if not filename:
-                    filename = f'image.{image.format.lower()}' if image.format else 'image.jpg'
+                    filename = f'image.{file.format.lower()}' if file.format else 'image.jpg'
             else:
-                raise TypeError(f"Invalid type for image: {type(img)} - must be Image.Image or str")
+                raise TypeError(f"Invalid type for file: {type(file)} - must be a str path to a file, or an "
+                                f"`Image.Image` object")
 
-            buffer = io.BytesIO()
-            image_format = image.format or "jpg"
-            image.save(buffer, format=image_format)
-            buffer.seek(0)
-            mime_type = mimetypes.types_map.get(f".{image_format.lower()}", "application/octet-stream")
-            processed_images.append(('files', (filename, buffer, mime_type)))
+            mime_type = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+            processed_files.append(('files', (filename, BytesIO(file_content), mime_type)))
 
-        return processed_images
+        return processed_files
