@@ -17,6 +17,7 @@ from lexy.core.events import generate_tasks_for_document
 router = APIRouter()
 
 
+# TODO: move this somewhere else
 def upload_file_to_s3(file: UploadFile, s3_client: boto3.client, s3_bucket: str, s3_key: str) -> dict:
     """ Upload a file to S3.
 
@@ -157,7 +158,7 @@ async def upload_documents(files: list[UploadFile],
             "size": file.size,
         }
 
-        # TODO: replace file.filename with the unique document id
+        # TODO: replace file.filename with the unique document id - will require saving the document in the DB first
         s3_bucket = settings.S3_BUCKET
         s3_key = f"collections/{collection_id}/documents/{file.filename}"
 
@@ -168,48 +169,48 @@ async def upload_documents(files: list[UploadFile],
         print(file_dict)
         file_dict.pop("headers")
 
+        # "pre-processing" based on file type
         if file.content_type.startswith('image/'):
             # logic for image files
             file_dict["type"] = 'image'
             doc_content = f"<Image({file.filename})>"
+        elif file.content_type.startswith('text/'):
+            # logic for text files
+            file_dict["type"] = 'text'
+            doc_content = file_content.decode("utf-8")
+        elif file.content_type.startswith('application/pdf'):
+            # logic for pdf files
+            file_dict["type"] = 'pdf'
+            doc_content = f"<PDF({file.filename})>"
+        elif file.content_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            # logic for docx files
+            file_dict["type"] = 'docx'
+            doc_content = f"<DOCX({file.filename})>"
+        elif file.content_type.startswith('video/'):
+            # logic for video files
+            file_dict["type"] = 'video'
+            doc_content = f"<Video({file.filename})>"
+        else:
+            # logic for all other files
+            file_dict["type"] = 'file'
+            doc_content = f"<File({file.filename})>"
 
-            # check for duplicates
-            docs = await crud.get_documents_by_collection_id_and_content(
-                session=session, collection_id=collection_id, content=doc_content
-            )
-            if docs:
-                file_dict['document'] = docs[0]
-                upload_files.append(file_dict)
-                continue
-            # result = await session.exec(
-            #     select(Document)
-            #     .where(Document.content == f"<Image({file.filename})>")
-            #     .where(Document.collection_id == collection_id)
-            # )
-            # document = result.first()
-            # if document:
-            #     file_dict['document'] = document
-            #     upload_files.append(file_dict)
-            #     continue
+        # check for an existing doc based on content
+        docs = await crud.get_documents_by_collection_id_and_content(
+            session=session, collection_id=collection_id, content=doc_content
+        )
+        if docs:
+            file_dict['document'] = docs[0]
+            upload_files.append(file_dict)
+            continue
 
+        # "post-processing" based on file type
+        if file.content_type.startswith('image/'):
             # all we're doing here is getting the width and height - if we're generating thumbnails, we'll use this
             #  instance as the input
             img = Image.open(file_in_memory)
             width, height = img.size
             file_dict["image"] = {"width": width, "height": height}
-
-            # # Upload the file to S3
-            # if collection.config.get('store_files'):
-            #     # TODO: replace file.filename with the unique document id
-            #     s3_bucket = settings.S3_BUCKET
-            #     s3_key = f"collections/{collection_id}/documents/{file.filename}"
-            #     file.file.seek(0)
-            #     s3_client.upload_fileobj(file.file, settings.S3_BUCKET, s3_key)
-            #
-            #     file_dict["s3_bucket"] = settings.S3_BUCKET
-            #     file_dict["s3_key"] = s3_key
-            #     file_dict["s3_url"] = f"https://{settings.S3_BUCKET}.s3.amazonaws.com/{s3_key}"
-            #     file_dict["s3_uri"] = f"s3://{settings.S3_BUCKET}/{s3_key}"
 
             # generate thumbnails
             if collection.config.get('generate_thumbnails') and collection.config.get('store_files'):
@@ -220,184 +221,29 @@ async def upload_documents(files: list[UploadFile],
                                                   s3_base_path=f"collections/{collection_id}/thumbnails",
                                                   document_id=file.filename)
                 file_dict["image"]["thumbnails"] = thumbnails
+        # elif file.content_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+        #     # example processing for docx
+        #     import docx
+        #     doc = docx.Document(BytesIO(file.file.read()))
+        #     num_paragraphs = len(doc.paragraphs)
+        #     num_tables = len(doc.tables)
 
-            # Upload the file to S3
-            if collection.config.get('store_files'):
-                s3_meta = upload_file_to_s3(file, s3_client, s3_bucket, s3_key)
-                file_dict.update(s3_meta)
+        # Upload the file to S3
+        if collection.config.get('store_files'):
+            s3_meta = upload_file_to_s3(file, s3_client, s3_bucket, s3_key)
+            file_dict.update(s3_meta)
 
-            document = Document(content=doc_content, meta=file_dict, collection_id=collection_id)
-            session.add(document)
-            await session.commit()
-            await session.refresh(document)
+        document = Document(content=doc_content, meta=file_dict, collection_id=collection_id)
+        session.add(document)
+        await session.commit()
+        await session.refresh(document)
 
-            # generate tasks
-            tasks = await generate_tasks_for_document(document, s3_client=s3_client)
-            file_dict["document"] = document
-            file_dict["tasks"] = tasks
+        # generate tasks
+        tasks = await generate_tasks_for_document(document, s3_client=s3_client)
+        file_dict["document"] = document
+        file_dict["tasks"] = tasks
 
-        elif file.content_type.startswith('text/'):
-            # logic for text files
-            file_dict["type"] = 'text'
-            doc_content = file_content.decode("utf-8")
-
-            # check for duplicates
-            docs = await crud.get_documents_by_collection_id_and_content(
-                session=session, collection_id=collection_id, content=doc_content
-            )
-            if docs:
-                file_dict['document'] = docs[0]
-                upload_files.append(file_dict)
-                continue
-
-            # Upload the file to S3
-            if collection.config.get('store_files'):
-                s3_meta = upload_file_to_s3(file, s3_client, s3_bucket, s3_key)
-                file_dict.update(s3_meta)
-
-            document = Document(content=doc_content, meta=file_dict, collection_id=collection_id)
-            session.add(document)
-            await session.commit()
-            await session.refresh(document)
-
-            # generate tasks
-            tasks = await generate_tasks_for_document(document, s3_client=s3_client)
-            file_dict['document'] = document
-            file_dict['tasks'] = tasks
-
-        elif file.content_type.startswith('application/pdf'):
-            # logic for pdf files
-            file_dict["type"] = 'pdf'
-            doc_content = f"<PDF({file.filename})>"
-
-            # check for duplicates
-            docs = await crud.get_documents_by_collection_id_and_content(
-                session=session, collection_id=collection_id, content=doc_content
-            )
-            if docs:
-                file_dict['document'] = docs[0]
-                upload_files.append(file_dict)
-                continue
-            # result = await session.exec(
-            #     select(Document)
-            #     .where(Document.content == f"<PDF({file.filename})>")
-            #     .where(Document.collection_id == collection_id)
-            # )
-            # document = result.first()
-            # if document:
-            #     file_dict['document'] = document
-            #     upload_files.append(file_dict)
-            #     continue
-
-            # Upload the file to S3
-            if collection.config.get('store_files'):
-                s3_meta = upload_file_to_s3(file, s3_client, s3_bucket, s3_key)
-                file_dict.update(s3_meta)
-
-            document = Document(content=doc_content, meta=file_dict, collection_id=collection_id)
-            session.add(document)
-            await session.commit()
-            await session.refresh(document)
-            file_dict['document'] = document
-
-            # generate tasks
-            tasks = await generate_tasks_for_document(document, s3_client=s3_client)
-            file_dict["document"] = document
-            file_dict["tasks"] = tasks
-
-        elif file.content_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-            # logic for docx files
-            file_dict["type"] = 'docx'
-            doc_content = f"<DOCX({file.filename})>"
-            # # example processing for docx
-            # import docx
-            # docx = docx.Document(io.BytesIO(file.file.read()))
-            # num_paragraphs = len(doc.paragraphs)
-
-            # check for duplicates
-            docs = await crud.get_documents_by_collection_id_and_content(
-                session=session, collection_id=collection_id, content=doc_content
-            )
-            if docs:
-                file_dict['document'] = docs[0]
-                upload_files.append(file_dict)
-                continue
-
-            # Upload the file to S3
-            if collection.config.get('store_files'):
-                s3_meta = upload_file_to_s3(file, s3_client, s3_bucket, s3_key)
-                file_dict.update(s3_meta)
-
-            document = Document(content=doc_content, meta=file_dict, collection_id=collection_id)
-            session.add(document)
-            await session.commit()
-            await session.refresh(document)
-
-            # generate tasks
-            tasks = await generate_tasks_for_document(document, s3_client=s3_client)
-            file_dict['document'] = document
-            file_dict['tasks'] = tasks
-
-        elif file.content_type.startswith('video/'):
-            # logic for video files
-            file_dict["type"] = 'video'
-            doc_content = f"<Video({file.filename})>"
-
-            # check for duplicates
-            docs = await crud.get_documents_by_collection_id_and_content(
-                session=session, collection_id=collection_id, content=doc_content
-            )
-            if docs:
-                file_dict['document'] = docs[0]
-                upload_files.append(file_dict)
-                continue
-
-            # Upload the file to S3
-            if collection.config.get('store_files'):
-                s3_meta = upload_file_to_s3(file, s3_client, s3_bucket, s3_key)
-                file_dict.update(s3_meta)
-
-            document = Document(content=doc_content, meta=file_dict, collection_id=collection_id)
-            session.add(document)
-            await session.commit()
-            await session.refresh(document)
-
-            # generate tasks
-            tasks = await generate_tasks_for_document(document, s3_client=s3_client)
-            file_dict['document'] = document
-            file_dict['tasks'] = tasks
-
-        else:
-            # logic for other files
-            file_dict["type"] = 'file'
-            doc_content = f"<File({file.filename})>"
-
-            # check for duplicates
-            docs = await crud.get_documents_by_collection_id_and_content(
-                session=session, collection_id=collection_id, content=doc_content
-            )
-            if docs:
-                file_dict['document'] = docs[0]
-                upload_files.append(file_dict)
-                continue
-
-            # Upload the file to S3
-            if collection.config.get('store_files'):
-                s3_meta = upload_file_to_s3(file, s3_client, s3_bucket, s3_key)
-                file_dict.update(s3_meta)
-
-            document = Document(content=doc_content, meta=file_dict, collection_id=collection_id)
-            session.add(document)
-            await session.commit()
-            await session.refresh(document)
-
-            # generate tasks
-            tasks = await generate_tasks_for_document(document, s3_client=s3_client)
-            file_dict['document'] = document
-            file_dict['tasks'] = tasks
-
-        if 'document' in file_dict:
-            upload_files.append(file_dict)
+        upload_files.append(file_dict)
 
     return upload_files
 
