@@ -398,7 +398,6 @@ class DocumentClient:
             ValueError: If the length of the filenames list does not match the length of the files list.
 
         Examples:
-
             >>> from lexy_py import LexyClient
             >>> lx = LexyClient()
             >>> lx.document.upload_documents(
@@ -411,7 +410,6 @@ class DocumentClient:
             ...     ],
             ...     collection_name='my_file_collection',
             ... )
-
         """
         created_docs = []
         files, filenames = self._align_filenames(files, filenames)
