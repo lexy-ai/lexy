@@ -1,13 +1,23 @@
+from io import BytesIO
 from typing import Union
 
+import boto3
 from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile
+from PIL import Image
 from sqlmodel import delete, exists, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from lexy import crud
 from lexy.db.session import get_session
+from lexy.storage.client import (
+    construct_key_for_document,
+    construct_key_for_thumbnail,
+    get_s3_client,
+    upload_file_to_s3
+)
 from lexy.models.collection import Collection, CollectionCreate, CollectionUpdate
 from lexy.models.document import Document, DocumentCreate
+from lexy.core.config import settings
 from lexy.core.events import generate_tasks_for_document
 
 
@@ -224,15 +234,128 @@ async def add_collection_documents(collection_id: str,
     return docs_added
 
 
+# TODO: refactor logic to combine with `lexy.api.endpoints.documents.upload_documents`
 @router.post("/collections/{collection_id}/documents/upload",
              status_code=status.HTTP_201_CREATED,
              name="Upload documents to collection",
              description="Upload documents to a collection")
 async def upload_collection_documents(collection_id: str,
                                       files: list[UploadFile],
-                                      session: AsyncSession = Depends(get_session)) -> list[dict]:
-    # TODO: Implement file upload - combine with `lexy.api.endpoints.documents.upload_documents`
-    pass
+                                      session: AsyncSession = Depends(get_session),
+                                      s3_client: boto3.client = Depends(get_s3_client)) -> list[dict]:
+    # get the collection
+    collection = await crud.get_collection_by_id(session=session, collection_id=collection_id)
+    if not collection:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
+
+    docs_uploaded = []
+
+    for file in files:
+
+        file_dict = {
+            "content_type": file.content_type,
+            "filename": file.filename,
+            "size": file.size,
+            # "headers": file.headers,  # headers seem to be redundant
+        }
+
+        s3_bucket = settings.S3_BUCKET
+        # TODO: replace file.filename with the unique document id - will require saving the document in the DB first
+        #  but for now, we're using the filename as the document_id, which is equivalent to the following:
+        #    s3_key = f"collections/{collection_id}/documents/{file.filename}"
+        # uncomment the following line when ready
+        # s3_document_key = await construct_key_for_document(document=document, filename=file.filename)
+        s3_document_key = await construct_key_for_document(collection_id=collection_id, document_id=file.filename)
+
+        # TODO: move this to a separate parsing function - don't read into memory if not parsing
+        file_content = await file.read()
+        file_in_memory = BytesIO(file_content)
+        file_in_memory.seek(0)
+
+        # "pre-processing" based on file type
+        if file.content_type.startswith('image/'):
+            # logic for image files
+            file_dict["type"] = 'image'
+            doc_content = f"<Image({file.filename})>"
+        elif file.content_type.startswith('text/'):
+            # logic for text files
+            file_dict["type"] = 'text'
+            doc_content = file_content.decode("utf-8")
+        elif file.content_type.startswith('application/pdf'):
+            # logic for pdf files
+            file_dict["type"] = 'pdf'
+            doc_content = f"<PDF({file.filename})>"
+        elif file.content_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            # logic for docx files
+            file_dict["type"] = 'docx'
+            doc_content = f"<DOCX({file.filename})>"
+        elif file.content_type.startswith('video/'):
+            # logic for video files
+            file_dict["type"] = 'video'
+            doc_content = f"<Video({file.filename})>"
+        else:
+            # logic for all other files
+            file_dict["type"] = 'file'
+            doc_content = f"<File({file.filename})>"
+
+        # check for an existing doc based on content
+        docs = await crud.get_documents_by_collection_id_and_content(
+            session=session, collection_id=collection_id, content=doc_content
+        )
+        if docs:
+            file_dict['document'] = docs[0]
+            docs_uploaded.append(file_dict)
+            continue
+
+        # "post-processing" based on file type
+        if file.content_type.startswith('image/'):
+            # all we're doing here is getting the width and height - if we're generating thumbnails, we'll use this
+            #  instance as the input
+            img = Image.open(file_in_memory)
+            width, height = img.size
+            file_dict["image"] = {"width": width, "height": height}
+
+            # generate thumbnails
+            if collection.config.get('generate_thumbnails') and collection.config.get('store_files'):
+                # generate thumbnails and upload to S3
+                thumbnails = {}
+                for dims in settings.IMAGE_THUMBNAIL_SIZES:
+                    s3_thumbnail_key = await construct_key_for_thumbnail(dims=dims, collection_id=collection_id,
+                                                                         document_id=file.filename)
+                    img_copy = img.copy()
+                    img_copy.thumbnail(dims, Image.Resampling.LANCZOS)
+                    img_byte_arr = BytesIO()
+                    img_copy.save(img_byte_arr, format=img.format or 'JPEG')
+                    # Note: img_byte_arr.seek(0) is run in upload_file_to_s3 by default `rewind=True`
+                    s3_thumbnail_meta = upload_file_to_s3(img_byte_arr, s3_client, s3_bucket, s3_thumbnail_key)
+                    thumbnails[f"{dims[0]}x{dims[1]}"] = s3_thumbnail_meta
+                file_dict["image"]["thumbnails"] = thumbnails
+        elif file.content_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            # # example processing for docx
+            # import docx
+            # doc = docx.Document(BytesIO(file.file.read()))
+            # num_paragraphs = len(doc.paragraphs)
+            # num_tables = len(doc.tables)
+            pass
+
+        # Upload the file to S3
+        if collection.config.get('store_files'):
+            s3_meta = upload_file_to_s3(file.file, s3_client, s3_bucket, s3_document_key)
+            file_dict.update(s3_meta)
+
+        document = Document(content=doc_content, meta=file_dict, collection_id=collection_id)
+        session.add(document)
+        await session.commit()
+        await session.refresh(document)
+
+        # generate tasks
+        tasks = await generate_tasks_for_document(document, s3_client=s3_client)
+        file_dict["document"] = document
+        file_dict["tasks"] = tasks
+
+        docs_uploaded.append(file_dict)
+
+    return docs_uploaded
 
 
 # TODO: Implement bulk update

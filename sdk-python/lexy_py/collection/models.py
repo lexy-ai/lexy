@@ -106,7 +106,6 @@ class Collection(CollectionModel):
             ValueError: If the length of the filenames list does not match the length of the files list.
 
         Examples:
-
             >>> from lexy_py import LexyClient
             >>> lx = LexyClient()
             >>> collection = lx.create_collection(collection_name='my_file_collection')
@@ -119,7 +118,6 @@ class Collection(CollectionModel):
             ...         'kindle2.html',
             ...     ]
             ... )
-
         """
         return self.client.document.upload_documents(files=files,
                                                      filenames=filenames,
