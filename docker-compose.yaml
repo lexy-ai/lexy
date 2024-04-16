@@ -14,6 +14,7 @@ services:
     env_file:
       - .env
     environment:
+      - DOCKER=true
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=lexy
@@ -23,8 +24,11 @@ services:
       - CELERY_RESULT_BACKEND=db+postgresql://postgres:postgres@db_postgres/lexy
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - S3_BUCKET=${S3_BUCKET}
+      - PIPELINE_DIR=${PIPELINE_DIR:-./pipelines}
+      - PYTHONPATH=/home/app:/home/app/pipelines
     volumes:
       - ./:/home/app
+      - ${PIPELINE_DIR:-./pipelines}:/home/app/pipelines
       - $HOME/.aws/credentials:/root/.aws/credentials:ro
     networks:
       - lexy-net
@@ -86,7 +90,7 @@ services:
       dockerfile: docker/worker/Dockerfile
     hostname: celeryworker
     container_name: lexy-celeryworker
-    command: celery -A lexy.main.celery worker --loglevel=info -Q celery -c 4
+    command: watchmedo auto-restart --directory /home/app/lexy/transformers/ --directory /home/app/pipelines/ --recursive --pattern '*.py' -- celery -A lexy.main.celery worker --loglevel=info -Q celery -c 4
     depends_on:
       - lexyserver
       - queue
@@ -94,6 +98,7 @@ services:
     env_file:
       - .env
     environment:
+      - DOCKER=true
       - CELERY_BROKER_URL=amqp://guest:guest@queue:5672//
       - CELERY_BROKER_API_URL=http://guest:guest@queue:15672/api/vhost
       - CELERY_RESULT_BACKEND=db+postgresql://postgres:postgres@db_postgres/lexy
@@ -102,8 +107,11 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=lexy
       - POSTGRES_HOST=db_postgres
+      - PIPELINE_DIR=${PIPELINE_DIR:-./pipelines}
+      - PYTHONPATH=/home/app:/home/app/pipelines
     volumes:
       - ./:/home/app
+      - ${PIPELINE_DIR:-./pipelines}:/home/app/pipelines
     networks:
       - lexy-net
 

@@ -13,5 +13,13 @@ else
     echo "There is no script $PRE_START_PATH"
 fi
 
-# start server
-exec poetry run uvicorn lexy.main:app --host 0.0.0.0 --port 9900 --reload --reload-dir /home/app/lexy
+reload_options="--reload-dir /home/app/lexy --reload-dir /home/app/pipelines"
+## If PIPELINE_DIR is set, append it to reload_options
+#if [[ -n "$PIPELINE_DIR" ]] ; then
+#    for dir in $(echo "$PIPELINE_DIR" | tr ":" "\n"); do
+#      reload_options="$reload_options --reload-dir $dir"
+#    done
+#fi
+
+# Start server
+exec poetry run uvicorn lexy.main:app --host 0.0.0.0 --port 9900 --reload $reload_options

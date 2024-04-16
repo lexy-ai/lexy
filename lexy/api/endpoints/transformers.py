@@ -98,15 +98,20 @@ async def delete_transformer(transformer_id: str,
              description="Transform a document")
 async def transform_document(transformer_id: str,
                              document: DocumentCreate,
+                             celery_task_name: str = None,
                              transformer_params: dict = None,
                              content_only: bool = False,
                              session: AsyncSession = Depends(get_session)) -> dict:
-    result = await session.exec(select(Transformer).where(Transformer.transformer_id == transformer_id))
-    transformer = result.first()
-    if not transformer:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformer not found")
+    # TODO: set up a different end point for this without needing to pass the transformer_id
+    if celery_task_name:
+        task_name = celery_task_name
+    else:
+        result = await session.exec(select(Transformer).where(Transformer.transformer_id == transformer_id))
+        transformer = result.first()
+        if not transformer:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transformer not found")
+        task_name = transformer.celery_task_name
 
-    task_name = transformer.celery_task_name
     if content_only:
         task_arg = document.content
     else:
