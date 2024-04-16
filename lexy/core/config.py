@@ -1,8 +1,10 @@
 import importlib
+import os
 import pkgutil
+from pathlib import Path
 from typing import Optional
 
-from pydantic import field_validator, EmailStr, Field, SecretStr
+from pydantic import DirectoryPath, field_validator, EmailStr, Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -21,7 +23,7 @@ def expand_transformer_imports(transformer_imports: set[str]) -> set[str]:
     """ Expand transformer imports to include all submodules. """
     expanded_imports = set()
     for imp in transformer_imports:
-        if imp.rsplit('.', 1)[1] == '*':
+        if '.' in imp and imp.rsplit('.', 1)[1] == '*':
             expanded_imports.update(get_transformer_modules(imp.rsplit('.', 1)[0]))
         else:
             expanded_imports.add(imp)
@@ -75,7 +77,7 @@ class AppSettings(BaseSettings):
         (200, 200),
     }
 
-    # Celery settings
+    # Transformer settings
     LEXY_SERVER_TRANSFORMER_IMPORTS: set[str] = {
         # 'lexy.transformers.*'
         'lexy.transformers.counter',
@@ -89,7 +91,11 @@ class AppSettings(BaseSettings):
         'lexy.transformers.embeddings',
         'lexy.transformers.multimodal',
         'lexy.transformers.openai',
+        'pipelines.*'
     }
+
+    # Pipeline directory (relative to the project root)
+    PIPELINE_DIR: DirectoryPath = Field(default="pipelines", validation_alias="PIPELINE_DIR")
 
     @property
     def sync_database_url(self) -> str:
@@ -113,6 +119,12 @@ class AppSettings(BaseSettings):
 
     @property
     def worker_transformer_imports(self):
+        # TODO: Move to a separate property for pipeline imports
+        # if self.PIPELINE_DIR:
+        #     # Add pipeline imports to the worker transformer imports (i.e., adds 'pipelines.*' to the imports)
+        #     pipeline_imports = f'{self.PIPELINE_DIR.name}.*'
+        #     expanded_set = self.LEXY_WORKER_TRANSFORMER_IMPORTS.union({pipeline_imports})
+        #     return expand_transformer_imports(expanded_set)
         return expand_transformer_imports(self.LEXY_WORKER_TRANSFORMER_IMPORTS)
 
     @field_validator('SECRET_KEY')
@@ -121,6 +133,19 @@ class AppSettings(BaseSettings):
         if value.get_secret_value() == "changethis":
             import logging
             logging.warning("Using default value of SECRET_KEY. Do NOT use this value for production!")
+        return value
+
+    @field_validator('PIPELINE_DIR', mode='before')
+    @classmethod
+    def check_pipeline_dir(cls, value):
+        # override if inside of docker
+        # TODO: Move this jank override to a proper env setup
+        if os.getenv("DOCKER", False):
+            value = "pipelines"
+        if value:
+            pipeline_dir = Path(value).resolve()
+            if not pipeline_dir.is_dir():
+                raise ValueError(f"Pipeline directory '{pipeline_dir}' does not exist.")
         return value
 
     model_config = SettingsConfigDict(case_sensitive=True, env_file='.env', env_file_encoding='utf-8', extra="allow")
