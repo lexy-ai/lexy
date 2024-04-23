@@ -39,7 +39,7 @@ class TestCollection:
         assert "default" in collection_names
 
     @pytest.mark.asyncio
-    async def test_create_collection(self, async_session):
+    async def test_create_collection(self, async_session, settings):
         collection = Collection(collection_name="test_collection", description="Test Collection")
         async_session.add(collection)
         await async_session.commit()
@@ -47,6 +47,7 @@ class TestCollection:
         assert collection.collection_id is not None
         assert collection.collection_name == "test_collection"
         assert collection.description == "Test Collection"
+        assert collection.config == settings.COLLECTION_DEFAULT_CONFIG
         assert collection.created_at is not None
         assert collection.updated_at is not None
 
@@ -57,12 +58,16 @@ class TestCollection:
         assert len(collections) == 1
         assert collections[0].collection_name == "test_collection"
         assert collections[0].description == "Test Collection"
+        assert collections[0].config == settings.COLLECTION_DEFAULT_CONFIG
 
     @pytest.mark.asyncio
-    async def test_create_collection_with_model_validate(self, async_session):
+    async def test_create_collection_with_model_validate(self, async_session, settings):
         collection = CollectionCreate(
             collection_name="test_collection_validated", description="Test Collection Validated"
         )
+        assert collection.collection_name == "test_collection_validated"
+        assert collection.description == "Test Collection Validated"
+        assert collection.config == settings.COLLECTION_DEFAULT_CONFIG
 
         db_collection = Collection.model_validate(collection)
         async_session.add(db_collection)
@@ -71,6 +76,7 @@ class TestCollection:
         assert db_collection.collection_id is not None
         assert db_collection.collection_name == "test_collection_validated"
         assert db_collection.description == "Test Collection Validated"
+        assert db_collection.config == settings.COLLECTION_DEFAULT_CONFIG
         assert db_collection.created_at is not None
         assert db_collection.updated_at is not None
 
@@ -81,6 +87,7 @@ class TestCollection:
         assert len(collections) == 1
         assert collections[0].collection_name == "test_collection_validated"
         assert collections[0].description == "Test Collection Validated"
+        assert collections[0].config == settings.COLLECTION_DEFAULT_CONFIG
 
     @pytest.mark.asyncio
     async def test_collection_crud(self, async_session):

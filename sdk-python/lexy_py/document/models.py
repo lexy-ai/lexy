@@ -76,7 +76,8 @@ class Document(DocumentModel):
             self._refresh_urls()
         url = self._urls.get('object', None)
         # check if url is expired and refresh if needed
-        if url and presigned_url_is_expired(url):
+        storage_service = self.meta.get('storage_service')
+        if url and presigned_url_is_expired(url, storage_service=storage_service):
             self._refresh_urls()
             url = self._urls.get('object', None)
         return url
@@ -89,7 +90,9 @@ class Document(DocumentModel):
         if not url:
             url = next(iter(self._urls.get('thumbnails', {}).values()), None)
         # check if url is expired and refresh if needed
-        if url and presigned_url_is_expired(url):
+        storage_service = (self.meta.get('image', {}).get('thumbnails', {}).get(f'{size[0]}x{size[1]}', {})
+                           .get('storage_service'))
+        if url and presigned_url_is_expired(url, storage_service=storage_service):
             return self.get_thumbnail_url(size, refresh=True)
         return url
     thumbnail_url = property(get_thumbnail_url)

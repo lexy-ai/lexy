@@ -23,13 +23,18 @@ services:
       - CELERY_BROKER_URL=amqp://guest:guest@queue:5672//
       - CELERY_RESULT_BACKEND=db+postgresql://postgres:postgres@db_postgres/lexy
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - S3_BUCKET=${S3_BUCKET}
-      - PIPELINE_DIR=${PIPELINE_DIR:-./pipelines}
+      - PIPELINE_DIR=/home/app/pipelines
       - PYTHONPATH=/home/app:/home/app/pipelines
+      - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/gcp_credentials
     volumes:
       - ./:/home/app
       - ${PIPELINE_DIR:-./pipelines}:/home/app/pipelines
+      # Uncomment the following line if you are using AWS credentials
       - $HOME/.aws/credentials:/root/.aws/credentials:ro
+      # Uncomment the following line if you are using Google Cloud with application-default credentials
+      #- $HOME/.config/gcloud:/root/.config/gcloud:ro
+    secrets:
+      - gcp_credentials
     networks:
       - lexy-net
 
@@ -107,18 +112,24 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=lexy
       - POSTGRES_HOST=db_postgres
-      - PIPELINE_DIR=${PIPELINE_DIR:-./pipelines}
+      - PIPELINE_DIR=/home/app/pipelines
       - PYTHONPATH=/home/app:/home/app/pipelines
+      # Unset GOOGLE_APPLICATION_CREDENTIALS for the celery worker
+      - GOOGLE_APPLICATION_CREDENTIALS=
     volumes:
       - ./:/home/app
       - ${PIPELINE_DIR:-./pipelines}:/home/app/pipelines
     networks:
       - lexy-net
 
-
 volumes:
   db-postgres:
     driver: local
+
+secrets:
+  # Google Cloud service account credentials
+  gcp_credentials:
+    file: ${GOOGLE_APPLICATION_CREDENTIALS:-null}
 
 networks:
   lexy-net:

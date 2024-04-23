@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 
 from fastapi import APIRouter, status
@@ -109,3 +110,10 @@ async def get_index_manager_from_celery() -> dict:
         (model, index_manager.index_models[model].__table__.name) for model in index_manager.index_models
     )
     return {"index_models_and_tables": index_models_and_tables}
+
+
+@router.get("/os-env",
+            status_code=status.HTTP_200_OK,
+            name="os_env")
+async def os_env():
+    return dict(os.environ)

@@ -3,14 +3,14 @@ from typing import TYPE_CHECKING
 
 from fastapi import Depends
 
-from lexy.storage.client import get_s3_client
+from lexy.storage.client import get_storage_client
 from lexy.core.config import settings
 from lexy.models import Binding, Document
 from lexy.schemas.filters import filter_documents
 from lexy.core.celery_tasks import celery, save_records_to_index
 
 if TYPE_CHECKING:
-    import boto3
+    from lexy.storage.client import StorageClient
 
 
 logger = logging.getLogger(__name__)
@@ -18,12 +18,12 @@ logger.setLevel(logging.INFO)
 
 
 async def generate_tasks_for_document(doc: Document,
-                                      s3_client: "boto3.client" = Depends(get_s3_client)) -> list[dict]:
+                                      storage_client: "StorageClient" = Depends(get_storage_client)) -> list[dict]:
     """ Generate tasks for a document based on bindings and filters.
 
     Args:
         doc (Document): The document for which to generate tasks
-        s3_client (boto3.client): The S3 client to use for generating presigned object URLs
+        storage_client (StorageClient): The storage client to use for generating presigned object URLs
 
     Returns:
         list[dict]: A list of tasks that were created for the document
@@ -49,7 +49,7 @@ async def generate_tasks_for_document(doc: Document,
 
         # generate the task
         # TODO: add a condition to check if the document has a storage url before running refresh_object_urls
-        doc.refresh_object_urls(s3_client=s3_client)
+        doc.refresh_object_urls(storage_client=storage_client)
         task_name = binding.transformer.celery_task_name
         task = celery.send_task(
             task_name,
@@ -71,7 +71,7 @@ async def generate_tasks_for_document(doc: Document,
 # TODO: remove session arg and run async after update to SQLAlchemy 2.0
 def process_new_binding(session,
                         binding: Binding,
-                        s3_client: "boto3.client" = Depends(get_s3_client)) -> tuple[Binding, list[dict]]:
+                        storage_client: "StorageClient" = Depends(get_storage_client)) -> tuple[Binding, list[dict]]:
     """ Process a new binding.
 
     Steps involved:
@@ -81,7 +81,7 @@ def process_new_binding(session,
 
     Args:
         binding (Binding): The binding to process
-        s3_client (boto3.client): The S3 client to use for generating presigned object URLs
+        storage_client (StorageClient): The storage client to use for generating presigned object URLs
 
     Returns:
         tuple[Binding, list[dict]]: The binding and the tasks that were created
@@ -135,7 +135,7 @@ def process_new_binding(session,
     task_name = binding.transformer.celery_task_name
     for doc in documents:
         # TODO: add a condition to check if the document has a storage url before running refresh_object_urls
-        doc.refresh_object_urls(s3_client=s3_client)
+        doc.refresh_object_urls(storage_client=storage_client)
         task = celery.send_task(
             task_name,
             args=[doc],

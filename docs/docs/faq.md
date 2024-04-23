@@ -14,7 +14,8 @@ Then open the `.env` file and add your new environment variable.
 ```shell title=".env" hl_lines="7"
 # Lexy settings
 SECRET_KEY=super_secret_key
-S3_BUCKET=s3_bucket_name
+DEFAULT_STORAGE_SERVICE=s3
+DEFAULT_STORAGE_BUCKET=your_s3_bucket_name
 
 # Other secrets
 OPENAI_API_KEY=your_secret_api_key
