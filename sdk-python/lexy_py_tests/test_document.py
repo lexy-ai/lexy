@@ -1,10 +1,14 @@
 from datetime import datetime
+from io import BytesIO
 
 import asyncio
+import httpx
 import pytest
+from PIL import Image
 
 from lexy_py.exceptions import LexyAPIError
 from lexy_py.document.models import Document
+from lexy_py.storage import presigned_url_is_expired
 
 
 class TestDocumentClient:
@@ -206,6 +210,248 @@ class TestDocumentClient:
         assert isinstance(exc_info.value, LexyAPIError)
         assert exc_info.value.response.status_code == 404
         assert exc_info.value.response.json()['detail'] == 'Collection not found'
+
+    @pytest.mark.asyncio
+    async def test_upload_documents(self, lx_client, settings):
+        # create a test collection for testing uploading documents
+        tmp_collection = lx_client.create_collection(
+            collection_name="test_upload_documents", description="Test Upload Documents"
+        )
+        assert tmp_collection.collection_name == "test_upload_documents"
+        assert tmp_collection.description == "Test Upload Documents"
+        assert tmp_collection.config == settings.COLLECTION_DEFAULT_CONFIG
+        tmp_collection_id = tmp_collection.collection_id
+        storage_bucket = tmp_collection.config.get('storage_bucket')
+        assert storage_bucket == settings.DEFAULT_STORAGE_BUCKET
+
+        # upload documents to the test collection
+        # NOTE: file paths are relative to the execution directory (i.e., project root)
+        docs_uploaded = lx_client.upload_documents(
+            files=[
+                "sample_data/images/lexy-dalle.jpeg",
+                "sample_data/images/lexy.png",
+            ],
+            collection_name="test_upload_documents"
+        )
+        assert len(docs_uploaded) == 2
+        assert docs_uploaded[0].content == "<Image(lexy-dalle.jpeg)>"
+        assert docs_uploaded[1].content == "<Image(lexy.png)>"
+
+        img_doc = docs_uploaded[0]
+        assert img_doc.content == "<Image(lexy-dalle.jpeg)>"
+        assert img_doc.document_id is not None
+        assert img_doc.created_at is not None
+        assert img_doc.updated_at is not None
+        assert img_doc.collection_id == tmp_collection_id
+        assert img_doc.object_url is not None
+        assert img_doc.client is not None
+        assert img_doc.client == lx_client
+
+        # setting the client to None allows loading the image through httpx, but breaks the `.client` property
+        # img_doc._client = None
+        # assert img_doc.image is not None
+
+        print(f"{img_doc.object_url = }")
+
+        # FIXME: lx_client.get() returns a 404 but httpx.get() returns a 200 - this is because we're appending the
+        #  API_PREFIX (e.g., "/api") to the base_url
+        r = img_doc.client.get(img_doc.object_url, follow_redirects=True)
+        print(f"{r.status_code = }")
+
+        r2 = lx_client.get(img_doc.object_url, follow_redirects=True)
+        print(f"{r2.status_code = }")
+
+        r3 = httpx.get(img_doc.object_url, follow_redirects=True)
+        print(f"{r3.status_code = }")
+
+        # assert isinstance(img_doc.image, Image.Image)
+        img = Image.open(BytesIO(r3.content))
+        assert isinstance(img, Image.Image)
+        assert img_doc.meta['filename'] == 'lexy-dalle.jpeg'
+        assert img_doc.meta['s3_bucket'] == storage_bucket
+        assert img_doc.meta['s3_key'] == f"lexy_tests/collections/{tmp_collection_id}/documents/lexy-dalle.jpeg"
+        assert img_doc.meta['size'] == 113352
+        assert img_doc.meta['type'] == 'image'
+        assert img_doc.meta['content_type'] == 'image/jpeg'
+        assert img_doc.meta['image']['width'] == 1024
+        assert img_doc.meta['image']['height'] == 1024
+        assert 'thumbnails' in img_doc.meta['image']
+        thumbnail_dims = list(settings.IMAGE_THUMBNAIL_SIZES)[0]
+        thumbnail_dims_str = f"{thumbnail_dims[0]}x{thumbnail_dims[1]}"
+        assert thumbnail_dims_str in img_doc.meta['image']['thumbnails']
+        assert img_doc.meta['image']['thumbnails'][thumbnail_dims_str]['s3_bucket'] == storage_bucket
+        assert img_doc.meta['image']['thumbnails'][thumbnail_dims_str]['s3_key'] == (
+            f"lexy_tests/collections/{tmp_collection_id}/thumbnails/{thumbnail_dims_str}/lexy-dalle.jpeg"
+        )
+
+        # upload more image documents in batches
+        # NOTE: file paths are relative to the execution directory (i.e., project root)
+        more_img_docs = tmp_collection.upload_documents(
+            files=[
+                'sample_data/images/lexy-dalle.jpeg',
+                'sample_data/images/lexy.png',
+                'sample_data/images/lexy-dalle.jpeg',
+            ],
+            filenames=['junk1.jpeg', 'junk2.jpeg', 'junk3.jpeg'],
+            batch_size=2,
+        )
+        assert len(more_img_docs) == 3
+        assert more_img_docs[0].content == "<Image(junk1.jpeg)>"
+        assert more_img_docs[0].meta['filename'] == 'junk1.jpeg'
+        assert more_img_docs[1].content == "<Image(junk2.jpeg)>"
+        assert more_img_docs[1].meta['filename'] == 'junk2.jpeg'
+        assert more_img_docs[2].content == "<Image(junk3.jpeg)>"
+        assert more_img_docs[2].meta['filename'] == 'junk3.jpeg'
+
+        # upload additional files
+        # NOTE: file paths are relative to the execution directory (i.e., project root)
+        even_more_docs = tmp_collection.upload_documents([
+            'sample_data/documents/StarCoder.pdf',
+            'sample_data/documents/fluid.mp4',
+            'sample_data/documents/hotd.txt',
+        ])
+        assert len(even_more_docs) == 3
+
+        pdf_doc = even_more_docs[0]
+        assert pdf_doc.content == "<PDF(StarCoder.pdf)>"
+        assert pdf_doc.document_id is not None
+        assert pdf_doc.created_at is not None
+        assert pdf_doc.updated_at is not None
+        assert pdf_doc.collection_id == tmp_collection_id
+        assert pdf_doc.object_url is not None
+        # FIXME: lx_client.get() returns a 404 but httpx.get() returns a 200
+        # assert pdf_doc.image is None
+        assert pdf_doc.meta['filename'] == 'StarCoder.pdf'
+        assert pdf_doc.meta['s3_bucket'] == storage_bucket
+        assert pdf_doc.meta['s3_key'] == f"lexy_tests/collections/{tmp_collection_id}/documents/StarCoder.pdf"
+        assert pdf_doc.meta['size'] == 629980
+        assert pdf_doc.meta['type'] == 'pdf'
+        assert pdf_doc.meta['content_type'] == 'application/pdf'
+
+        video_doc = even_more_docs[1]
+        assert video_doc.content == "<Video(fluid.mp4)>"
+        assert video_doc.document_id is not None
+        assert video_doc.created_at is not None
+        assert video_doc.updated_at is not None
+        assert video_doc.collection_id == tmp_collection_id
+        assert video_doc.object_url is not None
+        # FIXME: lx_client.get() returns a 404 but httpx.get() returns a 200
+        # assert video_doc.image is None
+        assert video_doc.meta['filename'] == 'fluid.mp4'
+        assert video_doc.meta['s3_bucket'] == storage_bucket
+        assert video_doc.meta['s3_key'] == f"lexy_tests/collections/{tmp_collection_id}/documents/fluid.mp4"
+        assert video_doc.meta['size'] == 323778
+        assert video_doc.meta['type'] == 'video'
+        assert video_doc.meta['content_type'] == 'video/mp4'
+
+        text_doc = even_more_docs[2]
+        assert text_doc.content.startswith(
+            "Viserys I Targaryen is the fifth king of the Targaryen dynasty to rule the Seven Kingdoms."
+        )
+        assert text_doc.document_id is not None
+        assert text_doc.created_at is not None
+        assert text_doc.updated_at is not None
+        assert text_doc.collection_id == tmp_collection_id
+        assert text_doc.object_url is not None
+        # FIXME: lx_client.get() returns a 404 but httpx.get() returns a 200
+        # assert text_doc.image is None
+        assert text_doc.meta['filename'] == 'hotd.txt'
+        assert text_doc.meta['s3_bucket'] == storage_bucket
+        assert text_doc.meta['s3_key'] == f"lexy_tests/collections/{tmp_collection_id}/documents/hotd.txt"
+        assert text_doc.meta['size'] == 3143
+        assert text_doc.meta['type'] == 'text'
+        assert text_doc.meta['content_type'] == 'text/plain'
+
+        # delete test documents
+        response = lx_client.document.bulk_delete_documents(collection_name="test_upload_documents")
+        assert response.get("msg") == "Documents deleted"
+        assert response.get("deleted_count") == 8
+
+        # delete test collection
+        response = lx_client.delete_collection(collection_name="test_upload_documents")
+        assert response.get("msg") == "Collection deleted"
+        assert response.get("collection_id") == tmp_collection_id
+
+    # TODO: run the equivalent tests for GCS
+    @pytest.mark.asyncio
+    async def test_document_urls(self, lx_client, settings):
+        thumbnail_dims = list(settings.IMAGE_THUMBNAIL_SIZES)[0]
+        thumbnail_dims_str = f"{thumbnail_dims[0]}x{thumbnail_dims[1]}"
+
+        tmp_collection = lx_client.create_collection(
+            collection_name="test_document_urls", description="Test Document Urls"
+        )
+        assert tmp_collection.collection_name == "test_document_urls"
+        assert tmp_collection.description == "Test Document Urls"
+        assert tmp_collection.config == settings.COLLECTION_DEFAULT_CONFIG
+        tmp_collection_id = tmp_collection.collection_id
+        storage_bucket = tmp_collection.config.get('storage_bucket')
+        assert storage_bucket == settings.DEFAULT_STORAGE_BUCKET
+
+        # upload documents to the test collection
+        # NOTE: file paths are relative to the execution directory (i.e., project root)
+        docs_uploaded = lx_client.upload_documents(
+            files=[
+                "sample_data/images/lexy.png",
+            ],
+            filenames=["testing-document-urls.png"],
+            collection_name="test_document_urls"
+        )
+        assert len(docs_uploaded) == 1
+
+        img_doc = docs_uploaded[0]
+        assert img_doc.client == lx_client
+        assert img_doc.content == "<Image(testing-document-urls.png)>"
+        assert img_doc.document_id is not None
+        assert img_doc.collection_id == tmp_collection_id
+        assert img_doc.created_at is not None
+        assert img_doc.updated_at is not None
+        assert img_doc.object_url is not None
+
+        # get document urls
+        doc_urls = lx_client.document.get_document_urls(document_id=img_doc.document_id, expiration=3)
+        # sample response:
+        '''
+        {
+            "object": "https://my-bucket.s3.amazonaws.com/path/to/object?...",
+            "thumbnails": {
+                "256x256": "https://my-bucket.s3.amazonaws.com/path/to/thumbnail?..."
+            }
+        }
+        '''
+
+        # presigned object url
+        assert 'object' in doc_urls
+        object_url = doc_urls['object']
+        assert object_url is not None
+        assert object_url.startswith(f"https://{storage_bucket}.s3.")
+        object_key = f"lexy_tests/collections/{tmp_collection_id}/documents/testing-document-urls.png"
+        assert object_key in object_url
+
+        # presigned thumbnail urls
+        assert 'thumbnails' in doc_urls
+        assert thumbnail_dims_str in doc_urls['thumbnails']
+        assert doc_urls['thumbnails'][thumbnail_dims_str].startswith(f"https://{storage_bucket}.s3.")
+        thumbnail_key = \
+            f"lexy_tests/collections/{tmp_collection_id}/thumbnails/{thumbnail_dims_str}/testing-document-urls.png"
+        assert thumbnail_key in doc_urls['thumbnails'][thumbnail_dims_str]
+
+        # check url expiration
+        assert presigned_url_is_expired(object_url, storage_service='s3') is False
+        assert presigned_url_is_expired(doc_urls['thumbnails'][thumbnail_dims_str], storage_service='s3') is False
+        await asyncio.sleep(3)
+        assert presigned_url_is_expired(object_url, storage_service='s3') is True
+        assert presigned_url_is_expired(doc_urls['thumbnails'][thumbnail_dims_str], storage_service='s3') is True
+
+        # delete test documents
+        response = lx_client.document.bulk_delete_documents(collection_name="test_document_urls")
+        assert response.get("msg") == "Documents deleted"
+        assert response.get("deleted_count") == 1
+
+        # delete test collection
+        response = lx_client.delete_collection(collection_name="test_document_urls")
+        assert response.get("msg") == "Collection deleted"
+        assert response.get("collection_id") == tmp_collection_id
 
 
 class TestDocumentModel:

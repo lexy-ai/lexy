@@ -12,25 +12,26 @@ from lexy_tests.conftest import (
     celery_config,
     client,
     create_test_database,
-    create_test_engine,
     get_session,
     seed_data,
     settings,
     sync_engine,
     test_app,
-    test_engine,
     test_settings,
     use_celery_app_trap,
 )
 from lexy_py import LexyClient
 
 
-DB_WARNING_MSG = "There's a good chance you're about to drop the wrong database! Double check your test settings."
-assert test_settings.POSTGRES_DB != "lexy", DB_WARNING_MSG
-test_settings.DB_ECHO_LOG = False
-
-# the value of CELERY_CONFIG is set using pytest-env plugin in pyproject.toml
+# the value of LEXY_CONFIG and CELERY_CONFIG are set using pytest-env plugin in pyproject.toml
+assert os.environ.get("LEXY_CONFIG") == "testing", "LEXY_CONFIG is not set to 'testing'"
 assert os.environ.get("CELERY_CONFIG") == "testing", "CELERY_CONFIG is not set to 'testing'"
+
+
+DB_WARNING_MSG = ("There's a good chance you're about to drop the wrong database! "
+                  "Double check your test settings.")
+assert test_settings.POSTGRES_DB != "lexy", DB_WARNING_MSG
+
 
 TEST_BASE_URL = "http://test"
 TEST_API_TIMEOUT = 10

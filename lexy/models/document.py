@@ -13,10 +13,10 @@ from sqlmodel import Field, SQLModel, Relationship
 
 from lexy.models.collection import Collection
 from lexy.storage import presigned_url_is_expired
-from lexy.storage.client import generate_presigned_urls_for_document
+from lexy.storage.client import generate_signed_urls_for_document
 
 if TYPE_CHECKING:
-    import boto3
+    from lexy.storage.client import StorageClient
 
 
 class DocumentBase(SQLModel):
@@ -51,15 +51,17 @@ class DocumentBase(SQLModel):
             self.refresh_object_urls()
         url = self.meta.get('_urls', {}).get('object')
         # check if url is expired and refresh if needed
-        if url and presigned_url_is_expired(url):
+        storage_service = self.meta.get('storage_service')
+        if url and presigned_url_is_expired(url, storage_service=storage_service):
             self.refresh_object_urls()
             url = self.meta.get('_urls', {}).get('object')
         return url
 
+    # FIXME: storage_client is required, but not passed in with object_url's self.refresh_object_urls()
     def refresh_object_urls(self,
-                            s3_client: "boto3.client" = None,
+                            storage_client: "StorageClient" = None,
                             expiration: int = 3600) -> None:
-        urls = generate_presigned_urls_for_document(self, s3_client=s3_client, expiration=expiration)
+        urls = generate_signed_urls_for_document(self, storage_client=storage_client, expiration=expiration)
         self.meta['_urls'] = urls
 
     # TODO: move to future ImageDocument class

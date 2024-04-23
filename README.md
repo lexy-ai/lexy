@@ -47,8 +47,8 @@ In order to upload and store files to Lexy, you'll need to configure AWS. You ca
 put `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in your `.env` file.
 
 You'll also need to specify an S3 bucket for file storage (for which your AWS credentials should have full access). 
-You can do so by adding `S3_BUCKET=<name-of-your-S3-bucket>` to your `.env` file, or by updating the value of 
-`s3_bucket` in `lexy/core/config.py`.
+You can do so by adding `DEFAULT_STORAGE_BUCKET=<name-of-your-S3-bucket>` to your `.env` file. Remember to rebuild your 
+dev containers for the change to take effect (run `make rebuild-dev-containers` on the command line).
 
 ### Using OpenAI transformers
 

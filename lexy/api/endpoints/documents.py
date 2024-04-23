@@ -1,6 +1,5 @@
 from io import BytesIO
 
-import boto3
 from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile
 from PIL import Image
 from sqlmodel import delete, select
@@ -11,9 +10,9 @@ from lexy.db.session import get_session
 from lexy.storage.client import (
     construct_key_for_document,
     construct_key_for_thumbnail,
-    generate_presigned_urls_for_document,
-    get_s3_client,
-    upload_file_to_s3
+    generate_signed_urls_for_document,
+    get_storage_client,
+    StorageClient
 )
 from lexy.models.document import Document, DocumentCreate, DocumentUpdate
 from lexy.core.config import settings
@@ -87,12 +86,16 @@ async def add_documents(documents: list[DocumentCreate],
 async def upload_documents(files: list[UploadFile],
                            collection_name: str = "default",
                            session: AsyncSession = Depends(get_session),
-                           s3_client: boto3.client = Depends(get_s3_client)) -> list[dict]:
+                           storage_client: StorageClient = Depends(get_storage_client)) -> list[dict]:
     # get the collection
     collection = await crud.get_collection_by_name(session=session, collection_name=collection_name)
     if not collection:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
     collection_id = collection.collection_id
+    # TODO: get storage client from collection config
+    # storage_client = get_storage_client(service=collection.config.get('storage_service', None))
+    storage_bucket = collection.config.get('storage_bucket', settings.DEFAULT_STORAGE_BUCKET)
+    storage_prefix = collection.config.get('storage_prefix', None)
 
     docs_uploaded = []
 
@@ -101,17 +104,23 @@ async def upload_documents(files: list[UploadFile],
         file_dict = {
             "content_type": file.content_type,
             "filename": file.filename,
-            "size": file.size,
-            # "headers": file.headers,  # headers seem to be redundant
+            "size": file.size
         }
 
-        s3_bucket = settings.S3_BUCKET
         # TODO: replace file.filename with the unique document id - will require saving the document in the DB first
         #  but for now, we're using the filename as the document_id, which is equivalent to the following:
-        #    s3_key = f"collections/{collection_id}/documents/{file.filename}"
+        #    document_key = f"collections/{collection_id}/documents/{file.filename}"
         # uncomment the following line when ready
-        # s3_document_key = await construct_key_for_document(document=document, filename=file.filename)
-        s3_document_key = await construct_key_for_document(collection_id=collection_id, document_id=file.filename)
+        # document_key = await construct_key_for_document(
+        #     document=document,
+        #     path_prefix=storage_prefix,
+        #     filename=file.filename
+        # )
+        document_key = await construct_key_for_document(
+            collection_id=collection_id,
+            document_id=file.filename,
+            path_prefix=storage_prefix
+        )
 
         # TODO: move this to a separate parsing function - don't read into memory if not parsing
         file_content = await file.read()
@@ -163,18 +172,22 @@ async def upload_documents(files: list[UploadFile],
 
             # generate thumbnails
             if collection.config.get('generate_thumbnails') and collection.config.get('store_files'):
-                # generate thumbnails and upload to S3
+                # generate thumbnails and upload to storage
                 thumbnails = {}
                 for dims in settings.IMAGE_THUMBNAIL_SIZES:
-                    s3_thumbnail_key = await construct_key_for_thumbnail(dims=dims, collection_id=collection_id,
-                                                                         document_id=file.filename)
+                    thumbnail_key = await construct_key_for_thumbnail(
+                        dims=dims,
+                        collection_id=collection_id,
+                        document_id=file.filename,
+                        path_prefix=storage_prefix
+                    )
                     img_copy = img.copy()
                     img_copy.thumbnail(dims, Image.Resampling.LANCZOS)
                     img_byte_arr = BytesIO()
                     img_copy.save(img_byte_arr, format=img.format or 'JPEG')
-                    # Note: img_byte_arr.seek(0) is run in upload_file_to_s3 by default `rewind=True`
-                    s3_thumbnail_meta = upload_file_to_s3(img_byte_arr, s3_client, s3_bucket, s3_thumbnail_key)
-                    thumbnails[f"{dims[0]}x{dims[1]}"] = s3_thumbnail_meta
+                    # Note: img_byte_arr.seek(0) is run in storage_client.upload_object by default `rewind=True`
+                    storage_thumbnail_meta = storage_client.upload_object(img_byte_arr, storage_bucket, thumbnail_key)
+                    thumbnails[f"{dims[0]}x{dims[1]}"] = storage_thumbnail_meta
                 file_dict["image"]["thumbnails"] = thumbnails
         elif file.content_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
             # # example processing for docx
@@ -184,10 +197,10 @@ async def upload_documents(files: list[UploadFile],
             # num_tables = len(doc.tables)
             pass
 
-        # Upload the file to S3
+        # Upload the file to storage
         if collection.config.get('store_files'):
-            s3_meta = upload_file_to_s3(file.file, s3_client, s3_bucket, s3_document_key)
-            file_dict.update(s3_meta)
+            storage_document_meta = storage_client.upload_object(file_in_memory, storage_bucket, document_key)
+            file_dict.update(storage_document_meta)
 
         document = Document(content=doc_content, meta=file_dict, collection_id=collection_id)
         session.add(document)
@@ -195,7 +208,7 @@ async def upload_documents(files: list[UploadFile],
         await session.refresh(document)
 
         # generate tasks
-        tasks = await generate_tasks_for_document(document, s3_client=s3_client)
+        tasks = await generate_tasks_for_document(document, storage_client=storage_client)
         file_dict["document"] = document
         file_dict["tasks"] = tasks
 
@@ -247,12 +260,12 @@ async def get_document(document_id: str,
 async def get_document_urls(document_id: str,
                             expiration: int = Query(3600, gt=0, le=3600),
                             session: AsyncSession = Depends(get_session),
-                            s3_client: boto3.client = Depends(get_s3_client)) -> dict:
+                            storage_client: StorageClient = Depends(get_storage_client)) -> dict:
     result = await session.exec(select(Document).where(Document.document_id == document_id))
     document = result.first()
     if not document:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
-    return generate_presigned_urls_for_document(document, s3_client, expiration)
+    return generate_signed_urls_for_document(document, storage_client, expiration)
 
 
 @router.patch("/documents/{document_id}",
@@ -262,7 +275,7 @@ async def get_document_urls(document_id: str,
 async def update_document(document_id: str,
                           document: DocumentUpdate,
                           session: AsyncSession = Depends(get_session),
-                          s3_client: boto3.client = Depends(get_s3_client)) -> dict:
+                          storage_client: StorageClient = Depends(get_storage_client)) -> dict:
     result = await session.exec(select(Document).where(Document.document_id == document_id))
     db_document = result.first()
     if not db_document:
@@ -273,7 +286,7 @@ async def update_document(document_id: str,
     session.add(db_document)
     await session.commit()
     await session.refresh(db_document)
-    tasks = await generate_tasks_for_document(db_document, s3_client=s3_client)
+    tasks = await generate_tasks_for_document(db_document, storage_client=storage_client)
     return {"document": db_document, "tasks": tasks}
 
 

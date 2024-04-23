@@ -3,7 +3,6 @@ import os
 import asyncio
 import httpx
 import pytest
-import sqlalchemy
 from celery import current_app
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -16,38 +15,24 @@ from sqlmodel import SQLModel, create_engine, delete
 from sqlmodel.ext.asyncio.session import AsyncSession
 from asgi_lifespan import LifespanManager
 
-from lexy.core.config import TestAppSettings
+from lexy.core.config import settings, TestAppSettings
 from lexy.db.init_db import add_default_data_to_db, add_first_superuser_to_db
 from lexy.db.session import get_session
-import lexy.db.session as db_session
 from lexy import models
+from lexy.main import app as lexy_test_app
 
 
-test_settings = TestAppSettings()
-DB_WARNING_MSG = "There's a good chance you're about to drop the wrong database! Double check your test settings."
-assert test_settings.POSTGRES_DB != "lexy", DB_WARNING_MSG
-test_settings.DB_ECHO_LOG = False
-
-# the value of CELERY_CONFIG is set using pytest-env plugin in pyproject.toml
+# the value of LEXY_CONFIG and CELERY_CONFIG are set using pytest-env plugin in pyproject.toml
+assert os.environ.get("LEXY_CONFIG") == "testing", "LEXY_CONFIG is not set to 'testing'"
 assert os.environ.get("CELERY_CONFIG") == "testing", "CELERY_CONFIG is not set to 'testing'"
 
 
-def create_test_engine(settings: TestAppSettings = test_settings) -> Engine:
-    """Create a SQLAlchemy sync engine for the test database."""
-    return create_engine(
-        url=settings.sync_database_url,
-        echo=settings.DB_ECHO_LOG,
-        future=True
-    )
+test_settings = settings
 
 
-test_engine = create_test_engine()
-assert test_engine.url.database != "lexy", DB_WARNING_MSG
-db_session.get_sync_engine = lambda: test_engine
-db_session.sync_engine = test_engine
-
-# in order to work, this has to come after `db_session.get_sync_engine` is overwritten
-from lexy.main import app as lexy_test_app  # noqa: E402
+DB_WARNING_MSG = ("There's a good chance you're about to drop the wrong database! "
+                  "Double check your test settings.")
+assert test_settings.POSTGRES_DB != "lexy", DB_WARNING_MSG
 
 
 @pytest.fixture(scope="session")
@@ -66,6 +51,7 @@ def sync_engine(settings: TestAppSettings):
         future=True
     )
     print(f"sync_engine.url: {engine.url}")
+    assert engine.url.database != "lexy", DB_WARNING_MSG
     return engine
 
 
@@ -79,6 +65,7 @@ def async_engine(settings: TestAppSettings):
         poolclass=NullPool
     )
     print(f"async_engine.url: {engine.url}")
+    assert engine.url.database != "lexy", DB_WARNING_MSG
     return engine
 
 
