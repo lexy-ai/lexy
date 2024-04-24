@@ -5,6 +5,8 @@ services:
     build:
       context: ./
       dockerfile: docker/server/Dockerfile
+      args:
+        ENVIRONMENT: development
     hostname: lexy_server
     container_name: lexy-server
     depends_on:
@@ -93,9 +95,10 @@ services:
     build:
       context: ./
       dockerfile: docker/worker/Dockerfile
+      args:
+        ENVIRONMENT: development
     hostname: celeryworker
     container_name: lexy-celeryworker
-    command: watchmedo auto-restart --directory /home/app/lexy/transformers/ --directory /home/app/pipelines/ --recursive --pattern '*.py' -- celery -A lexy.main.celery worker --loglevel=info -Q celery -c 4
     depends_on:
       - lexyserver
       - queue
@@ -129,7 +132,7 @@ volumes:
 secrets:
   # Google Cloud service account credentials
   gcp_credentials:
-    file: ${GOOGLE_APPLICATION_CREDENTIALS:-null}
+    file: ${GOOGLE_APPLICATION_CREDENTIALS:-docker/null-credentials.json}
 
 networks:
   lexy-net:

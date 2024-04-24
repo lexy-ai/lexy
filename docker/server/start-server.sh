@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "Running inside start-server.sh"
+echo "Running start-server.sh"
 
 # If there's a prestart.sh script in the lexy directory or other path specified, run it before starting
 PRE_START_PATH=${PRE_START_PATH:-/home/app/lexy/prestart.sh}
@@ -14,12 +14,6 @@ else
 fi
 
 reload_options="--reload-dir /home/app/lexy --reload-dir /home/app/pipelines"
-## If PIPELINE_DIR is set, append it to reload_options
-#if [[ -n "$PIPELINE_DIR" ]] ; then
-#    for dir in $(echo "$PIPELINE_DIR" | tr ":" "\n"); do
-#      reload_options="$reload_options --reload-dir $dir"
-#    done
-#fi
 
 # Start server
 exec poetry run uvicorn lexy.main:app --host 0.0.0.0 --port 9900 --reload $reload_options
