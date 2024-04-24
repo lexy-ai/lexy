@@ -15,9 +15,17 @@ RUN apt-get install -y \
 WORKDIR /home/app
 COPY ../../pyproject.toml ./poetry.lock* ./
 
+ARG ENVIRONMENT=development
+
 RUN pip install poetry
 RUN poetry config virtualenvs.create false
-RUN poetry install --no-root -E "lexy_transformers"
+RUN if [ "$ENVIRONMENT" = "development" ]; then poetry install --no-root -E "lexy_transformers"; else poetry install -E "lexy_transformers"; fi
 
-# FIXME: this seems to have no effect?
-ENV PYTHONPATH="/home/app:${PYTHONPATH}"
+ENV PYTHONPATH="/home/app:/home/app/pipelines:$PYTHONPATH"
+
+# Copy init script
+COPY ./docker/worker/start-worker.sh /start-worker.sh
+RUN chmod +x /start-worker.sh
+
+# Run the start script, it will install any extras and then start the worker
+CMD ["/start-worker.sh"]

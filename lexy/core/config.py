@@ -69,17 +69,16 @@ class AppSettings(BaseSettings):
     FIRST_SUPERUSER_EMAIL: EmailStr = Field("lexy@lexy.ai", validation_alias="FIRST_SUPERUSER_EMAIL")
     FIRST_SUPERUSER_PASSWORD: SecretStr = Field("lexy", validation_alias="FIRST_SUPERUSER_PASSWORD")
 
-    # AWS settings & S3 storage settings
+    # AWS settings
     AWS_ACCESS_KEY_ID: Optional[str] = Field(default=None, validation_alias="AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY: Optional[SecretStr] = Field(default=None, validation_alias="AWS_SECRET_ACCESS_KEY")
     AWS_REGION: Optional[str] = Field(default=None, validation_alias="AWS_REGION")
-    S3_BUCKET: Optional[str] = Field(default=None, validation_alias="S3_BUCKET")
 
     # Google Cloud settings
     # Path to a file containing JSON credentials for a service account. Using Optional[str] because setting to
     #  Optional[FilePath] triggers a validation error if GOOGLE_APPLICATION_CREDENTIALS is an empty string.
-    GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = Field(default=None,
-                                                          validation_alias="GOOGLE_APPLICATION_CREDENTIALS")
+    GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = (
+        Field(default=None, validation_alias="GOOGLE_APPLICATION_CREDENTIALS"))
 
     # Storage settings
     DEFAULT_STORAGE_SERVICE: Optional[Literal['s3', 'gcs']] = (
