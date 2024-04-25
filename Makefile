@@ -72,3 +72,13 @@ update-doc-reqs: check-env
 run-tests: check-env
 	pytest lexy_tests
 	pytest sdk-python
+
+drop-db-tables:
+	# stop the server
+	docker-compose stop lexyserver lexyworker
+	# copy the drop_tables function to the postgres container
+	docker cp scripts/drop_tables.sql lexy-postgres:/tmp/drop_tables.sql
+	# execute the script to drop all tables in public schema
+	docker exec lexy-postgres psql -U postgres -d lexy -f /tmp/drop_tables.sql
+	# restart the server
+	docker-compose start lexyserver lexyworker
