@@ -116,7 +116,7 @@ def init_db(session=db, seed_data=False):
     logger.info("Finished initializing database")
 
 
-def drop_tables(session=db, drop_all=True):
+def drop_tables(session=db, drop_all=True, dry_run=True):
     """ Drop all tables in the database
 
     WARNING: This will drop all indexes and celery tables too!
@@ -125,19 +125,31 @@ def drop_tables(session=db, drop_all=True):
     Args:
         session: database session
         drop_all: drop all tables, including indexes and celery tables
+        dry_run: whether to actually drop the tables
     """
-    logger.info("Dropping tables")
+    logger.debug("Running drop_tables")
     session.commit()
     session.close_all()
     close_all_sessions()
     if drop_all:
         SQLModel.metadata.reflect(bind=session.bind)
-    SQLModel.metadata.drop_all(sync_engine)
-    logger.info("Dropped tables")
+    db_table_names = ", ".join(SQLModel.metadata.tables.keys())
+    logger.info(f"Dropping database tables..."
+                f"\n\tengine.url: {sync_engine.url}"
+                f"\n\tdb_table_names: {db_table_names}")
+    if dry_run is False:
+        SQLModel.metadata.drop_all(sync_engine)
+        logger.info("Dropped tables")
+    else:
+        logger.info("Did not drop tables -- set `dry_run=False` to drop")
 
 
-def reset_db(session=db, drop_all=True):
+def reset_db(session=db, drop_all=True, dry_run=True):
+    """ Reset the database
+
+        WARNING: this may not work as expected - use the make target `drop-db-tables` instead
+    """
     logger.info("Resetting database")
-    drop_tables(session, drop_all=drop_all)
+    drop_tables(session, drop_all=drop_all, dry_run=dry_run)
     init_db(session, seed_data=True)
     logger.info("Finished resetting database")
