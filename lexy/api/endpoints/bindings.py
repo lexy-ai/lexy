@@ -12,12 +12,13 @@ from lexy.storage.client import get_storage_client
 from lexy.models.binding import Binding, BindingCreate, BindingRead, BindingUpdate
 from lexy.core.events import process_new_binding
 
+if TYPE_CHECKING:
+    from lexy.storage.client import StorageClient
+
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 router = APIRouter()
-
-if TYPE_CHECKING:
-    from lexy.storage.client import StorageClient
 
 
 @router.get("/bindings",
@@ -48,8 +49,15 @@ async def add_binding(binding: BindingCreate,
         # BindingCreate model validator ensures that one of the two is provided (id or name)
         collection = await crud.get_collection_by_name(session=session, collection_name=binding.collection_name)
     if not collection:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Collection not found")
     binding.collection_id = collection.collection_id
+
+    transformer = await crud.get_transformer_by_id(session=session, transformer_id=binding.transformer_id)
+    if not transformer:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Transformer not found")
+    index = await crud.get_index_by_id(session=session, index_id=binding.index_id)
+    if not index:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Index not found")
 
     # TODO: switch to pattern `db_binding = Binding.model_validate(binding)` once issue is resolved.
     #  Currently SQLModel is not serializing the nested model, leading to the error 'Filter is not JSON

@@ -41,18 +41,18 @@ install-dev: check-env
 
 build-dev:
 	# build docker images
-	docker-compose up --build -d
+	docker compose up --build -d
 
 update-dev-env: check-env
 	# update dev dependencies and extras
 	poetry install --no-root --with test,docs,dev -E "lexy_transformers"
 
 restart-dev-containers:
-	docker-compose restart lexyserver lexyworker
+	docker compose restart lexyserver lexyworker
 
 rebuild-dev-containers:
 	# rebuild lexyserver and lexyworker
-	docker-compose up --build -d --no-deps lexyserver lexyworker
+	docker compose up --build -d --no-deps lexyserver lexyworker
 
 # NOTE: migrations will be applied as part of rebuild-dev-containers if they are uncommented in `lexy/prestart.sh`
 #   keeping this target for manual migration runs during development
@@ -75,10 +75,10 @@ run-tests: check-env
 
 drop-db-tables:
 	# stop the server
-	docker-compose stop lexyserver lexyworker
+	docker compose stop lexyserver lexyworker
 	# copy the drop_tables function to the postgres container
 	docker cp scripts/drop_tables.sql lexy-postgres:/tmp/drop_tables.sql
 	# execute the script to drop all tables in public schema
 	docker exec lexy-postgres psql -U postgres -d lexy -f /tmp/drop_tables.sql
 	# restart the server
-	docker-compose start lexyserver lexyworker
+	docker compose start lexyserver lexyworker
