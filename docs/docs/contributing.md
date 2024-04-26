@@ -61,7 +61,7 @@ make update-dev-containers
 To rebuild the server and worker containers only (without migrations), run the following.
 
 ```bash
-docker-compose up --build -d --no-deps lexyserver lexyworker
+docker compose up --build -d --no-deps lexyserver lexyworker
 ```
 
 If for some reason you need to install the new dependencies without rebuilding your containers, run the following:

@@ -3,7 +3,7 @@
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from lexy.models import Collection, Document
+from lexy.models import Collection, Document, Index, Transformer
 
 
 async def get_collection_by_id(*, session: AsyncSession, collection_id: str) -> Collection | None:
@@ -50,3 +50,21 @@ async def get_documents_by_collection_id_and_content(*, session: AsyncSession, c
     )
     documents = result.all()
     return documents
+
+
+async def get_index_by_id(*, session: AsyncSession, index_id: str) -> Index | None:
+    """Get an index by id."""
+    result = await session.exec(
+        select(Index).where(Index.index_id == index_id)
+    )
+    index = result.first()
+    return index
+
+
+async def get_transformer_by_id(*, session: AsyncSession, transformer_id: str) -> Transformer | None:
+    """Get a transformer by id."""
+    result = await session.exec(
+        select(Transformer).where(Transformer.transformer_id == transformer_id)
+    )
+    transformer = result.first()
+    return transformer

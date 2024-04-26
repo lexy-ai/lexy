@@ -147,6 +147,45 @@ class TestBindingClient:
         assert error["msg"] == "Value error, Value must be a number for operation 'less_than'"
         assert error["input"] == "hello"
 
+    def test_create_binding_with_nonexistent_collection(self, lx_client, celery_app, celery_worker):
+        with pytest.raises(LexyAPIError) as exc_info:
+            lx_client.create_binding(
+                collection_name="nonexistent_collection",
+                index_id="default_text_embeddings",
+                transformer_id="text.embeddings.minilm",
+                description="Test Binding with Nonexistent Collection"
+            )
+        assert isinstance(exc_info.value, LexyAPIError)
+        assert exc_info.value.response_data["status_code"] == 400, exc_info.value.response_data
+        assert exc_info.value.response.status_code == 400
+        assert exc_info.value.response.json()["detail"] == "Collection not found"
+
+    def test_create_binding_with_nonexistent_index(self, lx_client, celery_app, celery_worker):
+        with pytest.raises(LexyAPIError) as exc_info:
+            lx_client.create_binding(
+                collection_name="default",
+                index_id="nonexistent_index",
+                transformer_id="text.embeddings.minilm",
+                description="Test Binding with Nonexistent Index"
+            )
+        assert isinstance(exc_info.value, LexyAPIError)
+        assert exc_info.value.response_data["status_code"] == 400, exc_info.value.response_data
+        assert exc_info.value.response.status_code == 400
+        assert exc_info.value.response.json()["detail"] == "Index not found"
+
+    def test_create_binding_with_nonexistent_transformer(self, lx_client, celery_app, celery_worker):
+        with pytest.raises(LexyAPIError) as exc_info:
+            lx_client.create_binding(
+                collection_name="default",
+                index_id="default_text_embeddings",
+                transformer_id="nonexistent_transformer",
+                description="Test Binding with Nonexistent Transformer"
+            )
+        assert isinstance(exc_info.value, LexyAPIError)
+        assert exc_info.value.response_data["status_code"] == 400, exc_info.value.response_data
+        assert exc_info.value.response.status_code == 400
+        assert exc_info.value.response.json()["detail"] == "Transformer not found"
+
     def test_remove_filter_from_binding(self, lx_client, celery_app, celery_worker):
         # create filter
         my_filter = FilterBuilder()

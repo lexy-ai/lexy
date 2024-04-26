@@ -55,7 +55,7 @@ the following to your `.env` file:
 OPENAI_API_KEY=<your-openai-api-key>
 ```
 
-Do this before building your docker containers. Or, if you've already run `docker-compose up`, you can run the 
+Do this before building your docker containers. Or, if you've already run `docker compose up`, you can run the 
 following to rebuild the server and worker containers.
 
 ```shell
