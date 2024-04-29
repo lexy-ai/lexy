@@ -8,9 +8,9 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME_LEXY_SERVER: ${REGISTRY}/lexy-ai/lexy/lexy-server
-  IMAGE_NAME_LEXY_WORKER: ${REGISTRY}/lexy-ai/lexy/lexy-worker
-  IMAGE_NAME_LEXY_POSTGRES: ${REGISTRY}/lexy-ai/lexy/lexy-postgres
+  IMAGE_NAME_LEXY_SERVER: ghcr.io/lexy-ai/lexy/lexy-server
+  IMAGE_NAME_LEXY_WORKER: ghcr.io/lexy-ai/lexy/lexy-worker
+  IMAGE_NAME_LEXY_POSTGRES: ghcr.io/lexy-ai/lexy/lexy-postgres
 
 jobs:
   build-and-push:
