@@ -16,6 +16,13 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
+
+      - name: List huge unnecessary tools folder
+        run: tree -L 2 /opt/hostedtoolcache
+
+      - name: Delete huge unnecessary tools folder
+        run: rm -rf /opt/hostedtoolcache
+      
       - name: Checkout code
         uses: actions/checkout@v3
 
