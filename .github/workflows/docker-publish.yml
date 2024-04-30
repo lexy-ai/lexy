@@ -31,6 +31,14 @@ jobs:
 
       - name: Free disk space
         run: df -h
+
+      - name: Other stuff
+        run: |
+          df . -h
+          which python
+          which pip
+          which poetry
+          python --version
         
 #      - name: Delete huge unnecessary tools folder
 #       run: rm -rf /opt/hostedtoolcache
