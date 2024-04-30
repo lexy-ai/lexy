@@ -71,6 +71,9 @@ docker exec lexy-server poetry install --no-root -E "lexy_transformers"
 docker exec lexy-celeryworker poetry install --no-root -E "lexy_transformers"
 ```
 
+### Release Docker containers 
+
+Docker containers are built for each release and hosted on Github Container Registry. Packages are available [here](https://github.com/orgs/lexy-ai/packages?repo_name=lexy).
 
 ### Pip installing into Docker containers
 
