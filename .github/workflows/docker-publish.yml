@@ -36,13 +36,16 @@ jobs:
         run: |
           df . -h
           which python
+          which python3
           which pip
-          which poetry
           python --version
         
 #      - name: Delete huge unnecessary tools folder
 #       run: rm -rf /opt/hostedtoolcache
-      
+
+      - name: Delete huge unnecessary tools folder
+        run: rm -rf /opt/hostedtoolcache/CodeQL
+
       - name: Checkout code
         uses: actions/checkout@v3
 
