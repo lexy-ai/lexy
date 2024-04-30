@@ -25,7 +25,13 @@ jobs:
 
       - name: List huge unnecessary tools folder
         run: tree -L 2 /opt/hostedtoolcache
+        
+      - name: Size of huge unnecessary tools folder
+        run: du -sh /opt/hostedtoolcache/*/* | sort -h -r
 
+      - name: Free disk space
+        run: df -h
+        
 #      - name: Delete huge unnecessary tools folder
 #       run: rm -rf /opt/hostedtoolcache
       
