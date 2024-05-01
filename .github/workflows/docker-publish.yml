@@ -16,6 +16,14 @@ jobs:
   build-and-push:
 
     runs-on: ubuntu-latest
+    strategy:
+      # fail-fast: false
+      matrix:
+        platform:
+          - linux/amd64
+          # - linux/arm/v6
+          # - linux/arm/v7
+          - linux/arm64
     
     permissions:
       contents: read
@@ -80,6 +88,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./
+          platforms: ${{ matrix.platform }}
           file: ./docker/server/Dockerfile
           build-args: ENVIRONMENT=development
           labels: |
@@ -106,6 +115,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./
+          platforms: ${{ matrix.platform }}
           file: ./docker/worker/Dockerfile
           build-args: ENVIRONMENT=development
           labels: |
@@ -127,6 +137,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./
+          platforms: ${{ matrix.platform }}
           file: ./docker/postgres/Dockerfile
           push: true
           tags: ${{ env.IMAGE_NAME_LEXY_POSTGRES }}:latest
+        
