@@ -94,7 +94,8 @@ jobs:
             org.opencontainers.image.title=LexyServer
             org.opencontainers.image.description=Lexy Server 
             org.opencontainers.image.vendor=Lexy AI
-            # org.opencontainers.image.version=latest
+          flavor: |
+            latest=true
           # tags: |
           #   type=ref,value=latest
           #   type=ref,event=branch
