@@ -78,11 +78,22 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Metadata for Lexy server
+        id: meta_server
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME_LEXY_SERVER }}
+          # tags: |
+          #   type=ref,event=branch
+          #   type=ref,event=pr
+          #   type=sha
+          #   type=semver,pattern={{version}}
 
       - name: Build and push Lexy Server image
         uses: docker/build-push-action@v5
@@ -94,8 +105,11 @@ jobs:
           labels: |
             org.opencontainers.image.source=https://github.com/lexy-ai/lexy
             org.opencontainers.image.title=Lexy Server
+            ${{ steps.meta_server.outputs.labels }}
           push: true
-          tags: ${{ env.IMAGE_NAME_LEXY_SERVER }}:latest
+          # tags: ${{ env.IMAGE_NAME_LEXY_SERVER }}:latest
+          tags: ${{ steps.meta_server.outputs.tags }}
+          # labels: ${{ steps.meta_server.outputs.labels }}
 
       - name: Free disk space after lexy server
         run: df -h
