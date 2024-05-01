@@ -89,7 +89,7 @@ jobs:
         id: meta_server
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.IMAGE_NAME_LEXY_SERVER }}
+          images: ${{ env.IMAGE_NAME_LEXY_SERVER }}:latest
           # tags: |
           #   type=ref,event=branch
           #   type=ref,event=pr
@@ -103,29 +103,26 @@ jobs:
           platforms: ${{ matrix.platform }}
           file: ./docker/server/Dockerfile
           build-args: ENVIRONMENT=development
-          labels: |
-            org.opencontainers.image.source=https://github.com/lexy-ai/lexy
-            org.opencontainers.image.title=Lexy Server
-            ${{ steps.meta_server.outputs.labels }}
+          # labels: |
+          #   org.opencontainers.image.source=https://github.com/lexy-ai/lexy
+          #   org.opencontainers.image.title=Lexy Server
+          #   ${{ steps.meta_server.outputs.labels }}
           push: true
           # tags: ${{ env.IMAGE_NAME_LEXY_SERVER }}:latest
           tags: ${{ steps.meta_server.outputs.tags }}
-          # labels: ${{ steps.meta_server.outputs.labels }}
-
-      - name: Free disk space after lexy server
-        run: df -h
-
-      - name: Check build context after lexy server
-        run: |
-          pwd
-          ls -lah ./
-          du -sh * | sort -h -r
+          labels: ${{ steps.meta_server.outputs.labels }}
 
       - name: Size of py packages after lexy server
         run: |
           export PYSITE=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
           du -sh $PYSITE/* | sort -h -r
 
+      - name: Metadata for Lexy worker
+        id: meta_worker
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME_LEXY_WORKER }}:latest
+          
       - name: Build and push Lexy Worker image
         uses: docker/build-push-action@v5
         with:
@@ -133,20 +130,19 @@ jobs:
           platforms: ${{ matrix.platform }}
           file: ./docker/worker/Dockerfile
           build-args: ENVIRONMENT=development
-          labels: |
-            org.opencontainers.image.source=https://github.com/lexy-ai/lexy
-            org.opencontainers.image.title=Lexy Worker
+          # labels: |
+          #   org.opencontainers.image.source=https://github.com/lexy-ai/lexy
+          #   org.opencontainers.image.title=Lexy Worker
           push: true
-          tags: ${{ env.IMAGE_NAME_LEXY_WORKER }}:latest
+          # tags: ${{ env.IMAGE_NAME_LEXY_WORKER }}:latest
+          tags: ${{ steps.meta_worker.outputs.tags }}
+          labels: ${{ steps.meta_worker.outputs.labels }}
 
-      - name: Free disk space after lexy worker
-        run: df -h
-
-      - name: Check build context after lexy worker
-        run: |
-          pwd
-          ls -lah ./
-          du -sh ./* | sort -h -r
+      - name: Metadata for Lexy postgres
+        id: meta_postgres
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME_LEXY_POSTGRES }}:latest
 
       - name: Build and push Lexy Postgres image
         uses: docker/build-push-action@v5
@@ -155,5 +151,6 @@ jobs:
           platforms: ${{ matrix.platform }}
           file: ./docker/postgres/Dockerfile
           push: true
-          tags: ${{ env.IMAGE_NAME_LEXY_POSTGRES }}:latest
-        
+          # tags: ${{ env.IMAGE_NAME_LEXY_POSTGRES }}:latest
+          tags: ${{ steps.meta_postgres.outputs.tags }}
+          labels: ${{ steps.meta_postgres.outputs.labels }}
