@@ -89,7 +89,8 @@ jobs:
         id: meta_server
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.IMAGE_NAME_LEXY_SERVER }}:latest
+          # images: ${{ env.IMAGE_NAME_LEXY_SERVER }}:latest
+          images: ${{ env.IMAGE_NAME_LEXY_SERVER }}
           labels: |
             org.opencontainers.image.title=LexyServer
             org.opencontainers.image.description=Lexy Server 
