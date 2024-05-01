@@ -95,7 +95,7 @@ jobs:
             org.opencontainers.image.description=Lexy Server 
             org.opencontainers.image.vendor=Lexy AI
           flavor: |
-            latest=true
+            latest=false
           # tags: |
           #   type=ref,value=latest
           #   type=ref,event=branch
