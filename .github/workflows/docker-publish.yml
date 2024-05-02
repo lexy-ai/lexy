@@ -66,6 +66,11 @@ jobs:
       #   run: |
       #     export PYSITE=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
       #     du -sh $PYSITE/* | sort -h -r
+      -
+        name: Prepare
+        run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV 
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -97,7 +102,7 @@ jobs:
           labels: |
             org.opencontainers.image.vendor=Lexy AI
           flavor: |
-            latest=false
+            latest=auto
 
       - name: Metadata for Lexy server
         id: meta_server
@@ -109,7 +114,7 @@ jobs:
             org.opencontainers.image.description=Lexy Server 
             org.opencontainers.image.vendor=Lexy AI
           flavor: |
-            latest=false
+            latest=auto
           # tags: |
           #   type=ref,value=latest
           #   type=ref,event=branch
@@ -129,9 +134,34 @@ jobs:
           #   org.opencontainers.image.title=Lexy Server
           #   ${{ steps.meta_server.outputs.labels }}
           push: true
-          # tags: ${{ env.IMAGE_NAME_LEXY_SERVER }}:latest
+          # tags: ${{ env.IMAGE_NAME_LEXY_SERVER }}:${{ matrix.platform }}
           tags: ${{ steps.meta_server.outputs.tags }}
           labels: ${{ steps.meta_server.outputs.labels }}
+
+      - name: Build and push Lexy Server by digest
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./
+          platforms: ${{ matrix.platform }}
+          file: ./docker/server/Dockerfile
+          build-args: ENVIRONMENT=development
+          labels: ${{ steps.meta_server.outputs.labels }}
+          outputs: type=image,name=${{ env.IMAGE_NAME_LEXY_SERVER }},push-by-digest=true,name-canonical=true,push=true
+      -
+        name: Export digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"          
+      -
+        name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ env.PLATFORM_PAIR }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
 
       # - name: Size of py packages after lexy server
       #   run: |
@@ -155,8 +185,8 @@ jobs:
           #   org.opencontainers.image.source=https://github.com/lexy-ai/lexy
           #   org.opencontainers.image.title=Lexy Worker
           push: true
-          # tags: ${{ env.IMAGE_NAME_LEXY_WORKER }}:latest
-          tags: ${{ steps.meta_worker.outputs.tags }}
+          tags: ${{ env.IMAGE_NAME_LEXY_WORKER }}:${{ matrix.platform }}
+          # tags: ${{ steps.meta_worker.outputs.tags }}
           labels: ${{ steps.meta_worker.outputs.labels }}
 
       - name: Metadata for Lexy postgres
@@ -175,3 +205,55 @@ jobs:
           # tags: ${{ env.IMAGE_NAME_LEXY_POSTGRES }}:latest
           tags: ${{ steps.meta_postgres.outputs.tags }}
           labels: ${{ steps.meta_postgres.outputs.labels }}
+
+
+  merge:
+    runs-on: ubuntu-latest
+    needs:
+      - build-and-push
+    steps:
+      -
+        name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      # -
+      #   name: Docker meta
+      #   id: meta
+      #   uses: docker/metadata-action@v5
+      #   with:
+      #     images: ${{ env.REGISTRY_IMAGE }}
+      - 
+        name: Docker meta for Lexy server
+        id: meta_lxs
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME_LEXY_SERVER }}
+          # labels: |
+          #   org.opencontainers.image.title=LexyServer
+          #   org.opencontainers.image.description=Lexy Server 
+          #   org.opencontainers.image.vendor=Lexy AI
+          # flavor: |
+          #   latest=auto
+      -
+        name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      -
+        name: Create manifest list and push
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.IMAGE_NAME_LEXY_SERVER }}@sha256:%s ' *)          
+      -
+        name: Inspect image
+        run: |
+          docker buildx imagetools inspect ${{ env.IMAGE_NAME_LEXY_SERVER }}:${{ steps.meta_lxs.outputs.version }}    
