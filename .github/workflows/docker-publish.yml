@@ -122,21 +122,21 @@ jobs:
           #   type=sha
           #   type=semver,pattern={{version}}
 
-      - name: Build and push Lexy Server image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./
-          platforms: ${{ matrix.platform }}
-          file: ./docker/server/Dockerfile
-          build-args: ENVIRONMENT=development
-          # labels: |
-          #   org.opencontainers.image.source=https://github.com/lexy-ai/lexy
-          #   org.opencontainers.image.title=Lexy Server
-          #   ${{ steps.meta_server.outputs.labels }}
-          push: true
-          # tags: ${{ env.IMAGE_NAME_LEXY_SERVER }}:${{ matrix.platform }}
-          tags: ${{ steps.meta_server.outputs.tags }}
-          labels: ${{ steps.meta_server.outputs.labels }}
+      # - name: Build and push Lexy Server image
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: ./
+      #     platforms: ${{ matrix.platform }}
+      #     file: ./docker/server/Dockerfile
+      #     build-args: ENVIRONMENT=development
+      #     # labels: |
+      #     #   org.opencontainers.image.source=https://github.com/lexy-ai/lexy
+      #     #   org.opencontainers.image.title=Lexy Server
+      #     #   ${{ steps.meta_server.outputs.labels }}
+      #     push: true
+      #     # tags: ${{ env.IMAGE_NAME_LEXY_SERVER }}:${{ matrix.platform }}
+      #     tags: ${{ steps.meta_server.outputs.tags }}
+      #     labels: ${{ steps.meta_server.outputs.labels }}
 
       - name: Build and push Lexy Server by digest
         id: build
@@ -185,7 +185,7 @@ jobs:
           #   org.opencontainers.image.source=https://github.com/lexy-ai/lexy
           #   org.opencontainers.image.title=Lexy Worker
           push: true
-          tags: ${{ env.IMAGE_NAME_LEXY_WORKER }}:${{ matrix.platform }}
+          tags: ${{ env.IMAGE_NAME_LEXY_WORKER }}:${{ env.PLATFORM_PAIR }}
           # tags: ${{ steps.meta_worker.outputs.tags }}
           labels: ${{ steps.meta_worker.outputs.labels }}
 
