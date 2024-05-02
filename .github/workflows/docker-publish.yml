@@ -48,8 +48,8 @@ jobs:
           which pip
           python --version
         
-#      - name: Delete huge unnecessary tools folder
-#       run: rm -rf /opt/hostedtoolcache
+      - name: Delete huge unnecessary tools folder
+        run: rm -rf /opt/hostedtoolcache
 
       # - name: Delete huge unnecessary tools folder
       #   run: |
