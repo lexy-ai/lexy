@@ -17,8 +17,8 @@ permissions:
   packages: write
 
 jobs:
-  build-and-push:
 
+  build-and-push:
     runs-on: ubuntu-latest
     strategy:
       # fail-fast: false
@@ -26,22 +26,18 @@ jobs:
         platform:
           - linux/arm64
           - linux/amd64
-          # - linux/arm/v6
-          # - linux/arm/v7
-          # - linux/arm64
-          
+
     steps:
 
       - name: List huge unnecessary tools folder
-        run: tree -L 2 /opt/hostedtoolcache
-        
-      - name: Size of huge unnecessary tools folder
-        run: du -sh /opt/hostedtoolcache/*/* | sort -h -r
+        run: |
+          tree -L 2 /opt/hostedtoolcache
+          du -sh /opt/hostedtoolcache/*/* | sort -h -r
 
       - name: Free disk space
         run: df -h
 
-      - name: Other stuff
+      - name: Python stuff
         run: |
           which python
           which python3
@@ -49,25 +45,11 @@ jobs:
           python --version
         
       - name: Delete huge unnecessary tools folder
-        run: rm -rf /opt/hostedtoolcache
+        run: |
+          rm -rf /opt/hostedtoolcache
+          df -h
 
-      # - name: Delete huge unnecessary tools folder
-      #   run: |
-      #     rm -rf /opt/hostedtoolcache/CodeQL
-      #     df -h
-
-      # - name: Check build context
-      #   run: |
-      #     pwd
-      #     ls -lah ./
-      #     du -sh * | sort -h -r
-
-      # - name: Size of py packages
-      #   run: |
-      #     export PYSITE=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
-      #     du -sh $PYSITE/* | sort -h -r
-      -
-        name: Prepare
+      - name: Prepare platform format
         run: |
           platform=${{ matrix.platform }}
           echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV 
@@ -75,8 +57,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-        # Add support for more platforms with QEMU (optional)
-        # https://github.com/docker/setup-qemu-action
+      # Add support for more platforms with QEMU
+      # https://github.com/docker/setup-qemu-action
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         
@@ -90,7 +72,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Metadata for all
+      # Currently not being used
+      - name: Metadata for all images
         id: meta-all
         uses: docker/metadata-action@v5
         with:
@@ -102,22 +85,8 @@ jobs:
             org.opencontainers.image.vendor=Lexy AI
           flavor: |
             latest=auto
-
-      # - name: Build and push Lexy Server image
-      #   uses: docker/build-push-action@v5
-      #   with:
-      #     context: ./
-      #     platforms: ${{ matrix.platform }}
-      #     file: ./docker/server/Dockerfile
-      #     build-args: ENVIRONMENT=development
-      #     # labels: |
-      #     #   org.opencontainers.image.source=https://github.com/lexy-ai/lexy
-      #     #   org.opencontainers.image.title=Lexy Server
-      #     #   ${{ steps.meta_server.outputs.labels }}
-      #     push: true
-      #     # tags: ${{ env.IMAGE_NAME_LEXY_SERVER }}:${{ matrix.platform }}
-      #     tags: ${{ steps.meta-server.outputs.tags }}
-      #     labels: ${{ steps.meta-server.outputs.labels }}
+        env:
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
 
       ### Lexy Server ###
 
@@ -130,6 +99,10 @@ jobs:
             org.opencontainers.image.title=Lexy Server
             org.opencontainers.image.description=Lexy API Server
             org.opencontainers.image.vendor=Lexy AI
+          annotations: |
+            org.opencontainers.image.title=Lexy Server
+            org.opencontainers.image.description=Lexy API Server
+            org.opencontainers.image.vendor=Lexy AI
 
       - name: Build and push server by digest
         id: build-server
@@ -139,17 +112,18 @@ jobs:
           platforms: ${{ matrix.platform }}
           file: ./docker/server/Dockerfile
           build-args: ENVIRONMENT=development
-          provenance: false  # Avoid unknown/unknown arch (https://github.com/docker/build-push-action/issues/820)
+          provenance: false  # Avoid "unknown/unknown" arch (https://github.com/docker/build-push-action/issues/820)
           labels: ${{ steps.meta-server.outputs.labels }}
+          annotations: ${{ steps.meta-server.outputs.annotations }}
           outputs: type=image,name=${{ env.IMAGE_NAME_LEXY_SERVER }},push-by-digest=true,name-canonical=true,push=true
-      -
-        name: Export server digest
+
+      - name: Export server digest
         run: |
           mkdir -p /tmp/digests/server
           digest="${{ steps.build-server.outputs.digest }}"
           touch "/tmp/digests/server/${digest#sha256:}"          
-      -
-        name: Upload server digest
+
+      - name: Upload server digest
         uses: actions/upload-artifact@v4
         with:
           name: digests-server-${{ env.PLATFORM_PAIR }}
@@ -168,6 +142,10 @@ jobs:
             org.opencontainers.image.title=Lexy Worker
             org.opencontainers.image.description=Lexy Worker Instance
             org.opencontainers.image.vendor=Lexy AI
+          annotations: |
+            org.opencontainers.image.title=Lexy Worker
+            org.opencontainers.image.description=Lexy Worker Instance
+            org.opencontainers.image.vendor=Lexy AI
 
       - name: Build and push worker by digest
         id: build-worker
@@ -177,17 +155,18 @@ jobs:
           platforms: ${{ matrix.platform }}
           file: ./docker/worker/Dockerfile
           build-args: ENVIRONMENT=development
-          provenance: false  # Avoid unknown/unknown arch (https://github.com/docker/build-push-action/issues/820)
+          provenance: false  # Avoid "unknown/unknown" arch (https://github.com/docker/build-push-action/issues/820)
           labels: ${{ steps.meta-worker.outputs.labels }}
+          annotations: ${{ steps.meta-worker.outputs.annotations }}
           outputs: type=image,name=${{ env.IMAGE_NAME_LEXY_WORKER }},push-by-digest=true,name-canonical=true,push=true
-      -
-        name: Export worker digest
+
+      - name: Export worker digest
         run: |
           mkdir -p /tmp/digests/worker
           digest="${{ steps.build-worker.outputs.digest }}"
           touch "/tmp/digests/worker/${digest#sha256:}"          
-      -
-        name: Upload worker digest
+
+      - name: Upload worker digest
         uses: actions/upload-artifact@v4
         with:
           name: digests-worker-${{ env.PLATFORM_PAIR }}
@@ -206,6 +185,10 @@ jobs:
             org.opencontainers.image.title=Lexy Postgres
             org.opencontainers.image.description=Lexy Postgres Database
             org.opencontainers.image.vendor=Lexy AI
+          annotations: |
+            org.opencontainers.image.title=Lexy Postgres
+            org.opencontainers.image.description=Lexy Postgres Database
+            org.opencontainers.image.vendor=Lexy AI
 
       - name: Build and push postgres by digest
         id: build-postgres
@@ -214,145 +197,59 @@ jobs:
           context: ./
           platforms: ${{ matrix.platform }}
           file: ./docker/postgres/Dockerfile
-          provenance: false  # Avoid unknown/unknown arch (https://github.com/docker/build-push-action/issues/820)
+          provenance: false  # Avoid "unknown/unknown" arch (https://github.com/docker/build-push-action/issues/820)
           labels: ${{ steps.meta-postgres.outputs.labels }}
+          annotations: ${{ steps.meta-postgres.outputs.annotations }}
           outputs: type=image,name=${{ env.IMAGE_NAME_LEXY_POSTGRES }},push-by-digest=true,name-canonical=true,push=true
-      -
-        name: Export postgres digest
+
+      - name: Export postgres digest
         run: |
           mkdir -p /tmp/digests/postgres
           digest="${{ steps.build-postgres.outputs.digest }}"
           touch "/tmp/digests/postgres/${digest#sha256:}"          
-      -
-        name: Upload postgres digest
+
+      - name: Upload postgres digest
         uses: actions/upload-artifact@v4
         with:
           name: digests-postgres-${{ env.PLATFORM_PAIR }}
           path: /tmp/digests/postgres/*
           if-no-files-found: error
           retention-days: 1
-          
-      # -
-      #   name: Export digest
-      #   run: |
-      #     mkdir -p /tmp/digests
-      #     digest="${{ steps.build.outputs.digest }}"
-      #     touch "/tmp/digests/${digest#sha256:}"          
-      # -
-      #   name: Upload digest
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: digests-${{ env.PLATFORM_PAIR }}
-      #     path: /tmp/digests/*
-      #     if-no-files-found: error
-      #     retention-days: 1
-
-      # - name: Size of py packages after lexy server
-      #   run: |
-      #     export PYSITE=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
-      #     du -sh $PYSITE/* | sort -h -r
-
-      # - name: Metadata for Lexy worker
-      #   id: meta_worker
-      #   uses: docker/metadata-action@v5
-      #   with:
-      #     images: ${{ env.IMAGE_NAME_LEXY_WORKER }}
-          
-      # - name: Build and push Lexy Worker image
-      #   uses: docker/build-push-action@v5
-      #   with:
-      #     context: ./
-      #     platforms: ${{ matrix.platform }}
-      #     file: ./docker/worker/Dockerfile
-      #     build-args: ENVIRONMENT=development
-      #     # labels: |
-      #     #   org.opencontainers.image.source=https://github.com/lexy-ai/lexy
-      #     #   org.opencontainers.image.title=Lexy Worker
-      #     push: true
-      #     tags: ${{ env.IMAGE_NAME_LEXY_WORKER }}:${{ env.PLATFORM_PAIR }}
-      #     # tags: ${{ steps.meta_worker.outputs.tags }}
-      #     labels: ${{ steps.meta_worker.outputs.labels }}
-
-      # - name: Metadata for Lexy postgres
-      #   id: meta_postgres
-      #   uses: docker/metadata-action@v5
-      #   with:
-      #     images: ${{ env.IMAGE_NAME_LEXY_POSTGRES }}
-
-      # - name: Build and push Lexy Postgres image
-      #   uses: docker/build-push-action@v5
-      #   with:
-      #     context: ./
-      #     platforms: ${{ matrix.platform }}
-      #     file: ./docker/postgres/Dockerfile
-      #     push: true
-      #     # tags: ${{ env.IMAGE_NAME_LEXY_POSTGRES }}:latest
-      #     tags: ${{ steps.meta_postgres.outputs.tags }}
-      #     labels: ${{ steps.meta_postgres.outputs.labels }}
-
 
   create-manifests:
     runs-on: ubuntu-latest
     needs:
       - build-and-push
     steps:
-      -
-        name: Download server digests
+
+      - name: Download server digests
         uses: actions/download-artifact@v4
         with:
           path: /tmp/digests/server
           pattern: digests-server-*
           merge-multiple: true
-      -
-        name: Download worker digests
+
+      - name: Download worker digests
         uses: actions/download-artifact@v4
         with:
           path: /tmp/digests/worker
           pattern: digests-worker-*
           merge-multiple: true
-      -
-        name: Download postgres digests
+
+      - name: Download postgres digests
         uses: actions/download-artifact@v4
         with:
           path: /tmp/digests/postgres
           pattern: digests-postgres-*
           merge-multiple: true
-      -
-        name: List all digests
+
+      - name: List all digests
         run: ls -R /tmp/digests
 
-      # -
-      #   name: Download digests
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     path: /tmp/digests
-      #     pattern: digests-*
-      #     merge-multiple: true
-      
-      -
-        name: Set up Docker Buildx
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # -
-      #   name: Docker meta
-      #   id: meta
-      #   uses: docker/metadata-action@v5
-      #   with:
-      #     images: ${{ env.REGISTRY_IMAGE }}
-      
-      # - 
-      #   name: Docker meta for Lexy server
-      #   id: meta-lx-server
-      #   uses: docker/metadata-action@v5
-      #   with:
-      #     images: ${{ env.IMAGE_NAME_LEXY_SERVER }}
-      #     # labels: |
-      #     #   org.opencontainers.image.title=Lexy Server
-      #     #   org.opencontainers.image.description=Lexy API Server 
-      #     #   org.opencontainers.image.vendor=Lexy AI
-
-      -
-        name: Log in to GitHub Container Registry
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -360,8 +257,8 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       ### Manifest for Lexy Server ###
-      - 
-        name: Docker meta for Lexy server
+
+      - name: Docker meta for Lexy server
         id: meta-lx-server
         uses: docker/metadata-action@v5
         with:
@@ -370,26 +267,26 @@ jobs:
           #   org.opencontainers.image.title=Lexy Server
           #   org.opencontainers.image.description=Lexy API Server 
           #   org.opencontainers.image.vendor=Lexy AI
-      -
-        name: Quick check for server
+
+      - name: Metadata check for server
         run: |
           echo "$DOCKER_METADATA_OUTPUT_JSON"
           echo "${{ steps.meta-lx-server.outputs.json }}"
-      -
-        name: Create server manifest and push
+
+      - name: Create server manifest and push
         working-directory: /tmp/digests/server
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.IMAGE_NAME_LEXY_SERVER }}@sha256:%s ' *)          
-      -
-        name: Inspect server image
+
+      - name: Inspect server image
         run: |
           docker buildx imagetools inspect ${{ env.IMAGE_NAME_LEXY_SERVER }}:${{ steps.meta-lx-server.outputs.version }}
           docker buildx imagetools inspect ${{ env.IMAGE_NAME_LEXY_SERVER }}:${{ steps.meta-lx-server.outputs.version }} --format "{{json .Image}}"
 
       ### Manifest for Lexy Worker ###
-      - 
-        name: Docker meta for Lexy worker
+
+      - name: Docker meta for Lexy worker
         id: meta-lx-worker
         uses: docker/metadata-action@v5
         with:
@@ -398,26 +295,26 @@ jobs:
           #   org.opencontainers.image.title=Lexy Worker
           #   org.opencontainers.image.description=Lexy Worker Instance 
           #   org.opencontainers.image.vendor=Lexy AI
-      -
-        name: Quick check for worker
+
+      - name: Metadata check for worker
         run: |
           echo "$DOCKER_METADATA_OUTPUT_JSON"
           echo "${{ steps.meta-lx-worker.outputs.json }}"
-      -
-        name: Create worker manifest and push
+
+      - name: Create worker manifest and push
         working-directory: /tmp/digests/worker
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.IMAGE_NAME_LEXY_WORKER }}@sha256:%s ' *)          
-      -
-        name: Inspect worker image
+
+      - name: Inspect worker image
         run: |
           docker buildx imagetools inspect ${{ env.IMAGE_NAME_LEXY_WORKER }}:${{ steps.meta-lx-worker.outputs.version }}
           docker buildx imagetools inspect ${{ env.IMAGE_NAME_LEXY_WORKER }}:${{ steps.meta-lx-worker.outputs.version }} --format "{{json .Image}}"
 
       ### Manifest for Lexy Postgres ###
-      - 
-        name: Docker meta for Lexy postgres
+
+      - name: Docker meta for Lexy postgres
         id: meta-lx-postgres
         uses: docker/metadata-action@v5
         with:
@@ -426,30 +323,19 @@ jobs:
           #   org.opencontainers.image.title=Lexy Postgres
           #   org.opencontainers.image.description=Lexy Postgres Database 
           #   org.opencontainers.image.vendor=Lexy AI
-      -
-        name: Quick check for postgres
+
+      - name: Metadata check for postgres
         run: |
           echo "$DOCKER_METADATA_OUTPUT_JSON"
           echo "${{ steps.meta-lx-postgres.outputs.json }}"
-      -
-        name: Create postgres manifest and push
+
+      - name: Create postgres manifest and push
         working-directory: /tmp/digests/postgres
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.IMAGE_NAME_LEXY_POSTGRES }}@sha256:%s ' *)          
-      -
-        name: Inspect postgres image
+
+      - name: Inspect postgres image
         run: |
           docker buildx imagetools inspect ${{ env.IMAGE_NAME_LEXY_POSTGRES }}:${{ steps.meta-lx-postgres.outputs.version }}
           docker buildx imagetools inspect ${{ env.IMAGE_NAME_LEXY_POSTGRES }}:${{ steps.meta-lx-postgres.outputs.version }} --format "{{json .Image}}"
-
-      # -
-      #   name: Create manifest list and push
-      #   working-directory: /tmp/digests
-      #   run: |
-      #     docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-      #       $(printf '${{ env.IMAGE_NAME_LEXY_SERVER }}@sha256:%s ' *)          
-      # -
-      #   name: Inspect image
-      #   run: |
-      #     docker buildx imagetools inspect ${{ env.IMAGE_NAME_LEXY_SERVER }}:${{ steps.meta_lxs.outputs.version }}    
