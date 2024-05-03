@@ -29,11 +29,7 @@ jobs:
           # - linux/arm/v6
           # - linux/arm/v7
           # - linux/arm64
-    
-    # permissions:
-    #   contents: read
-    #   packages: write
-    
+          
     steps:
 
       - name: List huge unnecessary tools folder
@@ -109,22 +105,16 @@ jobs:
             latest=auto
 
       - name: Metadata for Lexy server
-        id: meta_server
+        id: meta-server
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.IMAGE_NAME_LEXY_SERVER }}
           labels: |
-            org.opencontainers.image.title=LexyServer
-            org.opencontainers.image.description=Lexy Server 
+            org.opencontainers.image.title=Lexy Server
+            org.opencontainers.image.description=Lexy API Server
             org.opencontainers.image.vendor=Lexy AI
           flavor: |
             latest=auto
-          # tags: |
-          #   type=ref,value=latest
-          #   type=ref,event=branch
-          #   type=ref,event=pr
-          #   type=sha
-          #   type=semver,pattern={{version}}
 
       # - name: Build and push Lexy Server image
       #   uses: docker/build-push-action@v5
@@ -143,29 +133,45 @@ jobs:
       #     labels: ${{ steps.meta_server.outputs.labels }}
 
       - name: Build and push Lexy Server by digest
-        id: build
+        id: build-server
         uses: docker/build-push-action@v5
         with:
           context: ./
           platforms: ${{ matrix.platform }}
           file: ./docker/server/Dockerfile
           build-args: ENVIRONMENT=development
-          labels: ${{ steps.meta_server.outputs.labels }}
+          provenance: false  # Avoid unknown/unknown arch (https://github.com/docker/build-push-action/issues/820)
+          labels: ${{ steps.meta-server.outputs.labels }}
           outputs: type=image,name=${{ env.IMAGE_NAME_LEXY_SERVER }},push-by-digest=true,name-canonical=true,push=true
       -
-        name: Export digest
+        name: Export server digest
         run: |
-          mkdir -p /tmp/digests
-          digest="${{ steps.build.outputs.digest }}"
-          touch "/tmp/digests/${digest#sha256:}"          
+          mkdir -p /tmp/digests/server
+          digest="${{ steps.build-server.outputs.digest }}"
+          touch "/tmp/digests/server/${digest#sha256:}"          
       -
-        name: Upload digest
+        name: Upload server digest
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ env.PLATFORM_PAIR }}
-          path: /tmp/digests/*
+          name: digests-server-${{ env.PLATFORM_PAIR }}
+          path: /tmp/digests/server/*
           if-no-files-found: error
           retention-days: 1
+
+      # -
+      #   name: Export digest
+      #   run: |
+      #     mkdir -p /tmp/digests
+      #     digest="${{ steps.build.outputs.digest }}"
+      #     touch "/tmp/digests/${digest#sha256:}"          
+      # -
+      #   name: Upload digest
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: digests-${{ env.PLATFORM_PAIR }}
+      #     path: /tmp/digests/*
+      #     if-no-files-found: error
+      #     retention-days: 1
 
       # - name: Size of py packages after lexy server
       #   run: |
@@ -211,18 +217,29 @@ jobs:
       #     labels: ${{ steps.meta_postgres.outputs.labels }}
 
 
-  merge:
+  create-manifests:
     runs-on: ubuntu-latest
     needs:
       - build-and-push
     steps:
       -
-        name: Download digests
+        name: Download server digests
         uses: actions/download-artifact@v4
         with:
-          path: /tmp/digests
-          pattern: digests-*
+          path: /tmp/digests/server
+          pattern: digests-server-*
           merge-multiple: true
+      -
+        name: List server digests
+        run: ls -R /tmp/digests/server
+
+      # -
+      #   name: Download digests
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     path: /tmp/digests
+      #     pattern: digests-*
+      #     merge-multiple: true
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -234,7 +251,7 @@ jobs:
       #     images: ${{ env.REGISTRY_IMAGE }}
       - 
         name: Docker meta for Lexy server
-        id: meta_lxs
+        id: meta-lxs
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.IMAGE_NAME_LEXY_SERVER }}
@@ -252,12 +269,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       -
-        name: Create manifest list and push
-        working-directory: /tmp/digests
+        name: Create server manifest and push
+        working-directory: /tmp/digests/server
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.IMAGE_NAME_LEXY_SERVER }}@sha256:%s ' *)          
       -
         name: Inspect image
         run: |
-          docker buildx imagetools inspect ${{ env.IMAGE_NAME_LEXY_SERVER }}:${{ steps.meta_lxs.outputs.version }}    
+          docker buildx imagetools inspect ${{ env.IMAGE_NAME_LEXY_SERVER }}:${{ steps.meta-lxs.outputs.version }}   
+      
+      # -
+      #   name: Create manifest list and push
+      #   working-directory: /tmp/digests
+      #   run: |
+      #     docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+      #       $(printf '${{ env.IMAGE_NAME_LEXY_SERVER }}@sha256:%s ' *)          
+      # -
+      #   name: Inspect image
+      #   run: |
+      #     docker buildx imagetools inspect ${{ env.IMAGE_NAME_LEXY_SERVER }}:${{ steps.meta_lxs.outputs.version }}    
