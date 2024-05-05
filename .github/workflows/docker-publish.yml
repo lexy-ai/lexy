@@ -2,9 +2,11 @@ name: Build and Push Docker Images
 
 on:
   push:
-    branches:
-#      - main
-      - rs/test-gh-actions
+#    branches:
+##      - main
+#      - rs/test-gh-actions
+    tags:
+      - v*
 
 env:
   REGISTRY: ghcr.io
@@ -271,7 +273,7 @@ jobs:
       - name: Metadata check for server
         run: |
           echo "$DOCKER_METADATA_OUTPUT_JSON"
-          echo "${{ steps.meta-lx-server.outputs.json }}"
+          echo ${{ steps.meta-lx-server.outputs.json }}
 
       - name: Create server manifest and push
         working-directory: /tmp/digests/server
