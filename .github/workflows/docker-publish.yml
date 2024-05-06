@@ -2,9 +2,9 @@ name: Build and Push Docker Images
 
 on:
   push:
-#    branches:
-##      - main
-#      - rs/test-gh-actions
+    branches:
+#      - main
+      - rs/test-gh-actions
     tags:
       - v*
 
@@ -23,7 +23,6 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     strategy:
-      # fail-fast: false
       matrix:
         platform:
           - linux/arm64
@@ -58,6 +57,12 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Check build context
+        run: |
+          pwd
+          ls -lah .
+          tree -L 2 .
 
       # Add support for more platforms with QEMU
       # https://github.com/docker/setup-qemu-action
