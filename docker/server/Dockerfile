@@ -15,11 +15,21 @@ RUN apt-get install -y \
 WORKDIR /home/app
 COPY ../../pyproject.toml ./poetry.lock* ./
 
+# check current directory
+RUN pwd
+RUN ls -lah
+RUN tree -L 2
+
 ARG ENVIRONMENT=development
 
 RUN pip install poetry
 RUN poetry config virtualenvs.create false
-RUN if [ "$ENVIRONMENT" = "development" ]; then poetry install --no-root -E "lexy_transformers"; else poetry install -E "lexy_transformers"; fi
+RUN if [ "$ENVIRONMENT" = "development" ]; \
+      then \
+        poetry install --no-root -E "lexy_transformers"; \
+      else \
+        poetry install -E "lexy_transformers"; \
+    fi
 
 ENV PYTHONPATH="/home/app:/home/app/pipelines:$PYTHONPATH"
 
