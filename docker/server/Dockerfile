@@ -1,11 +1,16 @@
 FROM python:3.11
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    POETRY_VERSION=1.8.2 \
+    POETRY_CACHE_DIR="$HOME/.cache/pypoetry"
 
-RUN apt-get update
+RUN set -ex && \
+    apt-get update
 
-RUN apt-get install -y \
+RUN set -ex && \
+    apt-get install -y \
     build-essential \
     curl \
     python3 \
@@ -17,26 +22,26 @@ COPY ../../pyproject.toml ./poetry.lock* ./
 
 ARG ENVIRONMENT=development
 
-RUN pip install poetry
+RUN pip install "poetry==$POETRY_VERSION"
 RUN poetry config virtualenvs.create false
 
+# Install dependencies
+RUN poetry install --no-root -E "lexy_transformers" && rm -rf $POETRY_CACHE_DIR;
+
 # copy source code
-#COPY . ./
 COPY lexy ./lexy
-COPY pipelines ./pipelines
 COPY lexy_tests ./lexy_tests
+COPY pipelines ./pipelines
 COPY README.md ./
 COPY sdk-python ./sdk-python
-RUN ls -lah
-
-# TODO: switch to --no-root install followed by install from git
-#poetry install --no-root -E "lexy_transformers";
 
 RUN if [ "$ENVIRONMENT" = "development" ]; \
       then \
-        poetry install --no-root -E "lexy_transformers"; \
+        echo "development install, skipping install of 'lexy' and 'lexy-py'"; \
       else \
-        poetry install -E "lexy_transformers"; \
+        echo "installing 'lexy'"; \
+        poetry install --only-root -E "lexy_transformers"; \
+        echo "installing 'lexy-py'"; \
         cd ./sdk-python && poetry install; \
     fi
 
@@ -56,7 +61,14 @@ ENV DOCKER=true \
 COPY ./docker/server/start-server.sh /start-server.sh
 RUN chmod +x /start-server.sh
 
+# Top 20 largest python packages
+RUN echo "Top 20 largest python packages" && export PYSITE=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") && du -sh $PYSITE/* | sort -h -r | head -20
+# Total size of python packages
+RUN echo "Total size of python packages" && export PYSITE=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") && du -sh $PYSITE | sort -h -r
+# Total size of caches
+RUN echo "Total size of caches" && du -sh $HOME/.cache/*
+# Keep server alive for debugging
+#CMD ["tail", "-f", "/dev/null"]
+
 # Run the start script, it will check for a './lexy/prestart.sh' script (e.g., for DB initialization)
 CMD ["/start-server.sh"]
-# Uncomment for testing
-#CMD ["tail", "-f", "/dev/null"]

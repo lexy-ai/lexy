@@ -3783,4 +3783,4 @@ lexy-transformers = ["openai", "sentence-transformers", "transformers"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "cff1b26e8deca08dad458e103d023554d703450feb50f2eb87e162ff2e9981eb"
+content-hash = "a11db076f29a81449ce673ff95da22a55a9bb56f3375ba63bbd76a9912cc7127"
