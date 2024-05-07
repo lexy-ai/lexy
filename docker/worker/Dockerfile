@@ -40,7 +40,6 @@ RUN if [ "$ENVIRONMENT" = "development" ]; \
         cd ./sdk-python && poetry install; \
     fi
 
-#ENV PYTHONPATH="/home/app:/home/app/pipelines:$PYTHONPATH"
 ENV DOCKER=true \
     CELERY_BROKER_URL=amqp://guest:guest@queue:5672// \
     CELERY_BROKER_API_URL=http://guest:guest@queue:15672/api/vhost \

@@ -40,7 +40,6 @@ RUN if [ "$ENVIRONMENT" = "development" ]; \
         cd ./sdk-python && poetry install; \
     fi
 
-#ENV PYTHONPATH="/home/app:/home/app/pipelines:$PYTHONPATH"
 ENV DOCKER=true \
     POSTGRES_USER=postgres \
     POSTGRES_PASSWORD=postgres \
@@ -59,5 +58,5 @@ RUN chmod +x /start-server.sh
 
 # Run the start script, it will check for a './lexy/prestart.sh' script (e.g., for DB initialization)
 CMD ["/start-server.sh"]
-# uncomment for testing
+# Uncomment for testing
 #CMD ["tail", "-f", "/dev/null"]
