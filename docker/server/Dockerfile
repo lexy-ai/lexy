@@ -26,6 +26,7 @@ COPY lexy ./lexy
 COPY pipelines ./pipelines
 COPY lexy_tests ./lexy_tests
 COPY README.md ./
+COPY sdk-python ./sdk-python
 RUN ls -lah
 
 # TODO: switch to --no-root install followed by install from git
@@ -36,6 +37,7 @@ RUN if [ "$ENVIRONMENT" = "development" ]; \
         poetry install --no-root -E "lexy_transformers"; \
       else \
         poetry install -E "lexy_transformers"; \
+        cd ./sdk-python && poetry install; \
     fi
 
 ENV PYTHONPATH="/home/app:/home/app/pipelines:$PYTHONPATH"
