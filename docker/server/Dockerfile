@@ -15,10 +15,6 @@ RUN apt-get install -y \
 WORKDIR /home/app
 COPY ../../pyproject.toml ./poetry.lock* ./
 
-# check current directory
-RUN pwd
-RUN ls -lah
-
 ARG ENVIRONMENT=development
 
 RUN pip install poetry

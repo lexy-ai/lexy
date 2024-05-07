@@ -19,7 +19,24 @@ ARG ENVIRONMENT=development
 
 RUN pip install poetry
 RUN poetry config virtualenvs.create false
-RUN if [ "$ENVIRONMENT" = "development" ]; then poetry install --no-root -E "lexy_transformers"; else poetry install -E "lexy_transformers"; fi
+
+# copy source code
+#COPY . ./
+COPY lexy ./lexy
+COPY pipelines ./pipelines
+COPY lexy_tests ./lexy_tests
+COPY README.md ./
+RUN ls -lah
+
+# TODO: switch to --no-root install followed by install from git
+#poetry install --no-root -E "lexy_transformers";
+
+RUN if [ "$ENVIRONMENT" = "development" ]; \
+      then \
+        poetry install --no-root -E "lexy_transformers"; \
+      else \
+        poetry install -E "lexy_transformers"; \
+    fi
 
 ENV PYTHONPATH="/home/app:/home/app/pipelines:$PYTHONPATH"
 
