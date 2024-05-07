@@ -2,9 +2,6 @@ name: Build and Push Docker Images
 
 on:
   push:
-    branches:
-#      - main
-      - rs/test-gh-actions
     tags:
       - v*
 
