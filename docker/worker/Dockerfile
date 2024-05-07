@@ -40,7 +40,20 @@ RUN if [ "$ENVIRONMENT" = "development" ]; \
         cd ./sdk-python && poetry install; \
     fi
 
-ENV PYTHONPATH="/home/app:/home/app/pipelines:$PYTHONPATH"
+#ENV PYTHONPATH="/home/app:/home/app/pipelines:$PYTHONPATH"
+ENV DOCKER=true \
+    CELERY_BROKER_URL=amqp://guest:guest@queue:5672// \
+    CELERY_BROKER_API_URL=http://guest:guest@queue:15672/api/vhost \
+    CELERY_RESULT_BACKEND=db+postgresql://postgres:postgres@db_postgres/lexy \
+    C_FORCE_ROOT=true \
+    POSTGRES_USER=postgres \
+    POSTGRES_PASSWORD=postgres \
+    POSTGRES_DB=lexy \
+    POSTGRES_HOST=db_postgres \
+    PIPELINE_DIR=/home/app/pipelines \
+    PYTHONPATH=/home/app:/home/app/pipelines \
+    # Unset GOOGLE_APPLICATION_CREDENTIALS for the celery worker \
+    GOOGLE_APPLICATION_CREDENTIALS=""
 
 # Copy init script
 COPY ./docker/worker/start-worker.sh /start-worker.sh

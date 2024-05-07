@@ -40,7 +40,18 @@ RUN if [ "$ENVIRONMENT" = "development" ]; \
         cd ./sdk-python && poetry install; \
     fi
 
-ENV PYTHONPATH="/home/app:/home/app/pipelines:$PYTHONPATH"
+#ENV PYTHONPATH="/home/app:/home/app/pipelines:$PYTHONPATH"
+ENV DOCKER=true \
+    POSTGRES_USER=postgres \
+    POSTGRES_PASSWORD=postgres \
+    POSTGRES_DB=lexy \
+    POSTGRES_HOST=db_postgres \
+    POSTGRES_TEST_DB=lexy_tests \
+    CELERY_BROKER_URL=amqp://guest:guest@queue:5672// \
+    CELERY_RESULT_BACKEND=db+postgresql://postgres:postgres@db_postgres/lexy \
+    PIPELINE_DIR=/home/app/pipelines \
+    PYTHONPATH=/home/app:/home/app/pipelines \
+    GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/gcp_credentials
 
 # Copy init script
 COPY ./docker/server/start-server.sh /start-server.sh
