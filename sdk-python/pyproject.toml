@@ -24,7 +24,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 httpx = "^0.24.1"
 pydantic = ">=2.0.0,<3.0.0"
 Pillow = "^10.0.1"

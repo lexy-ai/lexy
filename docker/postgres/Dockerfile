@@ -20,5 +20,11 @@ RUN apt-get remove -y git build-essential postgresql-server-dev-16 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# Set environment variables
+ENV POSTGRES_USER=postgres \
+    POSTGRES_PASSWORD=postgres \
+    POSTGRES_DB=lexy \
+    POSTGRES_TEST_DB=lexy_tests
+
 # Copy init script
 COPY ./docker/postgres/init-db.sh /docker-entrypoint-initdb.d/init-db.sh

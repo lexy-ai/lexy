@@ -8,3 +8,10 @@ __pycache__
 *.pyc
 *.pyo
 *.bak
+.DS_Store
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+.pytest_cache
+build
+dist
+tmp
