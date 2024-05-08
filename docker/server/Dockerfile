@@ -1,4 +1,4 @@
-FROM python:3.11
+FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -60,6 +60,15 @@ ENV DOCKER=true \
 # Copy init script
 COPY ./docker/server/start-server.sh /start-server.sh
 RUN chmod +x /start-server.sh
+
+# Top 20 largest python packages
+RUN echo "Top 20 largest python packages" && export PYSITE=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") && du -sh $PYSITE/* | sort -h -r | head -20
+# Total size of python packages
+RUN echo "Total size of python packages" && export PYSITE=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") && du -sh $PYSITE | sort -h -r
+# Total size of caches
+RUN echo "Total size of caches" && du -sh $HOME/.cache/*
+# Keep server alive for debugging
+#CMD ["tail", "-f", "/dev/null"]
 
 # Run the start script, it will check for a './lexy/prestart.sh' script (e.g., for DB initialization)
 CMD ["/start-server.sh"]
