@@ -1,4 +1,5 @@
 FROM python:3.11-slim
+ARG ENVIRONMENT=development
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -20,15 +21,13 @@ RUN set -ex && \
 WORKDIR /home/app
 COPY ../../pyproject.toml ./poetry.lock* ./
 
-ARG ENVIRONMENT=development
-
 RUN pip install "poetry==$POETRY_VERSION"
 RUN poetry config virtualenvs.create false
 
 # Install dependencies
 RUN poetry install --no-root -E "lexy_transformers" && rm -rf $POETRY_CACHE_DIR;
 
-# copy source code
+# Copy source code
 COPY lexy ./lexy
 COPY lexy_tests ./lexy_tests
 COPY pipelines ./pipelines
@@ -67,8 +66,6 @@ RUN echo "Top 20 largest python packages" && export PYSITE=$(python -c "from dis
 RUN echo "Total size of python packages" && export PYSITE=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") && du -sh $PYSITE | sort -h -r
 # Total size of caches
 RUN echo "Total size of caches" && du -sh $HOME/.cache/*
-# Keep server alive for debugging
-#CMD ["tail", "-f", "/dev/null"]
 
 # Run the start script, it will check for a './lexy/prestart.sh' script (e.g., for DB initialization)
 CMD ["/start-server.sh"]
