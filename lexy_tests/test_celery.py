@@ -3,11 +3,14 @@
 
 class TestCelery:
 
-    def test_celery_app(self, celery_app, celery_worker, settings):
+    def test_celery_app(self, celery_app, celery_worker, settings, celery_settings):
         print(f"{celery_app = }")
         print(f"{celery_app.conf.broker_url = }")
         print(f"{celery_app.conf.result_backend = }")
         assert celery_app
+
+        # assert that result_backend is set to the value in test settings
+        assert celery_app.conf.result_backend == celery_settings.result_backend
 
         assert 'lexy.transformers.text.embeddings.minilm' in celery_app.tasks
         assert 'lexy.db.save_records_to_index' in celery_app.tasks

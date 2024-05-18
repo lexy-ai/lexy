@@ -33,6 +33,8 @@ COPY lexy_tests ./lexy_tests
 COPY pipelines ./pipelines
 COPY README.md ./
 COPY sdk-python ./sdk-python
+# Copy sample data (for testing)
+COPY sample_data ./sample_data
 
 RUN if [ "$ENVIRONMENT" = "development" ]; \
       then \

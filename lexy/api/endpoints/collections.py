@@ -249,6 +249,9 @@ async def upload_collection_documents(collection_id: str,
     # TODO: get storage client from collection config
     # storage_client = get_storage_client(service=collection.config.get('storage_service', None))
     storage_bucket = collection.config.get('storage_bucket', settings.DEFAULT_STORAGE_BUCKET)
+    if collection.config.get('store_files') and not storage_bucket:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Storage bucket not configured for this collection")
     storage_prefix = collection.config.get('storage_prefix', None)
 
     docs_uploaded = []

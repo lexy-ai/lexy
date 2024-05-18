@@ -453,6 +453,45 @@ class TestDocumentClient:
         assert response.get("msg") == "Collection deleted"
         assert response.get("collection_id") == tmp_collection_id
 
+    @pytest.mark.asyncio
+    async def test_upload_documents_to_collection_without_storage_bucket(self, lx_client, settings):
+        # create a test collection without a storage bucket
+        tmp_collection = lx_client.create_collection(
+            collection_name="test_no_storage_bucket",
+            description="Test No Storage Bucket",
+            config={
+                "store_files": True,
+                "generate_thumbnails": True,
+                "storage_service": settings.DEFAULT_STORAGE_SERVICE,
+                "storage_bucket": None,
+            }
+        )
+        assert tmp_collection.collection_name == "test_no_storage_bucket"
+        assert tmp_collection.description == "Test No Storage Bucket"
+        assert tmp_collection.config != settings.COLLECTION_DEFAULT_CONFIG
+        tmp_collection_id = tmp_collection.collection_id
+        storage_bucket = tmp_collection.config.get('storage_bucket')
+        assert storage_bucket is None
+
+        # upload documents to the test collection
+        with pytest.raises(LexyAPIError) as exc_info:
+            # NOTE: file paths are relative to the execution directory (i.e., project root)
+            lx_client.upload_documents(
+                files=[
+                    "sample_data/images/lexy.png",
+                ],
+                filenames=["testing-no-storage-bucket.png"],
+                collection_name="test_no_storage_bucket"
+            )
+        assert isinstance(exc_info.value, LexyAPIError)
+        assert exc_info.value.response.status_code == 400
+        assert exc_info.value.response.json()['detail'] == 'Storage bucket not configured for this collection'
+
+        # delete test collection
+        response = lx_client.delete_collection(collection_name="test_no_storage_bucket")
+        assert response.get("msg") == "Collection deleted"
+        assert response.get("collection_id") == tmp_collection_id
+
 
 class TestDocumentModel:
 
