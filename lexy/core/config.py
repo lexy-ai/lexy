@@ -77,8 +77,20 @@ class AppSettings(BaseSettings):
     # Google Cloud settings
     # Path to a file containing JSON credentials for a service account. Using Optional[str] because setting to
     #  Optional[FilePath] triggers a validation error if GOOGLE_APPLICATION_CREDENTIALS is an empty string.
+    #  If set to devnull, or to an invalid filepath, GOOGLE_APPLICATION_CREDENTIALS will be set to None.
     GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = (
-        Field(default=None, validation_alias="GOOGLE_APPLICATION_CREDENTIALS"))
+        Field(default=None, validation_alias="GOOGLE_APPLICATION_CREDENTIALS")
+    )
+
+    @field_validator('GOOGLE_APPLICATION_CREDENTIALS')
+    def check_google_application_credentials(cls, value):
+        if value == os.path.devnull:
+            return None
+        if value and not Path(value).is_file():
+            logging.warning(f"GOOGLE_APPLICATION_CREDENTIALS file '{value}' does not exist. "
+                            f"Setting value to `None`.")
+            return None
+        return value
 
     # Storage settings
     DEFAULT_STORAGE_SERVICE: Optional[Literal['s3', 'gcs']] = (

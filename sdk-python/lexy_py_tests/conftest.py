@@ -14,6 +14,7 @@ from lexy_tests.conftest import (
     celery_settings,
     client,
     create_test_database,
+    document_storage,
     get_session,
     seed_data,
     settings,

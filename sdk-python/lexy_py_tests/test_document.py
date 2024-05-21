@@ -212,7 +212,7 @@ class TestDocumentClient:
         assert exc_info.value.response.json()['detail'] == 'Collection not found'
 
     @pytest.mark.asyncio
-    async def test_upload_documents(self, lx_client, settings):
+    async def test_upload_documents(self, lx_client, settings, document_storage):
         # create a test collection for testing uploading documents
         tmp_collection = lx_client.create_collection(
             collection_name="test_upload_documents", description="Test Upload Documents"
@@ -374,7 +374,7 @@ class TestDocumentClient:
 
     # TODO: run the equivalent tests for GCS
     @pytest.mark.asyncio
-    async def test_document_urls(self, lx_client, settings):
+    async def test_document_urls(self, lx_client, settings, document_storage):
         thumbnail_dims = list(settings.IMAGE_THUMBNAIL_SIZES)[0]
         thumbnail_dims_str = f"{thumbnail_dims[0]}x{thumbnail_dims[1]}"
 

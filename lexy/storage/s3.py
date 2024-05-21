@@ -1,6 +1,7 @@
 import logging
 
 import boto3
+import botocore
 
 from lexy.core.config import settings
 from lexy.storage.base import StorageClient
@@ -21,6 +22,15 @@ class S3Client(StorageClient):
             client_kwargs["region_name"] = settings.AWS_REGION
         client_kwargs.update(kwargs)
         self.client = boto3.client('s3', **client_kwargs)
+
+    def is_authenticated(self) -> bool:
+        try:
+            self.client.list_buckets()
+            return True
+        except botocore.exceptions.NoCredentialsError:
+            return False
+        except Exception:
+            raise
 
     def list_buckets(self) -> list[str]:
         response = self.client.list_buckets()

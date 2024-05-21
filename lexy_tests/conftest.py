@@ -1,4 +1,5 @@
 import os
+import warnings
 
 import asyncio
 import httpx
@@ -194,6 +195,14 @@ async def async_client(test_app, async_session: AsyncSession) -> httpx.AsyncClie
         yield ac
 
     del test_app.dependency_overrides[get_session]  # Reset overrides after tests
+
+
+@pytest.fixture(scope="function")
+def document_storage(settings):
+    """Fixture used to propagate warnings regarding document storage."""
+    if settings.DEFAULT_STORAGE_BUCKET is None:
+        warnings.warn("DEFAULT_STORAGE_BUCKET is not set - will skip tests requiring document storage.")
+        pytest.skip("DEFAULT_STORAGE_BUCKET is not set")
 
 
 @pytest.fixture(scope="session")
