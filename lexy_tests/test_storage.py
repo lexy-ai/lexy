@@ -5,6 +5,7 @@ import time
 import boto3
 import pytest
 from botocore.client import Config
+from botocore.exceptions import NoCredentialsError
 from google.cloud import storage
 from google.oauth2 import service_account
 
@@ -17,12 +18,22 @@ from lexy.models.document import Document
 
 @pytest.fixture(scope='module')
 def s3():
-    return boto3.client('s3')
+    s3_client = boto3.client('s3')
+    try:
+        s3_client.list_buckets()
+    except NoCredentialsError:
+        pytest.skip("S3 credentials are not available")
+    yield s3_client
 
 
 @pytest.fixture(scope='module')
 def s3v4():
-    return boto3.client('s3', config=Config(signature_version='s3v4'))
+    s3v4_client = boto3.client('s3', config=Config(signature_version='s3v4'))
+    try:
+        s3v4_client.list_buckets()
+    except NoCredentialsError:
+        pytest.skip("S3 credentials are not available")
+    yield s3v4_client
 
 
 @pytest.fixture(scope='module')
