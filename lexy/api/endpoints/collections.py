@@ -248,6 +248,10 @@ async def upload_collection_documents(collection_id: str,
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found")
     # TODO: get storage client from collection config
     # storage_client = get_storage_client(service=collection.config.get('storage_service', None))
+    if collection.config.get('store_files') and not storage_client:
+        storage_service = collection.config.get('storage_service', None)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"Storage client not configured (service: {storage_service})")
     storage_bucket = collection.config.get('storage_bucket', settings.DEFAULT_STORAGE_BUCKET)
     if collection.config.get('store_files') and not storage_bucket:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,

@@ -1,7 +1,7 @@
 import logging
 
 import boto3
-import botocore
+from botocore.exceptions import NoCredentialsError
 
 from lexy.core.config import settings
 from lexy.storage.base import StorageClient
@@ -27,7 +27,7 @@ class S3Client(StorageClient):
         try:
             self.client.list_buckets()
             return True
-        except botocore.exceptions.NoCredentialsError:
+        except NoCredentialsError:
             return False
         except Exception:
             raise

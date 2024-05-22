@@ -466,7 +466,7 @@ class TestDocumentClient:
         assert response.get("collection_id") == tmp_collection_id
 
     @pytest.mark.asyncio
-    async def test_upload_documents_to_collection_without_storage_bucket(self, lx_client, settings):
+    async def test_upload_documents_to_collection_without_storage_bucket(self, lx_client, settings, document_storage):
         # create a test collection without a storage bucket
         tmp_collection = lx_client.create_collection(
             collection_name="test_no_storage_bucket",

@@ -210,13 +210,16 @@ class TestAppSettings(AppSettings):
     DB_ECHO_LOG: bool = False
 
     # User settings
-    # without `env=` argument, this will revert to the environment value of FIRST_SUPERUSER_EMAIL
+    # Without `env=` argument, this will revert to the environment value of FIRST_SUPERUSER_EMAIL
     FIRST_SUPERUSER_EMAIL: EmailStr = Field("test@lexy.ai", validation_alias="TEST_SUPERUSER_EMAIL")
     FIRST_SUPERUSER_PASSWORD: SecretStr = Field("test", validation_alias="TEST_SUPERUSER_PASSWORD")
 
     # Storage settings
+    # By default, use the same storage service and bucket for testing, with a different prefix
     DEFAULT_STORAGE_PREFIX: Optional[str] = Field(default="lexy_tests", validation_alias="DEFAULT_STORAGE_PREFIX")
+    # Bucket used in testing S3 storage, regardless of the default storage service
     S3_TEST_BUCKET: Optional[str] = Field(default=None, validation_alias="S3_TEST_BUCKET")
+    # Bucket used in testing GCS storage, regardless of the default storage service
     GCS_TEST_BUCKET: Optional[str] = Field(default=None, validation_alias="GCS_TEST_BUCKET")
 
 

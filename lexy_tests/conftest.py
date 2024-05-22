@@ -199,7 +199,14 @@ async def async_client(test_app, async_session: AsyncSession) -> httpx.AsyncClie
 
 @pytest.fixture(scope="function")
 def document_storage(settings):
-    """Fixture used to propagate warnings regarding document storage."""
+    """Fixture used to skip tests and propagate warnings regarding document storage.
+
+    Tests using this fixture will be skipped if any of the following are true:
+        - DEFAULT_STORAGE_BUCKET is not set
+        - DEFAULT_STORAGE_SERVICE is 's3' but S3 credentials are not available
+        - DEFAULT_STORAGE_SERVICE is 'gcs' but GOOGLE_APPLICATION_CREDENTIALS is not set
+        - DEFAULT_STORAGE_SERVICE is 'gcs' but client is not authenticated
+    """
     if settings.DEFAULT_STORAGE_BUCKET is None:
         warnings.warn("DEFAULT_STORAGE_BUCKET is not set - will skip tests requiring document storage.")
         pytest.skip("DEFAULT_STORAGE_BUCKET is not set")

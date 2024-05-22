@@ -94,6 +94,10 @@ async def upload_documents(files: list[UploadFile],
     collection_id = collection.collection_id
     # TODO: get storage client from collection config
     # storage_client = get_storage_client(service=collection.config.get('storage_service', None))
+    if collection.config.get('store_files') and not storage_client:
+        storage_service = collection.config.get('storage_service', None)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"Storage client not configured (service: {storage_service})")
     storage_bucket = collection.config.get('storage_bucket', settings.DEFAULT_STORAGE_BUCKET)
     if collection.config.get('store_files') and not storage_bucket:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -268,6 +272,11 @@ async def get_document_urls(document_id: str,
     document = result.first()
     if not document:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
+    # TODO: get storage client from document config
+    if document.is_stored_object and not storage_client:
+        storage_service = document.meta.get('storage_service')
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"Storage client not configured (service: {storage_service})")
     return generate_signed_urls_for_document(document, storage_client, expiration)
 
 

@@ -2,19 +2,28 @@ from typing import TYPE_CHECKING, Union
 
 from lexy.core.config import settings
 from lexy.storage.base import StorageClient
-from lexy.storage.gcs import GCSClient
+from lexy.storage.gcs import GCSClient, GoogleCredentialsError
 from lexy.storage.s3 import S3Client
 
 if TYPE_CHECKING:
     from lexy.models.document import Document, DocumentBase
 
 
+# TODO: Add caching
+# TODO: Add argument for storage service and default to settings.DEFAULT_STORAGE_SERVICE
 # TODO: Move this to lexy.api.deps?
-async def get_storage_client() -> StorageClient:
+async def get_storage_client() -> StorageClient | None:
     if settings.DEFAULT_STORAGE_SERVICE == "s3":
-        return S3Client()
+        # The boto3 client allows for initialization without credentials
+        s3_client = S3Client()
+        yield s3_client
     elif settings.DEFAULT_STORAGE_SERVICE == "gcs":
-        return GCSClient()
+        # The google-cloud-storage client requires credentials
+        try:
+            gcs_client = GCSClient()
+            yield gcs_client
+        except GoogleCredentialsError:
+            yield None
     else:
         raise ValueError("Unsupported storage service configured")
 

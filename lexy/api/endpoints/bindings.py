@@ -1,5 +1,5 @@
 import logging
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
@@ -40,7 +40,7 @@ async def get_bindings(session: AsyncSession = Depends(get_session)) -> list[Bin
              description="Create a new binding")
 async def add_binding(binding: BindingCreate,
                       session: AsyncSession = Depends(get_session),
-                      storage_client: "StorageClient" = Depends(get_storage_client)) \
+                      storage_client: Optional["StorageClient"] = Depends(get_storage_client)) \
         -> dict[str, BindingRead | list[dict]]:
     # set collection_id based on collection_id or collection_name
     if binding.collection_id:
@@ -103,7 +103,7 @@ async def get_binding(binding_id: int,
 async def update_binding(binding_id: int,
                          binding: BindingUpdate,
                          session: AsyncSession = Depends(get_session),
-                         storage_client: "StorageClient" = Depends(get_storage_client)) \
+                         storage_client: Optional["StorageClient"] = Depends(get_storage_client)) \
         -> dict[str, BindingRead | list[dict]]:
     result = await session.exec(select(Binding).where(Binding.binding_id == binding_id))
     db_binding = result.first()
