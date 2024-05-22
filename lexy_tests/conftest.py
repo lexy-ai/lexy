@@ -204,6 +204,26 @@ def document_storage(settings):
         warnings.warn("DEFAULT_STORAGE_BUCKET is not set - will skip tests requiring document storage.")
         pytest.skip("DEFAULT_STORAGE_BUCKET is not set")
 
+    if settings.DEFAULT_STORAGE_SERVICE == 's3':
+        from lexy.storage.s3 import S3Client
+        s3_client = S3Client()
+        if not s3_client.is_authenticated():
+            warnings.warn("DEFAULT_STORAGE_SERVICE is 's3' but credentials are not available - "
+                          "will skip tests requiring document storage.")
+            pytest.skip("S3 client is not authenticated")
+
+    elif settings.DEFAULT_STORAGE_SERVICE == 'gcs':
+        if not settings.GOOGLE_APPLICATION_CREDENTIALS:
+            warnings.warn("DEFAULT_STORAGE_SERVICE is 'gcs', but GOOGLE_APPLICATION_CREDENTIALS is not set - "
+                          "will skip tests requiring document storage.")
+            pytest.skip("GOOGLE_APPLICATION_CREDENTIALS is not set")
+        from lexy.storage.gcs import GCSClient
+        gcs_client = GCSClient()
+        if not gcs_client.is_authenticated():
+            warnings.warn("DEFAULT_STORAGE_SERVICE is 'gcs' but credentials are not available - "
+                          "will skip tests requiring document storage.")
+            pytest.skip("GCS client is not authenticated")
+
 
 @pytest.fixture(scope="session")
 def celery_settings():

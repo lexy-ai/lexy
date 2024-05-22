@@ -21,9 +21,9 @@ def s3():
     s3_client = boto3.client('s3')
     try:
         s3_client.list_buckets()
+        yield s3_client
     except NoCredentialsError:
         pytest.skip("S3 credentials are not available")
-    yield s3_client
 
 
 @pytest.fixture(scope='module')
@@ -31,9 +31,9 @@ def s3v4():
     s3v4_client = boto3.client('s3', config=Config(signature_version='s3v4'))
     try:
         s3v4_client.list_buckets()
+        yield s3v4_client
     except NoCredentialsError:
         pytest.skip("S3 credentials are not available")
-    yield s3v4_client
 
 
 @pytest.fixture(scope='module')
