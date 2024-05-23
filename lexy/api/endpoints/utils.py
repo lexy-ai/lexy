@@ -4,6 +4,7 @@ import time
 
 from fastapi import APIRouter, status
 
+from lexy.core.config import settings
 from lexy.core.celery_app import get_task_info
 from lexy.core.events import celery, restart_celery_worker
 
@@ -25,6 +26,13 @@ async def root():
             name="Ping")
 async def pong():
     return {"ping": "pong!"}
+
+
+@router.get("/lexy-conf",
+            status_code=status.HTTP_200_OK,
+            name="Lexy settings")
+async def lexy_settings():
+    return settings.model_dump()
 
 
 @router.get("/celery-conf",

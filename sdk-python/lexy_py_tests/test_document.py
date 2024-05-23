@@ -212,7 +212,7 @@ class TestDocumentClient:
         assert exc_info.value.response.json()['detail'] == 'Collection not found'
 
     @pytest.mark.asyncio
-    async def test_upload_documents(self, lx_client, settings):
+    async def test_upload_documents(self, lx_client, settings, document_storage):
         # create a test collection for testing uploading documents
         tmp_collection = lx_client.create_collection(
             collection_name="test_upload_documents", description="Test Upload Documents"
@@ -374,7 +374,7 @@ class TestDocumentClient:
 
     # TODO: run the equivalent tests for GCS
     @pytest.mark.asyncio
-    async def test_document_urls(self, lx_client, settings):
+    async def test_document_urls(self, lx_client, settings, document_storage):
         thumbnail_dims = list(settings.IMAGE_THUMBNAIL_SIZES)[0]
         thumbnail_dims_str = f"{thumbnail_dims[0]}x{thumbnail_dims[1]}"
 
@@ -385,6 +385,8 @@ class TestDocumentClient:
         assert tmp_collection.description == "Test Document Urls"
         assert tmp_collection.config == settings.COLLECTION_DEFAULT_CONFIG
         tmp_collection_id = tmp_collection.collection_id
+        storage_service = tmp_collection.config.get('storage_service')
+        assert storage_service == settings.DEFAULT_STORAGE_SERVICE
         storage_bucket = tmp_collection.config.get('storage_bucket')
         assert storage_bucket == settings.DEFAULT_STORAGE_BUCKET
 
@@ -424,24 +426,34 @@ class TestDocumentClient:
         assert 'object' in doc_urls
         object_url = doc_urls['object']
         assert object_url is not None
-        assert object_url.startswith(f"https://{storage_bucket}.s3.")
+        if storage_service == 's3':
+            assert object_url.startswith(f"https://{storage_bucket}.s3.")
+        elif storage_service == 'gcs':
+            assert object_url.startswith(f"https://storage.googleapis.com/{storage_bucket}/")
         object_key = f"lexy_tests/collections/{tmp_collection_id}/documents/testing-document-urls.png"
         assert object_key in object_url
 
         # presigned thumbnail urls
         assert 'thumbnails' in doc_urls
         assert thumbnail_dims_str in doc_urls['thumbnails']
-        assert doc_urls['thumbnails'][thumbnail_dims_str].startswith(f"https://{storage_bucket}.s3.")
+        if storage_service == 's3':
+            assert doc_urls['thumbnails'][thumbnail_dims_str].startswith(f"https://{storage_bucket}.s3.")
+        elif storage_service == 'gcs':
+            assert doc_urls['thumbnails'][thumbnail_dims_str].startswith(
+                f"https://storage.googleapis.com/{storage_bucket}/"
+            )
         thumbnail_key = \
             f"lexy_tests/collections/{tmp_collection_id}/thumbnails/{thumbnail_dims_str}/testing-document-urls.png"
         assert thumbnail_key in doc_urls['thumbnails'][thumbnail_dims_str]
 
         # check url expiration
-        assert presigned_url_is_expired(object_url, storage_service='s3') is False
-        assert presigned_url_is_expired(doc_urls['thumbnails'][thumbnail_dims_str], storage_service='s3') is False
+        assert presigned_url_is_expired(object_url, storage_service=storage_service) is False
+        assert (presigned_url_is_expired(doc_urls['thumbnails'][thumbnail_dims_str], storage_service=storage_service)
+                is False)
         await asyncio.sleep(3)
-        assert presigned_url_is_expired(object_url, storage_service='s3') is True
-        assert presigned_url_is_expired(doc_urls['thumbnails'][thumbnail_dims_str], storage_service='s3') is True
+        assert presigned_url_is_expired(object_url, storage_service=storage_service) is True
+        assert (presigned_url_is_expired(doc_urls['thumbnails'][thumbnail_dims_str], storage_service=storage_service)
+                is True)
 
         # delete test documents
         response = lx_client.document.bulk_delete_documents(collection_name="test_document_urls")
@@ -450,6 +462,45 @@ class TestDocumentClient:
 
         # delete test collection
         response = lx_client.delete_collection(collection_name="test_document_urls")
+        assert response.get("msg") == "Collection deleted"
+        assert response.get("collection_id") == tmp_collection_id
+
+    @pytest.mark.asyncio
+    async def test_upload_documents_to_collection_without_storage_bucket(self, lx_client, settings, document_storage):
+        # create a test collection without a storage bucket
+        tmp_collection = lx_client.create_collection(
+            collection_name="test_no_storage_bucket",
+            description="Test No Storage Bucket",
+            config={
+                "store_files": True,
+                "generate_thumbnails": True,
+                "storage_service": settings.DEFAULT_STORAGE_SERVICE,
+                "storage_bucket": None,
+            }
+        )
+        assert tmp_collection.collection_name == "test_no_storage_bucket"
+        assert tmp_collection.description == "Test No Storage Bucket"
+        assert tmp_collection.config != settings.COLLECTION_DEFAULT_CONFIG
+        tmp_collection_id = tmp_collection.collection_id
+        storage_bucket = tmp_collection.config.get('storage_bucket')
+        assert storage_bucket is None
+
+        # upload documents to the test collection
+        with pytest.raises(LexyAPIError) as exc_info:
+            # NOTE: file paths are relative to the execution directory (i.e., project root)
+            lx_client.upload_documents(
+                files=[
+                    "sample_data/images/lexy.png",
+                ],
+                filenames=["testing-no-storage-bucket.png"],
+                collection_name="test_no_storage_bucket"
+            )
+        assert isinstance(exc_info.value, LexyAPIError)
+        assert exc_info.value.response.status_code == 400
+        assert exc_info.value.response.json()['detail'] == 'Storage bucket not configured for this collection'
+
+        # delete test collection
+        response = lx_client.delete_collection(collection_name="test_no_storage_bucket")
         assert response.get("msg") == "Collection deleted"
         assert response.get("collection_id") == tmp_collection_id
 

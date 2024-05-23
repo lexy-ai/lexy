@@ -5,6 +5,7 @@ import time
 import boto3
 import pytest
 from botocore.client import Config
+from botocore.exceptions import NoCredentialsError
 from google.cloud import storage
 from google.oauth2 import service_account
 
@@ -17,35 +18,62 @@ from lexy.models.document import Document
 
 @pytest.fixture(scope='module')
 def s3():
-    return boto3.client('s3')
+    s3_client = boto3.client('s3')
+    try:
+        s3_client.list_buckets()
+        yield s3_client
+    except NoCredentialsError:
+        pytest.skip("S3 credentials are not available")
 
 
 @pytest.fixture(scope='module')
 def s3v4():
-    return boto3.client('s3', config=Config(signature_version='s3v4'))
+    s3v4_client = boto3.client('s3', config=Config(signature_version='s3v4'))
+    try:
+        s3v4_client.list_buckets()
+        yield s3v4_client
+    except NoCredentialsError:
+        pytest.skip("S3 credentials are not available")
 
 
 @pytest.fixture(scope='module')
 def gcs(settings):
     credentials_file = settings.GOOGLE_APPLICATION_CREDENTIALS
+    if not credentials_file:
+        pytest.skip("GOOGLE_APPLICATION_CREDENTIALS is not set")
+
+    print(f"Creating GCS client using credentials file: {credentials_file}")
     credentials = service_account.Credentials.from_service_account_file(credentials_file)
-    return storage.Client(credentials=credentials)
+    yield storage.Client(credentials=credentials)
 
 
 @pytest.fixture(scope='module')
 def lx_s3():
-    return S3Client()
+    s3_client = S3Client()
+    if not s3_client.is_authenticated():
+        pytest.skip("S3 client is not authenticated")
+    yield s3_client
 
 
 @pytest.fixture(scope='module')
 def lx_s3v4():
     config = Config(signature_version='s3v4')
-    return S3Client(config=config)
+    s3_client = S3Client(config=config)
+    if not s3_client.is_authenticated():
+        pytest.skip("S3 client is not authenticated")
+    yield s3_client
 
 
 @pytest.fixture(scope='module')
 def lx_gcs(settings):
-    return GCSClient()
+    credentials_file = settings.GOOGLE_APPLICATION_CREDENTIALS
+    if not credentials_file:
+        pytest.skip("GOOGLE_APPLICATION_CREDENTIALS is not set")
+
+    gcs_client = GCSClient()
+    if not gcs_client.is_authenticated():
+        pytest.skip("GCS client is not authenticated")
+    yield gcs_client
 
 
 @pytest.fixture(scope='module')
@@ -60,7 +88,8 @@ def test_s3_object(s3, test_file_document, settings):
     object_prefix = settings.COLLECTION_DEFAULT_CONFIG['storage_prefix']
     object_name = os.path.join(object_prefix, 'hotd.txt')
 
-    assert bucket_name is not None, "S3_TEST_BUCKET must be set to run these tests."
+    if not bucket_name:
+        pytest.skip("S3_TEST_BUCKET is not set")
 
     # Upload the test document
     s3.upload_file(test_file_document, bucket_name, object_name)
@@ -80,7 +109,8 @@ def test_gcs_object(gcs, test_file_document, settings):
     object_prefix = settings.COLLECTION_DEFAULT_CONFIG['storage_prefix']
     object_name = os.path.join(object_prefix, 'hotd.txt')
 
-    assert bucket_name is not None, "GCS_TEST_BUCKET must be set to run these tests."
+    if not bucket_name:
+        pytest.skip("GCS_TEST_BUCKET is not set")
 
     # Upload the test document
     bucket = gcs.bucket(bucket_name)

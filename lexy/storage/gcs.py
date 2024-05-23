@@ -3,12 +3,18 @@ import logging
 
 from google.cloud import storage
 from google.oauth2 import service_account
+from google.auth.exceptions import DefaultCredentialsError
 
 from lexy.core.config import settings
 from lexy.storage.base import StorageClient
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+
+class GoogleCredentialsError(Exception):
+    """Raised when missing credentials file."""
+    pass
 
 
 class GCSClient(StorageClient):
@@ -18,10 +24,19 @@ class GCSClient(StorageClient):
             logger.info(f"Creating GCS client using credentials file: {credentials_file}")
             credentials = service_account.Credentials.from_service_account_file(credentials_file)
         else:
-            logger.warning("Missing `credentials_file` - creating GCS client using default credentials. "
-                           "You will not be able to sign URLs with this client.")
-            credentials = None
+            raise GoogleCredentialsError("Missing credentials file for Google Cloud Storage. Make sure to set "
+                                         "`GOOGLE_APPLICATION_CREDENTIALS` to a valid JSON file containing "
+                                         "service account credentials.")
         self.client = storage.Client(credentials=credentials, **kwargs)
+
+    def is_authenticated(self) -> bool:
+        try:
+            self.client.list_buckets(max_results=1)
+            return True
+        except DefaultCredentialsError:
+            return False
+        except Exception:
+            raise
 
     def list_buckets(self) -> list[str]:
         buckets = self.client.list_buckets()

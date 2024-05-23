@@ -1,12 +1,12 @@
 import os
+import warnings
 
 import asyncio
 import httpx
 import pytest
-from celery import current_app
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import Engine, make_url
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import close_all_sessions
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
@@ -16,10 +16,18 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from asgi_lifespan import LifespanManager
 
 from lexy.core.config import settings, TestAppSettings
+from lexy.core.celery_config import settings as celery_settings
 from lexy.db.init_db import add_default_data_to_db, add_first_superuser_to_db
 from lexy.db.session import get_session
 from lexy import models
-from lexy.main import app as lexy_test_app
+
+os.environ["CELERY_BROKER_URL"] = celery_settings.broker_url
+os.environ["CELERY_RESULT_BACKEND"] = celery_settings.result_backend
+
+# We need to import the app **after** forcefully setting the env vars, since Celery doesn't
+#  let you assign any value other than the environment variable if one is set.
+#  See https://github.com/celery/celery/issues/4284.
+from lexy.main import app as lexy_test_app  # noqa: F401
 
 
 # the value of LEXY_CONFIG and CELERY_CONFIG are set using pytest-env plugin in pyproject.toml
@@ -28,11 +36,18 @@ assert os.environ.get("CELERY_CONFIG") == "testing", "CELERY_CONFIG is not set t
 
 
 test_settings = settings
+test_celery_settings = celery_settings
 
 
 DB_WARNING_MSG = ("There's a good chance you're about to drop the wrong database! "
                   "Double check your test settings.")
 assert test_settings.POSTGRES_DB != "lexy", DB_WARNING_MSG
+
+
+CELERY_DB_WARNING_MSG = ("Test instance of Celery is configured to store results in the wrong database! "
+                         "Double check your test settings.")
+backend_url_obj = make_url(test_celery_settings.result_backend)
+assert backend_url_obj.database != "lexy", CELERY_DB_WARNING_MSG
 
 
 @pytest.fixture(scope="session")
@@ -182,9 +197,62 @@ async def async_client(test_app, async_session: AsyncSession) -> httpx.AsyncClie
     del test_app.dependency_overrides[get_session]  # Reset overrides after tests
 
 
+@pytest.fixture(scope="function")
+def document_storage(settings):
+    """Fixture used to skip tests and propagate warnings regarding document storage.
+
+    Tests using this fixture will be skipped if any of the following are true:
+        - DEFAULT_STORAGE_BUCKET is not set
+        - DEFAULT_STORAGE_SERVICE is 's3' but S3 credentials are not available
+        - DEFAULT_STORAGE_SERVICE is 'gcs' but GOOGLE_APPLICATION_CREDENTIALS is not set
+        - DEFAULT_STORAGE_SERVICE is 'gcs' but client is not authenticated
+    """
+    if settings.DEFAULT_STORAGE_BUCKET is None:
+        warnings.warn("DEFAULT_STORAGE_BUCKET is not set - will skip tests requiring document storage.")
+        pytest.skip("DEFAULT_STORAGE_BUCKET is not set")
+
+    if settings.DEFAULT_STORAGE_SERVICE == 's3':
+        from lexy.storage.s3 import S3Client
+        s3_client = S3Client()
+        if not s3_client.is_authenticated():
+            warnings.warn("DEFAULT_STORAGE_SERVICE is 's3' but credentials are not available - "
+                          "will skip tests requiring document storage.")
+            pytest.skip("S3 client is not authenticated")
+
+    elif settings.DEFAULT_STORAGE_SERVICE == 'gcs':
+        if not settings.GOOGLE_APPLICATION_CREDENTIALS:
+            warnings.warn("DEFAULT_STORAGE_SERVICE is 'gcs', but GOOGLE_APPLICATION_CREDENTIALS is not set - "
+                          "will skip tests requiring document storage.")
+            pytest.skip("GOOGLE_APPLICATION_CREDENTIALS is not set")
+        from lexy.storage.gcs import GCSClient
+        gcs_client = GCSClient()
+        if not gcs_client.is_authenticated():
+            warnings.warn("DEFAULT_STORAGE_SERVICE is 'gcs' but credentials are not available - "
+                          "will skip tests requiring document storage.")
+            pytest.skip("GCS client is not authenticated")
+
+
 @pytest.fixture(scope="session")
-def celery_config():
-    return current_app.conf
+def celery_settings():
+    print(f"{test_celery_settings = }")
+    print(f"{test_celery_settings.broker_url = }")
+    print(f"{test_celery_settings.result_backend = }")
+    return test_celery_settings
+
+
+@pytest.fixture(scope="session")
+def celery_config(settings, celery_settings):
+    # these are normally set in lexy.celery_app.create_celery function
+    # TODO: add 'lexy.core.celery_tasks' here?
+    celery_settings.imports = list(settings.worker_transformer_imports)
+    celery_settings.include = settings.worker_transformer_imports
+
+    celery_settings_dict = dict()
+    for key in dir(celery_settings):
+        if not key.startswith("__"):
+            celery_settings_dict[key] = getattr(celery_settings, key)
+    print(f"{celery_settings_dict = }")
+    return celery_settings_dict
 
 
 @pytest.fixture(scope="session")

@@ -5,6 +5,10 @@ class StorageClient(ABC):
     """Abstract base class for storage clients."""
 
     @abstractmethod
+    def is_authenticated(self) -> bool:
+        pass
+
+    @abstractmethod
     def list_buckets(self) -> list[str]:
         pass
 

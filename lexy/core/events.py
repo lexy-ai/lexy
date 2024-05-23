@@ -1,5 +1,5 @@
 import logging
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 from fastapi import Depends
 
@@ -18,7 +18,8 @@ logger.setLevel(logging.INFO)
 
 
 async def generate_tasks_for_document(doc: Document,
-                                      storage_client: "StorageClient" = Depends(get_storage_client)) -> list[dict]:
+                                      storage_client: Optional["StorageClient"] = Depends(get_storage_client)) \
+        -> list[dict]:
     """ Generate tasks for a document based on bindings and filters.
 
     Args:
@@ -48,8 +49,10 @@ async def generate_tasks_for_document(doc: Document,
             continue
 
         # generate the task
-        # TODO: add a condition to check if the document has a storage url before running refresh_object_urls
-        doc.refresh_object_urls(storage_client=storage_client)
+        if doc.is_stored_object:
+            if not storage_client:
+                raise ValueError("Storage client must be configured when generating tasks for stored objects")
+            doc.refresh_object_urls(storage_client=storage_client)
         task_name = binding.transformer.celery_task_name
         task = celery.send_task(
             task_name,
@@ -71,7 +74,8 @@ async def generate_tasks_for_document(doc: Document,
 # TODO: remove session arg and run async after update to SQLAlchemy 2.0
 def process_new_binding(session,
                         binding: Binding,
-                        storage_client: "StorageClient" = Depends(get_storage_client)) -> tuple[Binding, list[dict]]:
+                        storage_client: Optional["StorageClient"] = Depends(get_storage_client)) \
+        -> tuple[Binding, list[dict]]:
     """ Process a new binding.
 
     Steps involved:
@@ -134,8 +138,10 @@ def process_new_binding(session,
     # generate tasks for documents
     task_name = binding.transformer.celery_task_name
     for doc in documents:
-        # TODO: add a condition to check if the document has a storage url before running refresh_object_urls
-        doc.refresh_object_urls(storage_client=storage_client)
+        if doc.is_stored_object:
+            if not storage_client:
+                raise ValueError("Storage client must be configured when generating tasks for stored objects")
+            doc.refresh_object_urls(storage_client=storage_client)
         task = celery.send_task(
             task_name,
             args=[doc],

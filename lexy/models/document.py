@@ -33,6 +33,10 @@ class DocumentBase(SQLModel):
         self._image = None
 
     @property
+    def is_stored_object(self) -> bool:
+        return bool(self.meta.get('storage_service') and self.meta.get('s3_bucket') and self.meta.get('s3_key'))
+
+    @property
     def image(self) -> Image:
         if not self._image:
             self._image = self.meta.get('image', {}).get('im')

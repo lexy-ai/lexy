@@ -1,4 +1,5 @@
-FROM python:3.11
+FROM python:3.11-slim
+ARG ENVIRONMENT=development
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -20,20 +21,20 @@ RUN set -ex && \
 WORKDIR /home/app
 COPY ../../pyproject.toml ./poetry.lock* ./
 
-ARG ENVIRONMENT=development
-
 RUN pip install "poetry==$POETRY_VERSION"
 RUN poetry config virtualenvs.create false
 
 # Install dependencies
 RUN poetry install --no-root -E "lexy_transformers" && rm -rf $POETRY_CACHE_DIR;
 
-# copy source code
+# Copy source code
 COPY lexy ./lexy
 COPY lexy_tests ./lexy_tests
 COPY pipelines ./pipelines
 COPY README.md ./
 COPY sdk-python ./sdk-python
+# Copy sample data (for testing)
+COPY sample_data ./sample_data
 
 RUN if [ "$ENVIRONMENT" = "development" ]; \
       then \
@@ -62,6 +63,13 @@ ENV DOCKER=true \
 # Copy init script
 COPY ./docker/worker/start-worker.sh /start-worker.sh
 RUN chmod +x /start-worker.sh
+
+# Top 20 largest python packages
+RUN echo "Top 20 largest python packages" && export PYSITE=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") && du -sh $PYSITE/* | sort -h -r | head -20
+# Total size of python packages
+RUN echo "Total size of python packages" && export PYSITE=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") && du -sh $PYSITE | sort -h -r
+# Total size of caches
+RUN echo "Total size of caches" && du -sh $HOME/.cache/*
 
 # Run the start script, it will install any extras and then start the worker
 CMD ["/start-worker.sh"]
