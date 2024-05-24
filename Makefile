@@ -79,8 +79,8 @@ run-tests: check-env
 
 run-tests-docker: check-lexy-server
 	# Run tests inside of an already running lexy-server container
-	docker exec -it lexy-server pytest lexy_tests
-	docker exec -it lexy-server pytest sdk-python
+	docker compose exec -it lexyserver pytest lexy_tests
+	docker compose exec -it lexyserver pytest sdk-python
 
 # FIXME: this is still mounting the local directory to `/home/app` - need to remove using docker-compose.test.yml
 test-lexy-server:
