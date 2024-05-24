@@ -12,13 +12,14 @@ This section contains some common development tasks and how to perform them.
 
 ### Running tests
 
-To run the tests, you can use the following make command.
+To run tests locally, you can use the following make command.
 
 ```bash
 make run-tests
 ```
 
-This will run tests for the Lexy server and Lexy Python SDK. If you want to run the tests separately, you can use the following commands.
+This command will run tests for the Lexy server and Lexy Python SDK. If you want to run the tests separately, you can 
+use the following commands.
 
 ```bash
 # Run tests for Lexy server
@@ -27,6 +28,21 @@ pytest lexy_tests
 # Run tests for Python SDK
 pytest sdk-python
 ```
+
+To run tests inside of an already running lexy-server container, use the following command.
+
+```bash
+make run-tests-docker
+```
+
+To create a new lexy-server container and run tests, use the following command. This requires the rest of the stack to 
+be running.
+
+```bash
+make test-lexy-server
+```
+
+Note that this option will still mount the current directory, and is not ideal for isolated testing.
 
 ### Adding a new migration
 
@@ -73,7 +89,8 @@ docker exec lexy-celeryworker poetry install --no-root -E "lexy_transformers"
 
 ### Release Docker containers 
 
-Docker containers are built for each release and hosted on Github Container Registry. Packages are available [here](https://github.com/orgs/lexy-ai/packages?repo_name=lexy).
+Docker containers are built for each [release](https://github.com/lexy-ai/lexy/releases) and hosted on GitHub Container 
+Registry. Packages are available [here](https://github.com/orgs/lexy-ai/packages?repo_name=lexy).
 
 ### Pip installing into Docker containers
 
