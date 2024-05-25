@@ -7,9 +7,9 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME_LEXY_SERVER: ghcr.io/lexy-ai/lexy/lexy-server
-  IMAGE_NAME_LEXY_WORKER: ghcr.io/lexy-ai/lexy/lexy-worker
-  IMAGE_NAME_LEXY_POSTGRES: ghcr.io/lexy-ai/lexy/lexy-postgres
+  IMAGE_NAME_LEXY_SERVER: ghcr.io/lexy-ai/lexy/lx-server
+  IMAGE_NAME_LEXY_WORKER: ghcr.io/lexy-ai/lexy/lx-worker
+  IMAGE_NAME_LEXY_POSTGRES: ghcr.io/lexy-ai/lexy/lx-postgres
 
 permissions:
   contents: read

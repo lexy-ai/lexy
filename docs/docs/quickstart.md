@@ -157,7 +157,7 @@ Available packages are [here](https://github.com/orgs/lexy-ai/packages?repo_name
         
         services:
           lexyserver:
-            image: ghcr.io/lexy-ai/lexy/lexy-server:latest
+            image: ghcr.io/lexy-ai/lexy/lx-server:latest
             hostname: lexy_server
             depends_on:
               - db_postgres
@@ -174,7 +174,7 @@ Available packages are [here](https://github.com/orgs/lexy-ai/packages?repo_name
               - gcp_credentials
         
           lexyworker:
-            image: ghcr.io/lexy-ai/lexy/lexy-worker:latest
+            image: ghcr.io/lexy-ai/lexy/lx-worker:latest
             hostname: celeryworker
             depends_on:
               - lexyserver
@@ -188,7 +188,7 @@ Available packages are [here](https://github.com/orgs/lexy-ai/packages?repo_name
               - ${PIPELINE_DIR:-./pipelines}:/home/app/pipelines
         
           db_postgres:
-            image: ghcr.io/lexy-ai/lexy/lexy-postgres:latest
+            image: ghcr.io/lexy-ai/lexy/lx-postgres:latest
             restart: always
             ports:
               - "5432:5432"

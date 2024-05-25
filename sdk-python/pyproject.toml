@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "lexy-py"
-version = "0.1.0"
-description = "A Python client for Lexy. Lexy is a data platform for building AI applications."
+version = "0.0.1"
+description = "A Python client for Lexy. Lexy is a data framework for building AI applications."
 authors = ["Reza Shabani"]
 license = "Apache 2.0"
 readme = "README.md"
