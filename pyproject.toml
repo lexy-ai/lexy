@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "lexy"
-version = "0.2.0"
-description = "Lexy is a data platform for building AI applications."
+version = "0.0.1"
+description = "Data framework for building AI applications."
 authors = ["Reza Shabani"]
 license = "Apache 2.0"
 readme = "README.md"
