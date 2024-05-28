@@ -4,7 +4,7 @@ on:
   push:
     branches:
 #      - main
-      - rs-bugfix-test-celery-worker
+      - rs/bugfix-test-celery-worker
     tags:
       - v*
 
