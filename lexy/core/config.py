@@ -222,6 +222,17 @@ class TestAppSettings(AppSettings):
     # Bucket used in testing GCS storage, regardless of the default storage service
     GCS_TEST_BUCKET: Optional[str] = Field(default=None, validation_alias="GCS_TEST_BUCKET")
 
+    # Worker settings
+    # Remove 'pipelines.*' from worker_transformer_imports - this avoids ModuleNotFoundError when running tests on
+    #  lexy-server, which does not have any of the extra pipeline requirements installed.
+    LEXY_WORKER_TRANSFORMER_IMPORTS: set[str] = {
+        # 'lexy.transformers.*'
+        'lexy.transformers.counter',
+        'lexy.transformers.embeddings',
+        'lexy.transformers.multimodal',
+        'lexy.transformers.openai',
+    }
+
 
 @lru_cache()
 def get_settings():
