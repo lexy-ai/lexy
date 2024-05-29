@@ -143,7 +143,7 @@ You can build and run Lexy using Docker Compose.
 Here is an example of `docker-compose.yml` and a `.env` file for a project using Lexy with Google Cloud Storage as the 
 default storage service.
 
-The example below uses the `latest` tag, which you can replace with a specific version if needed (e.g., `v0.1.0`). 
+The example below uses the `latest` tag, which you can replace with a specific version if needed (e.g., `v0.0.2`). 
 Images are built for each [release](https://github.com/lexy-ai/lexy/releases) and hosted on GitHub Container Registry. 
 Available packages are [here](https://github.com/orgs/lexy-ai/packages?repo_name=lexy).
 
@@ -168,6 +168,7 @@ Available packages are [here](https://github.com/orgs/lexy-ai/packages?repo_name
             environment:
               - OPENAI_API_KEY=${OPENAI_API_KEY}
               - PIPELINE_DIR=/home/app/pipelines
+              - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/gcp_credentials
             volumes:
               - ${PIPELINE_DIR:-./pipelines}:/home/app/pipelines
             secrets:
