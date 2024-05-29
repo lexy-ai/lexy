@@ -39,8 +39,8 @@ jobs:
         run: |
           touch .env
           touch .env.test
-#          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env.test
-#          echo "PIPELINE_DIR=./pipelines" >> .env.test
+          # echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env.test
+          # echo "PIPELINE_DIR=./pipelines" >> .env.test
           docker compose -f docker-compose.yaml -f docker-compose.test.yaml config
           docker compose -f docker-compose.yaml -f docker-compose.test.yaml up --build -d
           docker compose -f docker-compose.yaml -f docker-compose.test.yaml ps
