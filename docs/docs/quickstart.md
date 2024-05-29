@@ -168,6 +168,7 @@ Available packages are [here](https://github.com/orgs/lexy-ai/packages?repo_name
             environment:
               - OPENAI_API_KEY=${OPENAI_API_KEY}
               - PIPELINE_DIR=/home/app/pipelines
+              - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/gcp_credentials
             volumes:
               - ${PIPELINE_DIR:-./pipelines}:/home/app/pipelines
             secrets:
