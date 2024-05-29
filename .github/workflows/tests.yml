@@ -1,0 +1,55 @@
+name: Run tests
+
+on:
+  push:
+    branches:
+      - rs/run-tests-on-gh
+  pull_request:
+    branches:
+      - main
+
+permissions:
+    contents: read
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check build context
+        run: |
+          pwd
+          ls -lah .
+          tree -L 2 .
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+#      - name: Build server image
+#        uses: docker/build-push-action@v5
+#        with:
+#          context: .
+#          file: docker/server/Dockerfile
+#          platforms: linux/amd64,linux/arm64
+#          push: false
+
+      - name: Build the stack
+        run: |
+          docker compose up --build -d
+          docker compose ps
+#          docker compose -f docker-compose.test.yaml up --build -d
+#          docker compose -f docker-compose.test.yaml ps
+
+      - name: Run tests
+        run: |
+          docker compose exec lexyserver pytest lexy_tests
+          docker compose exec lexyserver pytest sdk-python
+#          docker compose -f docker-compose.test.yaml exec lexyserver pytest lexy_tests
+#          docker compose -f docker-compose.test.yaml exec lexyserver pytest sdk-python
+
+      - name: Tear down the stack
+        run: |
+          docker compose down
+#          docker compose -f docker-compose.test.yaml down
