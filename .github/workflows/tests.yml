@@ -37,19 +37,24 @@ jobs:
 
       - name: Build the stack
         run: |
-          docker compose up --build -d
-          docker compose ps
-#          docker compose -f docker-compose.test.yaml up --build -d
-#          docker compose -f docker-compose.test.yaml ps
+#          docker compose up --build -d
+#          docker compose ps
+          touch .env
+          touch .env.test
+#          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env.test
+#          echo "PIPELINE_DIR=./pipelines" >> .env.test
+          docker compose -f docker-compose.yaml -f docker-compose.test.yaml config
+          docker compose -f docker-compose.yaml -f docker-compose.test.yaml up --build -d
+          docker compose -f docker-compose.yaml -f docker-compose.test.yaml ps
 
       - name: Run tests
         run: |
-          docker compose exec lexyserver pytest lexy_tests
-          docker compose exec lexyserver pytest sdk-python
-#          docker compose -f docker-compose.test.yaml exec lexyserver pytest lexy_tests
-#          docker compose -f docker-compose.test.yaml exec lexyserver pytest sdk-python
+#          docker compose exec lexyserver pytest lexy_tests
+#          docker compose exec lexyserver pytest sdk-python
+          docker compose -f docker-compose.yaml -f docker-compose.test.yaml exec lexyserver pytest lexy_tests
+          docker compose -f docker-compose.yaml -f docker-compose.test.yaml exec lexyserver pytest sdk-python
 
       - name: Tear down the stack
         run: |
-          docker compose down
-#          docker compose -f docker-compose.test.yaml down
+#          docker compose down
+          docker compose -f docker-compose.yaml -f docker-compose.test.yaml down

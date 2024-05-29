@@ -1,0 +1,28 @@
+name: lx-test
+
+services:
+  lexyserver:
+    build:
+      args:
+        ENVIRONMENT: test
+    env_file:
+      - .env.test
+    environment:
+#      - ENVIRONMENT=test
+      - POSTGRES_DB=lexy_tests
+      - CELERY_RESULT_BACKEND=db+postgresql://postgres:postgres@db_postgres/lexy_tests
+
+  db_postgres:
+    environment:
+      - POSTGRES_DB=lexy_tests
+
+  lexyworker:
+    build:
+      args:
+        ENVIRONMENT: test
+    env_file:
+      - .env.test
+    environment:
+#      - ENVIRONMENT=test
+      - POSTGRES_DB=lexy_tests
+      - CELERY_RESULT_BACKEND=db+postgresql://postgres:postgres@db_postgres/lexy_tests
