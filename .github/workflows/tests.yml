@@ -60,12 +60,19 @@ jobs:
           echo "${{ secrets.GOOGLE_CREDENTIALS }}" > ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
           ls -lah ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
 
-      - name: Check docker compose config
+      - name: Create .env files
         run: |
           touch .env
           touch .env.test
+          echo "DEFAULT_STORAGE_SERVICE=${{ env.DEFAULT_STORAGE_SERVICE }}" >> .env.test
+          echo "DEFAULT_STORAGE_BUCKET=${{ env.DEFAULT_STORAGE_BUCKET }}" >> .env.test
+          echo "S3_TEST_BUCKET=${{ env.S3_TEST_BUCKET }}" >> .env.test
+          echo "GCS_TEST_BUCKET=${{ env.GCS_TEST_BUCKET }}" >> .env.test
+          echo "PIPELINE_DIR=./pipelines" >> .env.test
           # echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env.test
-          # echo "PIPELINE_DIR=./pipelines" >> .env.test
+
+      - name: Check docker compose config
+        run: |
           docker compose -f docker-compose.yaml -f docker-compose.test.yaml config
 
       - name: Build the stack
