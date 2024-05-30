@@ -48,21 +48,33 @@ jobs:
 #          platforms: linux/amd64,linux/arm64
 #          push: false
 
-      - name: Build the stack
+      - name: Check docker compose config
         run: |
           touch .env
           touch .env.test
           # echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env.test
           # echo "PIPELINE_DIR=./pipelines" >> .env.test
           docker compose -f docker-compose.yaml -f docker-compose.test.yaml config
+
+      - name: Build the stack
+        run: |
+          docker compose -f docker-compose.yaml -f docker-compose.test.yaml config
           docker compose -f docker-compose.yaml -f docker-compose.test.yaml up --build -d
           docker compose -f docker-compose.yaml -f docker-compose.test.yaml ps
 
-      - name: Run tests
+      - name: Run server tests
+        env:
+          PYTEST_ADDOPTS: "--color=yes"
         run: |
           docker compose -f docker-compose.yaml -f docker-compose.test.yaml exec -it lexyserver pytest -s lexy_tests
-          docker compose -f docker-compose.yaml -f docker-compose.test.yaml exec -it lexyserver pytest -s sdk-python
+
+      - name: Run client tests
+        env:
+          PYTEST_ADDOPTS: "--color=yes"
+        run: |
+          docker compose -f docker-compose.yaml -f docker-compose.test.yaml exec -it lexyserver pytest -s lexy_tests
 
       - name: Tear down the stack
+        if: always()
         run: |
           docker compose -f docker-compose.yaml -f docker-compose.test.yaml down
