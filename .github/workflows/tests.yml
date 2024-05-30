@@ -57,7 +57,7 @@ jobs:
 
       - name: Create Google Cloud credentials file
         run: |
-          echo ${{ secrets.GOOGLE_CREDENTIALS }} > ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
+          echo "${{ secrets.GOOGLE_CREDENTIALS }}" > ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
           ls -lah ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
 
       - name: Check docker compose config
@@ -89,6 +89,7 @@ jobs:
       - name: Delete Google Cloud credentials file
         if: always()
         run: |
+          ls -lah ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
           rm -f ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
 
       - name: Tear down the stack
