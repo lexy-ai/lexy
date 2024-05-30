@@ -60,8 +60,8 @@ jobs:
 
       - name: Run tests
         run: |
-          docker compose -f docker-compose.yaml -f docker-compose.test.yaml exec lexyserver pytest lexy_tests
-          docker compose -f docker-compose.yaml -f docker-compose.test.yaml exec lexyserver pytest sdk-python
+          docker compose -f docker-compose.yaml -f docker-compose.test.yaml exec -it lexyserver pytest -s lexy_tests
+          docker compose -f docker-compose.yaml -f docker-compose.test.yaml exec -it lexyserver pytest -s sdk-python
 
       - name: Tear down the stack
         run: |
