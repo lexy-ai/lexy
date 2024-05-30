@@ -55,9 +55,20 @@ jobs:
 #          platforms: linux/amd64,linux/arm64
 #          push: false
 
+      - name: Check env
+        run: env
+
+#      - name: Authenticate with Google Cloud
+#        uses: google-github-actions/auth@v2
+#        with:
+#          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+
+      - name: Check env again
+        run: env
+
       - name: Create Google Cloud credentials file
         run: |
-          echo "${{ secrets.GOOGLE_CREDENTIALS }}" > ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
+          echo '${{ secrets.GOOGLE_CREDENTIALS }}' > ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
           ls -lah ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
 
       - name: Create .env files
