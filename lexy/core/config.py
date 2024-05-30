@@ -84,10 +84,18 @@ class AppSettings(BaseSettings):
 
     @field_validator('GOOGLE_APPLICATION_CREDENTIALS')
     def check_google_application_credentials(cls, value):
+        if not value:
+            # Occurs when value is set to an empty string
+            return None
         if value == os.path.devnull:
             return None
         if value and not Path(value).is_file():
             logging.warning(f"GOOGLE_APPLICATION_CREDENTIALS file '{value}' does not exist. "
+                            f"Setting value to `None`.")
+            return None
+        if value and Path(value).is_file() and os.path.getsize(value) == 0:
+            # For example, when set to 'lexy/docker/null-credentials.json'
+            logging.warning(f"GOOGLE_APPLICATION_CREDENTIALS file '{value}' is empty. "
                             f"Setting value to `None`.")
             return None
         return value
