@@ -66,16 +66,17 @@ jobs:
 
       - name: Check output of Google Cloud auth
         run: |
-          echo "${{ steps.gcloud-auth.outputs }}"
-          echo "${{ steps.gcloud-auth.outputs.json }}"
+          echo ${{ steps.gcloud-auth.outputs }}
+          echo ${{ steps.gcloud-auth.outputs.credentials_file_path }}
 
       - name: Check env again
         run: env
 
-      - name: Create Google Cloud credentials file
-        run: |
-          echo '${{ secrets.GOOGLE_CREDENTIALS }}' > ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
-          ls -lah ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
+# Uncomment the following if manually creating the Google Cloud credentials file
+#      - name: Create Google Cloud credentials file
+#        run: |
+#          echo '${{ secrets.GOOGLE_CREDENTIALS }}' > ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
+#          ls -lah ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
 
       - name: Create .env files
         run: |
@@ -110,11 +111,12 @@ jobs:
         run: |
           docker compose -f docker-compose.yaml -f docker-compose.test.yaml exec -it lexyserver pytest -s sdk-python
 
-      - name: Delete Google Cloud credentials file
-        if: always()
-        run: |
-          ls -lah ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
-          rm -f ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
+# Uncomment the following if manually creating the Google Cloud credentials file
+#      - name: Delete Google Cloud credentials file
+#        if: always()
+#        run: |
+#          ls -lah ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
+#          rm -f ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
 
       - name: Tear down the stack
         if: always()
