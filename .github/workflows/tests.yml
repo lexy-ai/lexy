@@ -12,11 +12,12 @@ permissions:
     contents: read
 
 env:
-  GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp_credentials.json
   DEFAULT_STORAGE_SERVICE: s3
   DEFAULT_STORAGE_BUCKET: rs-lexy-ai-dev-deployments
   S3_TEST_BUCKET: rs-lexy-ai-dev-deployments
   GCS_TEST_BUCKET: rs-lexy-ai-gcs-dev-deployments
+# Uncomment the following if manually creating the Google Cloud credentials file
+#  GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp_credentials.json
 
 jobs:
   run-tests:
