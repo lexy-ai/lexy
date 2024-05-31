@@ -5,7 +5,7 @@ import time
 import boto3
 import pytest
 from botocore.client import Config
-from botocore.exceptions import NoCredentialsError
+from botocore.exceptions import ClientError, NoCredentialsError
 from google.cloud import storage
 from google.oauth2 import service_account
 
@@ -24,6 +24,9 @@ def s3():
         yield s3_client
     except NoCredentialsError:
         pytest.skip("S3 credentials are not available")
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'AccessDenied':
+            pytest.skip("S3 access is denied")
 
 
 @pytest.fixture(scope='module')
@@ -34,6 +37,9 @@ def s3v4():
         yield s3v4_client
     except NoCredentialsError:
         pytest.skip("S3 credentials are not available")
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'AccessDenied':
+            pytest.skip("S3 access is denied")
 
 
 @pytest.fixture(scope='module')

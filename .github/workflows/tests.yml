@@ -145,6 +145,6 @@ jobs:
       - name: Tear down the stack
         if: always()
         run: |
+          docker compose -f docker-compose.yaml -f docker-compose.test.yaml down
           rm -f .env
           rm -f .env.test
-          docker compose -f docker-compose.yaml -f docker-compose.test.yaml down

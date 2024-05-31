@@ -1,7 +1,7 @@
 import logging
 
 import boto3
-from botocore.exceptions import NoCredentialsError
+from botocore.exceptions import ClientError, NoCredentialsError
 
 from lexy.core.config import settings
 from lexy.storage.base import StorageClient
@@ -29,6 +29,10 @@ class S3Client(StorageClient):
             return True
         except NoCredentialsError:
             return False
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'AccessDenied':
+                return False
+            raise
         except Exception:
             raise
 
