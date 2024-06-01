@@ -18,16 +18,17 @@ from lexy.models.document import Document
 
 
 @pytest.fixture(scope='module')
-def s3():
+def s3(settings):
     s3_client = boto3.client('s3')
     try:
-        s3_client.list_buckets()
+        # s3_client.list_buckets()
+        s3_client.head_bucket(Bucket=settings.S3_TEST_BUCKET)
         yield s3_client
     except NoCredentialsError:
         warnings.warn("S3 credentials are not available", UserWarning)
         pytest.skip("S3 credentials are not available")
     except ClientError as e:
-        if e.response['Error']['Code'] == 'AccessDenied':
+        if e.response['Error']['Code'] in ('AccessDenied', 'Forbidden'):
             warnings.warn("S3 client access denied", UserWarning)
             pytest.skip("S3 access is denied")
         else:
@@ -36,16 +37,17 @@ def s3():
 
 
 @pytest.fixture(scope='module')
-def s3v4():
+def s3v4(settings):
     s3v4_client = boto3.client('s3', config=Config(signature_version='s3v4'))
     try:
-        s3v4_client.list_buckets()
+        # s3v4_client.list_buckets()
+        s3v4_client.head_bucket(Bucket=settings.S3_TEST_BUCKET)
         yield s3v4_client
     except NoCredentialsError:
         warnings.warn("S3 credentials are not available", UserWarning)
         pytest.skip("S3 credentials are not available")
     except ClientError as e:
-        if e.response['Error']['Code'] == 'AccessDenied':
+        if e.response['Error']['Code'] in ('AccessDenied', 'Forbidden'):
             warnings.warn("S3 client access denied", UserWarning)
             pytest.skip("S3 access is denied")
         else:
