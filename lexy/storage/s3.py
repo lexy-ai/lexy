@@ -3,7 +3,7 @@ import logging
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
 
-from lexy.core.config import settings
+# from lexy.core.config import settings
 from lexy.storage.base import StorageClient
 
 logger = logging.getLogger(__name__)

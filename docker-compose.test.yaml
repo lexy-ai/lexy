@@ -9,12 +9,12 @@ services:
       - .env.test
     environment:
       - ENVIRONMENT=test
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
-      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-      - AWS_REGION=${AWS_REGION}
+      - OPENAI_API_KEY
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SESSION_TOKEN
+      - AWS_DEFAULT_REGION
+      - AWS_REGION
 
   lexyworker:
     build:
