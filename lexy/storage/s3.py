@@ -29,10 +29,8 @@ class S3Client(StorageClient):
             return True
         except NoCredentialsError:
             return False
-        except ClientError as e:
-            if e.response['Error']['Code'] == 'AccessDenied':
-                return False
-            raise
+        except ClientError:
+            return False
         except Exception:
             raise
 
