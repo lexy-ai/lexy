@@ -14,14 +14,15 @@ class S3Client(StorageClient):
 
     def __init__(self, **kwargs):
         logger.info("Creating S3 client")
-        client_kwargs = {}
-        if settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY:
-            client_kwargs["aws_access_key_id"] = settings.AWS_ACCESS_KEY_ID
-            client_kwargs["aws_secret_access_key"] = settings.AWS_SECRET_ACCESS_KEY.get_secret_value()
-        if settings.AWS_REGION:
-            client_kwargs["region_name"] = settings.AWS_REGION
-        client_kwargs.update(kwargs)
-        self.client = boto3.client('s3', **client_kwargs)
+        # client_kwargs = {}
+        # if settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY:
+        #     client_kwargs["aws_access_key_id"] = settings.AWS_ACCESS_KEY_ID
+        #     client_kwargs["aws_secret_access_key"] = settings.AWS_SECRET_ACCESS_KEY.get_secret_value()
+        # if settings.AWS_REGION:
+        #     client_kwargs["region_name"] = settings.AWS_REGION
+        # client_kwargs.update(kwargs)
+        # self.client = boto3.client('s3', **client_kwargs)
+        self.client = boto3.client('s3', **kwargs)
 
     def is_authenticated(self) -> bool:
         try:
