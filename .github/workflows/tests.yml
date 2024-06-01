@@ -52,14 +52,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-#      - name: Build server image
-#        uses: docker/build-push-action@v5
-#        with:
-#          context: .
-#          file: docker/server/Dockerfile
-#          platforms: linux/amd64,linux/arm64
-#          push: false
-
       - name: Check env
         run: env
 
@@ -112,10 +104,42 @@ jobs:
         run: |
           docker compose -f docker-compose.yaml -f docker-compose.test.yaml config
 
-      - name: Build the stack
+      - name: Build server image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/server/Dockerfile
+          build-args: |
+            ENVIRONMENT=test
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build worker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/worker/Dockerfile
+          build-args: |
+            ENVIRONMENT=test
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build postgres image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/postgres/Dockerfile
+          build-args: |
+            ENVIRONMENT=test
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Bring up the stack
         run: |
-          docker compose -f docker-compose.yaml -f docker-compose.test.yaml config
-          docker compose -f docker-compose.yaml -f docker-compose.test.yaml up --build -d
+          docker compose -f docker-compose.yaml -f docker-compose.test.yaml up -d
           docker compose -f docker-compose.yaml -f docker-compose.test.yaml ps
 
       - name: Run server tests
