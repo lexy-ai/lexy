@@ -6,8 +6,7 @@ services:
       args:
         ENVIRONMENT: test
     env_file:
-      - path: .env.test
-        required: false
+      - .env.test
     environment:
       - ENVIRONMENT=test
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -22,7 +21,6 @@ services:
       args:
         ENVIRONMENT: test
     env_file:
-      - path: .env.test
-        required: false
+      - .env.test
     environment:
       - ENVIRONMENT=test
