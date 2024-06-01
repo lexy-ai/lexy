@@ -6,23 +6,23 @@ services:
       args:
         ENVIRONMENT: test
     env_file:
-      - .env.test
+      - path: .env.test
+        required: false
     environment:
       - ENVIRONMENT=test
-#      - POSTGRES_DB=lexy_tests
-#      - CELERY_RESULT_BACKEND=db+postgresql://postgres:postgres@db_postgres/lexy_tests
-
-#  db_postgres:
-#    environment:
-#      - POSTGRES_DB=lexy_tests
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - AWS_REGION=${AWS_REGION}
 
   lexyworker:
     build:
       args:
         ENVIRONMENT: test
     env_file:
-      - .env.test
+      - path: .env.test
+        required: false
     environment:
       - ENVIRONMENT=test
-#      - POSTGRES_DB=lexy_tests
-#      - CELERY_RESULT_BACKEND=db+postgresql://postgres:postgres@db_postgres/lexy_tests

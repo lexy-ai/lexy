@@ -26,9 +26,13 @@ def s3():
     except NoCredentialsError:
         warnings.warn("S3 credentials are not available", UserWarning)
         pytest.skip("S3 credentials are not available")
-    except ClientError:
-        warnings.warn("S3 client has no access", UserWarning)
-        pytest.skip("S3 access is denied")
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'AccessDenied':
+            warnings.warn("S3 client access denied", UserWarning)
+            pytest.skip("S3 access is denied")
+        else:
+            warnings.warn(f"S3 client has an error: {e.response}", UserWarning)
+            pytest.skip("S3 client has an error")
 
 
 @pytest.fixture(scope='module')
@@ -40,9 +44,13 @@ def s3v4():
     except NoCredentialsError:
         warnings.warn("S3 credentials are not available", UserWarning)
         pytest.skip("S3 credentials are not available")
-    except ClientError:
-        warnings.warn("S3 client has no access", UserWarning)
-        pytest.skip("S3 access is denied")
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'AccessDenied':
+            warnings.warn("S3 client access denied", UserWarning)
+            pytest.skip("S3 access is denied")
+        else:
+            warnings.warn(f"S3 client has an error: {e.response}", UserWarning)
+            pytest.skip("S3 client has an error")
 
 
 @pytest.fixture(scope='module')
