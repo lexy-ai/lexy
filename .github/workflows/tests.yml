@@ -126,6 +126,13 @@ jobs:
         run: |
           docker compose -f docker-compose.yaml -f docker-compose.test.yaml config
 
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build server image
         uses: docker/build-push-action@v5
         with:
@@ -135,6 +142,7 @@ jobs:
             ENVIRONMENT=test
           push: false
           load: true
+          cache-from: type=registry,src=ghcr.io/lexy-ai/lexy/lx-server:latest
 #          cache-from: type=local,src=/tmp/.buildx-cache
 #          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
@@ -198,13 +206,13 @@ jobs:
         run: |
           ls -lah /tmp/.buildx-cache
 
-      - # Temp fix
-        # https://github.com/docker/build-push-action/issues/252
-        # https://github.com/moby/buildkit/issues/1896
-        name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+#      - # Temp fix
+#        # https://github.com/docker/build-push-action/issues/252
+#        # https://github.com/moby/buildkit/issues/1896
+#        name: Move cache
+#        run: |
+#          rm -rf /tmp/.buildx-cache
+#          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Check Docker Buildx cache
         run: |
