@@ -56,7 +56,9 @@ jobs:
         run: docker buildx ls
 
       - name: Check Docker Buildx cache
-        run: ls -lah /tmp/.buildx-cache
+        run: |
+          mkdir -p /tmp/.buildx-cache
+          ls -lah /tmp/.buildx-cache
 
       - name: Cache Docker layers
         uses: actions/cache@v4
