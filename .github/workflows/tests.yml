@@ -61,7 +61,6 @@ jobs:
         run: |
           mkdir -p /tmp/.buildx-cache
           ls -lah /tmp/.buildx-cache
-          du -sh /tmp/*
 
       - name: Cache Docker layers
         uses: actions/cache@v4
@@ -74,7 +73,6 @@ jobs:
       - name: Check Docker Buildx cache
         run: |
           ls -lah /tmp/.buildx-cache
-          du -sh /tmp/*
 
       - name: Check env
         run: env
@@ -143,7 +141,6 @@ jobs:
       - name: Check Docker Buildx cache
         run: |
           ls -lah /tmp/.buildx-cache
-          du -sh /tmp/*
 
       - name: Build worker image
         uses: docker/build-push-action@v5
@@ -160,7 +157,6 @@ jobs:
       - name: Check Docker Buildx cache
         run: |
           ls -lah /tmp/.buildx-cache
-          du -sh /tmp/*
 
       - name: Build postgres image
         uses: docker/build-push-action@v5
@@ -177,7 +173,6 @@ jobs:
       - name: Check Docker Buildx cache
         run: |
           ls -lah /tmp/.buildx-cache
-          du -sh /tmp/*
 
       - name: Bring up the stack
         run: |
@@ -202,7 +197,6 @@ jobs:
       - name: Check Docker Buildx cache
         run: |
           ls -lah /tmp/.buildx-cache
-          du -sh /tmp/*
 
       - # Temp fix
         # https://github.com/docker/build-push-action/issues/252
@@ -215,7 +209,6 @@ jobs:
       - name: Check Docker Buildx cache
         run: |
           ls -lah /tmp/.buildx-cache
-          du -sh /tmp/*
 
       - name: Tear down the stack
         if: always()
