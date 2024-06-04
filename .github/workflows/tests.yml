@@ -135,6 +135,9 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
+      - name: Check Docker Buildx cache
+        run: ls -lah /tmp/.buildx-cache
+
       - name: Build worker image
         uses: docker/build-push-action@v5
         with:
@@ -147,6 +150,9 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
+      - name: Check Docker Buildx cache
+        run: ls -lah /tmp/.buildx-cache
+
       - name: Build postgres image
         uses: docker/build-push-action@v5
         with:
@@ -158,6 +164,9 @@ jobs:
           load: true
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Check Docker Buildx cache
+        run: ls -lah /tmp/.buildx-cache
 
       - name: Bring up the stack
         run: |
