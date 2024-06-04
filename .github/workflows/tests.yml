@@ -142,7 +142,7 @@ jobs:
             ENVIRONMENT=test
           push: false
           load: true
-          cache-from: type=registry,src=ghcr.io/lexy-ai/lexy/lx-server:latest
+          cache-from: type=registry,ref=ghcr.io/lexy-ai/lexy/lx-server:latest
 #          cache-from: type=local,src=/tmp/.buildx-cache
 #          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
