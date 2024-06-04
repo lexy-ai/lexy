@@ -1,9 +1,6 @@
 name: Run tests
 
 on:
-  push:
-    branches:
-      - rs/run-tests-on-gh
   pull_request:
     branches:
       - main
@@ -16,13 +13,6 @@ env:
   DEFAULT_STORAGE_BUCKET: lexy-ai-gha-testing-s3
   S3_TEST_BUCKET: lexy-ai-gha-testing-s3
   GCS_TEST_BUCKET: lexy-ai-gha-testing-gcs
-#  GCS_TEST_BUCKET: rs-lexy-ai-gcs-dev-deployments
-#  DEFAULT_STORAGE_BUCKET: rs-lexy-ai-dev-deployments
-#  S3_TEST_BUCKET: rs-lexy-ai-dev-deployments
-#  GCS_TEST_BUCKET: rs-lexy-ai-gcs-dev-deployments
-#  S3_TEST_BUCKET: lexy-ai-gha-testing-s3
-# Uncomment the following if manually creating the Google Cloud credentials file
-#  GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp_credentials.json
 
 jobs:
   run-tests:
@@ -90,12 +80,6 @@ jobs:
       - name: Check env again
         run: env
 
-# Uncomment the following if manually creating the Google Cloud credentials file
-#      - name: Create Google Cloud credentials file
-#        run: |
-#          echo '${{ secrets.GOOGLE_CREDENTIALS }}' > ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
-#          ls -lah ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
-
       - name: Create .env files
         run: |
           touch .env
@@ -152,13 +136,6 @@ jobs:
       - name: Run client tests
         run: |
           docker compose -f docker-compose.yaml -f docker-compose.test.yaml exec -it lexyserver pytest -s sdk-python
-
-# Uncomment the following if manually creating the Google Cloud credentials file
-#      - name: Delete Google Cloud credentials file
-#        if: always()
-#        run: |
-#          ls -lah ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
-#          rm -f ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
 
       - name: Tear down the stack
         if: always()
