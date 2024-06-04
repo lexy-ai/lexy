@@ -1,4 +1,5 @@
 .env
+.env.*
 .git
 .idea
 .venv
@@ -15,3 +16,4 @@ __pycache__
 build
 dist
 tmp
+gha-creds-*.json

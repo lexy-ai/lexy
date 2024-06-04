@@ -203,7 +203,7 @@ def document_storage(settings):
 
     Tests using this fixture will be skipped if any of the following are true:
         - DEFAULT_STORAGE_BUCKET is not set
-        - DEFAULT_STORAGE_SERVICE is 's3' but S3 credentials are not available
+        - DEFAULT_STORAGE_SERVICE is 's3' but S3 credentials are unavailable, invalid, or lack access
         - DEFAULT_STORAGE_SERVICE is 'gcs' but GOOGLE_APPLICATION_CREDENTIALS is not set
         - DEFAULT_STORAGE_SERVICE is 'gcs' but client is not authenticated
     """
@@ -215,7 +215,7 @@ def document_storage(settings):
         from lexy.storage.s3 import S3Client
         s3_client = S3Client()
         if not s3_client.is_authenticated():
-            warnings.warn("DEFAULT_STORAGE_SERVICE is 's3' but credentials are not available - "
+            warnings.warn("DEFAULT_STORAGE_SERVICE is 's3' but credentials are unavailable, invalid, or lack access - "
                           "will skip tests requiring document storage.")
             pytest.skip("S3 client is not authenticated")
 

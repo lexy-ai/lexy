@@ -1,11 +1,12 @@
 import datetime
 import os
 import time
+import warnings
 
 import boto3
 import pytest
 from botocore.client import Config
-from botocore.exceptions import NoCredentialsError
+from botocore.exceptions import ClientError, NoCredentialsError
 from google.cloud import storage
 from google.oauth2 import service_account
 
@@ -23,7 +24,15 @@ def s3():
         s3_client.list_buckets()
         yield s3_client
     except NoCredentialsError:
+        warnings.warn("S3 credentials are not available", UserWarning)
         pytest.skip("S3 credentials are not available")
+    except ClientError as e:
+        if e.response['Error']['Code'] in ('AccessDenied', '403'):
+            warnings.warn(f"S3 client access denied: {e.response}", UserWarning)
+            pytest.skip("S3 access is denied")
+        else:
+            warnings.warn(f"S3 client has an error: {e.response}", UserWarning)
+            pytest.skip("S3 client has an error")
 
 
 @pytest.fixture(scope='module')
@@ -33,13 +42,22 @@ def s3v4():
         s3v4_client.list_buckets()
         yield s3v4_client
     except NoCredentialsError:
+        warnings.warn("S3 credentials are not available", UserWarning)
         pytest.skip("S3 credentials are not available")
+    except ClientError as e:
+        if e.response['Error']['Code'] in ('AccessDenied', '403'):
+            warnings.warn(f"S3 client access denied: {e.response}", UserWarning)
+            pytest.skip("S3 access is denied")
+        else:
+            warnings.warn(f"S3 client has an error: {e.response}", UserWarning)
+            pytest.skip("S3 client has an error")
 
 
 @pytest.fixture(scope='module')
 def gcs(settings):
     credentials_file = settings.GOOGLE_APPLICATION_CREDENTIALS
     if not credentials_file:
+        warnings.warn("GOOGLE_APPLICATION_CREDENTIALS is not set", UserWarning)
         pytest.skip("GOOGLE_APPLICATION_CREDENTIALS is not set")
 
     print(f"Creating GCS client using credentials file: {credentials_file}")
@@ -51,6 +69,7 @@ def gcs(settings):
 def lx_s3():
     s3_client = S3Client()
     if not s3_client.is_authenticated():
+        warnings.warn("S3 client is not authenticated", UserWarning)
         pytest.skip("S3 client is not authenticated")
     yield s3_client
 
@@ -60,6 +79,7 @@ def lx_s3v4():
     config = Config(signature_version='s3v4')
     s3_client = S3Client(config=config)
     if not s3_client.is_authenticated():
+        warnings.warn("S3 client is not authenticated", UserWarning)
         pytest.skip("S3 client is not authenticated")
     yield s3_client
 
@@ -68,10 +88,12 @@ def lx_s3v4():
 def lx_gcs(settings):
     credentials_file = settings.GOOGLE_APPLICATION_CREDENTIALS
     if not credentials_file:
+        warnings.warn("GOOGLE_APPLICATION_CREDENTIALS is not set", UserWarning)
         pytest.skip("GOOGLE_APPLICATION_CREDENTIALS is not set")
 
     gcs_client = GCSClient()
     if not gcs_client.is_authenticated():
+        warnings.warn("GCS client is not authenticated", UserWarning)
         pytest.skip("GCS client is not authenticated")
     yield gcs_client
 
@@ -89,6 +111,7 @@ def test_s3_object(s3, test_file_document, settings):
     object_name = os.path.join(object_prefix, 'hotd.txt')
 
     if not bucket_name:
+        warnings.warn("S3_TEST_BUCKET is not set", UserWarning)
         pytest.skip("S3_TEST_BUCKET is not set")
 
     # Upload the test document
@@ -110,6 +133,7 @@ def test_gcs_object(gcs, test_file_document, settings):
     object_name = os.path.join(object_prefix, 'hotd.txt')
 
     if not bucket_name:
+        warnings.warn("GCS_TEST_BUCKET is not set", UserWarning)
         pytest.skip("GCS_TEST_BUCKET is not set")
 
     # Upload the test document
@@ -133,19 +157,16 @@ class TestStorageClient:
     def test_s3_client(self, s3):
         assert s3 is not None
         buckets = s3.list_buckets()
-        print(f"s3: {buckets = }")
         assert len(buckets) > 0
 
     def test_s3v4_client(self, s3v4):
         assert s3v4 is not None
         buckets = s3v4.list_buckets()
-        print(f"s3v4: {buckets = }")
         assert len(buckets) > 0
 
     def test_gcs_client(self, gcs):
         assert gcs is not None
         buckets = list(gcs.list_buckets())
-        print(f"gcs: {buckets = }")
         assert len(buckets) > 0
 
     def test_generate_signed_url_s3(self, s3, test_s3_object):
@@ -200,19 +221,16 @@ class TestLexyStorageClient:
     def test_lx_s3_client(self, lx_s3):
         assert lx_s3 is not None
         buckets = lx_s3.list_buckets()
-        print(f"lx_s3: {buckets = }")
         assert len(buckets) > 0
 
     def test_lx_s3v4_client(self, lx_s3v4):
         assert lx_s3v4 is not None
         buckets = lx_s3v4.list_buckets()
-        print(f"lx_s3v4: {buckets = }")
         assert len(buckets) > 0
 
     def test_lx_gcs_client(self, lx_gcs):
         assert lx_gcs is not None
         buckets = lx_gcs.list_buckets()
-        print(f"lx_gcs: {buckets = }")
         assert len(buckets) > 0
 
     def test_generate_presigned_url_lx_s3(self, lx_s3, test_s3_object):
