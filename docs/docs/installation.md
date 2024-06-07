@@ -2,10 +2,12 @@
 
 To run Lexy locally, you'll need [Docker](https://www.docker.com/get-started/) installed. You'll also need Python 3.11 or greater.
 
-## Install from PyPI
+## Install from PyPI (coming soon)
 
-Coming soon.
-
+```Shell
+# Doesn't work yet!
+pip install lexy[all]
+```
 
 ## Build from source
 

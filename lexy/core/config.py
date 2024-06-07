@@ -185,7 +185,9 @@ class AppSettings(BaseSettings):
         if value:
             pipeline_dir = Path(value).resolve()
             if not pipeline_dir.is_dir():
-                raise ValueError(f"Pipeline directory '{pipeline_dir}' does not exist.")
+                err_msg = (f"Pipeline directory '{pipeline_dir}' does not exist. "
+                           f"Run `lexy init` to initialize your project and create the directory.")
+                raise ValueError(err_msg)
             # log a warning if pipeline_dir is not in the Python path (Celery can't import pipelines)
             if str(pipeline_dir) not in sys.path and str(pipeline_dir) != os.getcwd():
                 logging.warning(f"Pipeline directory '{pipeline_dir}' is not in the Python path. "

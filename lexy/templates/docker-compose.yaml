@@ -1,0 +1,79 @@
+# Generated using `lexy docker`
+
+services:
+  lexyserver:
+    image: ghcr.io/lexy-ai/lexy/lx-server:latest
+    hostname: lexy_server
+    depends_on:
+      - db_postgres
+    ports:
+      - "9900:9900"
+    env_file:
+      - .env
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PIPELINE_DIR=/home/app/pipelines
+      - GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/gcp_credentials
+    volumes:
+      - ${PIPELINE_DIR:-./pipelines}:/home/app/pipelines
+    secrets:
+      - gcp_credentials
+
+  lexyworker:
+    image: ghcr.io/lexy-ai/lexy/lx-worker:latest
+    hostname: celeryworker
+    depends_on:
+      - lexyserver
+      - queue
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - PIPELINE_DIR=/home/app/pipelines
+    volumes:
+      - ${PIPELINE_DIR:-./pipelines}:/home/app/pipelines
+
+  db_postgres:
+    image: ghcr.io/lexy-ai/lexy/lx-postgres:latest
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-postgres:/var/lib/postgresql/data
+
+  queue:
+    image: rabbitmq:3.9.10-management
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  flower:
+    image: mher/flower
+    restart: always
+    ports:
+      - "5556:5555"
+    command: celery --broker=amqp://guest:guest@queue:5672// flower -A lexy.main.celery --broker_api=http://guest:guest@queue:15672/api/vhost
+    depends_on:
+      - lexyserver
+      - lexyworker
+      - queue
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@queue:5672//
+      - CELERY_RESULT_BACKEND=db+postgresql://postgres:postgres@db_postgres/lexy
+      - CELERY_BROKER_API_URL=http://guest:guest@queue:15672/api/vhost
+      - C_FORCE_ROOT=true
+      - FLOWER_UNAUTHENTICATED_API=true
+
+volumes:
+  db-postgres:
+    driver: local
+
+secrets:
+  gcp_credentials:
+    file: ${GOOGLE_APPLICATION_CREDENTIALS:-/dev/null}
+
+networks:
+  default:
+    name: lexy-net
+    external: false
