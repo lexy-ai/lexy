@@ -140,17 +140,21 @@ These packages will be installed in the `lexyworker` container.
 
 You can build and run Lexy using Docker Compose.
 
-Here is an example of `docker-compose.yml` and a `.env` file for a project using Lexy with Google Cloud Storage as the 
+Here is an example of `docker-compose.yaml` and a `.env` file for a project using Lexy with Google Cloud Storage as the 
 default storage service.
 
 The example below uses the `latest` tag, which you can replace with a specific version if needed (e.g., `v0.0.2`). 
 Images are built for each [release](https://github.com/lexy-ai/lexy/releases) and hosted on GitHub Container Registry. 
 Available packages are [here](https://github.com/orgs/lexy-ai/packages?repo_name=lexy).
 
+!!! tip 
+
+    You can generate the `docker-compose.yaml` file below using the Lexy CLI. Run `lexy docker` on the command line  
+    to create the file.
 
 ???+ note "Example configuration using Google Cloud Storage"
 
-    === "docker-compose.yml"
+    === "docker-compose.yaml"
     
         ```yaml
         name: my-project

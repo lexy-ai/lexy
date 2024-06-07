@@ -42,6 +42,7 @@ install-dev: check-env
 	# Install lexy in editable mode
 	pip install -e .
 	pip install -e sdk-python
+	lexy init --no-input
 
 build-dev:
 	# Build docker images

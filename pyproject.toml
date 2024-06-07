@@ -50,12 +50,10 @@ google-cloud-storage = "^2.16.0"
 Pillow = "^10.0.1"
 pgvector = "^0.2.5"
 watchdog = ">=4.0.0,<5.0.0"
-
 # Lexy Transformers
 openai = { version = "^1.7.1", optional = true }
 sentence-transformers = { version = "^2.2.2", optional = true }
 transformers = { version = "^4.33.1", extras = ["torch"], optional = true }
-
 # Tests
 pytest = { version = "^7.4.1", optional = true }
 pytest-asyncio = { version = "^0.21.1", optional = true }
@@ -78,7 +76,6 @@ tests = [
     "pytest-asyncio",
     "pytest-mock",
     "pytest-httpx",
-    "httpx",
     "greenlet",
     "pytest-env",
     "pytest-celery",
@@ -94,12 +91,15 @@ all = [
     "pytest-asyncio",
     "pytest-mock",
     "pytest-httpx",
-    "httpx",
     "greenlet",
     "pytest-env",
     "pytest-celery",
     "asgi-lifespan",
 ]
+
+
+[tool.poetry.scripts]
+lexy = "lexy.cli:cli"
 
 
 [tool.poetry.group.dev.dependencies]

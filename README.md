@@ -17,7 +17,9 @@ Lexy requires Python 3.11 or greater. You can check your Python version by runni
 First create a virtual environment and install the dependencies.
 
 ```Shell
-# create a virtualenv
+# Change to the lexy directory
+cd lexy
+# Create a virtualenv
 python3 -m venv venv 
 source venv/bin/activate
 ```
@@ -25,9 +27,9 @@ source venv/bin/activate
 Then run the following to install the dev dependencies and build your docker containers.
 
 ```Shell
-# install dev dependencies
+# Install dev dependencies
 make install-dev
-# build docker containers
+# Build docker containers
 make build-dev
 ```
 
@@ -63,13 +65,13 @@ Do this before building your docker containers. Or, if you've already run `docke
 following to rebuild the server and worker containers.
 
 ```shell
-# rebuild the server and worker containers
+# Rebuild the server and worker containers
 make rebuild-dev-containers
 ```
 
 ### Run the Dashboard
 
-Lexy comes with a built in dashboard to visualize pipelines. See [the dashboard README](./dashboard/README.md) for more details.
+Lexy comes with a built-in dashboard to visualize pipelines. See [the dashboard README](./dashboard/README.md) for more details.
 
 To start the dashboard, run:
 

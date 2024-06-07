@@ -3778,11 +3778,11 @@ files = [
 ]
 
 [extras]
-all = ["asgi-lifespan", "greenlet", "httpx", "openai", "pytest", "pytest-asyncio", "pytest-celery", "pytest-env", "pytest-httpx", "pytest-mock", "sentence-transformers", "transformers"]
+all = ["asgi-lifespan", "greenlet", "openai", "pytest", "pytest-asyncio", "pytest-celery", "pytest-env", "pytest-httpx", "pytest-mock", "sentence-transformers", "transformers"]
 lexy-transformers = ["openai", "sentence-transformers", "transformers"]
-tests = ["asgi-lifespan", "greenlet", "httpx", "pytest", "pytest-asyncio", "pytest-celery", "pytest-env", "pytest-httpx", "pytest-mock"]
+tests = ["asgi-lifespan", "greenlet", "pytest", "pytest-asyncio", "pytest-celery", "pytest-env", "pytest-httpx", "pytest-mock"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "de43492c2ea86ccbae06d3627d8e46ce2653fb4e060950b2f797f8f94b099f18"
+content-hash = "e11659bacfb284c93b64630d459f6bbbdaa0bd97872af7ac02988a70b1fc45b9"
