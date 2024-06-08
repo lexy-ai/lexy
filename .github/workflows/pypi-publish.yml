@@ -50,6 +50,7 @@ jobs:
           password: ${{ secrets.TEST_PYPI_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
           packages-dir: dist/
+          skip-existing: true
       - name: Build lexy-py package
         run: |
           cd sdk-python
@@ -64,3 +65,4 @@ jobs:
           password: ${{ secrets.TEST_PYPI_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
           packages-dir: dist/
+          skip-existing: true
