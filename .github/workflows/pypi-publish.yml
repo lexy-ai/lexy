@@ -18,7 +18,6 @@ jobs:
       contents: write
     environment:
       name: release
-#      url: https://test.pypi.org/p/lexy
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,16 +30,14 @@ jobs:
         with:
           python-version: 3.11
           cache: "poetry"
-# TODO: Compare versions for lexy and lexy-py
-#      - name: Compare pyproject version with tag
-#        run: |
-#          TAG_VERSION=${GITHUB_REF#refs/tags/}
-#          if [ "$TAG_VERSION" != "v$(poetry version --short)" ]; then
-#            echo "Tag version $TAG_VERSION does not match the project version $(poetry version --short)"
-#            exit 1
-#          fi
       - name: Build lexy package
         run: |
+          pwd
+          poetry build
+          ls -lah dist
+      - name: Build lexy-py package
+        run: |
+          cd sdk-python
           pwd
           poetry build
           ls -lah dist
@@ -52,12 +49,6 @@ jobs:
           repository-url: https://test.pypi.org/legacy/
           packages-dir: dist/
           skip-existing: true
-      - name: Build lexy-py package
-        run: |
-          cd sdk-python
-          pwd
-          poetry build
-          ls -lah dist
       - name: Publish lexy-py package to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
@@ -66,3 +57,15 @@ jobs:
           repository-url: https://test.pypi.org/legacy/
           packages-dir: sdk-python/dist/
           skip-existing: true
+      - name: Publish lexy package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          packages-dir: dist/
+      - name: Publish lexy-py package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          packages-dir: sdk-python/dist/
