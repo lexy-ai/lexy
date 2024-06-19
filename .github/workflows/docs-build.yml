@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - rs/test-docs-build
 permissions:
   contents: write
 jobs:
@@ -22,25 +21,8 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - run: pip install -r docs/requirements-docs.txt
-#      - run: pip install pydantic
       - run: pip install -e sdk-python
-#      - run: pip freeze
-#      - run: env
-#      - run: python -c "import sys; print(sys.path)"
-#      - run: pwd
-#      - run: ls -lah
-#      - run: echo "PYTHONPATH=$PYTHONPATH:$(pwd):$(pwd)/sdk-python" >> $GITHUB_ENV
-#      - run: env
-#      - run: python -c "import sys; print(sys.path)"
-#      - run: mkdocs get-deps --verbose -f docs/mkdocs.yml
-#      - run: mkdocs build --verbose -f docs/mkdocs.yml
-#      - run: PYTHONPATH=sdk-python mkdocs build --verbose -f docs/mkdocs.yml
-#      - run: |
-#          python -c "from griffe import dynamic_import; dynamic_import('lexy.schemas.filters.FilterCondition');"
-#      - run: |
-#          python -c "from griffe import dynamic_import; dynamic_import('lexy_py.collection.models.CollectionModel');"
-#      - run: mkdocs gh-deploy --verbose --force -f docs/mkdocs.yml
-      - run: mkdocs gh-deploy --verbose --force -f docs/mkdocs.yml
+      - run: mkdocs gh-deploy --force -f docs/mkdocs.yml
 env:
   MKDOCS_ENCRYPT_PW_LEXY: ${{ secrets.MKDOCS_ENCRYPT_PW_LEXY }}
   MKDOCS_ENCRYPT_PW_PARTNER1: ${{ secrets.MKDOCS_ENCRYPT_PW_PARTNER1 }}
