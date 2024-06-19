@@ -2,8 +2,6 @@ name: Build Python Package and Publish to PyPI
 
 on:
   push:
-    branches:
-      - rs/publish-to-pypi
     tags:
       - v*
 
