@@ -31,6 +31,7 @@ jobs:
       - run: python -c "import sys; print(sys.path)"
       - run: mkdocs get-deps --verbose -f docs/mkdocs.yml
       - run: mkdocs build --verbose -f docs/mkdocs.yml
+      - run: PYTHONPATH=sdk-python mkdocs build --verbose -f docs/mkdocs.yml
       - run: mkdocs gh-deploy --verbose --force -f docs/mkdocs.yml
 env:
   MKDOCS_ENCRYPT_PW_LEXY: ${{ secrets.MKDOCS_ENCRYPT_PW_LEXY }}
