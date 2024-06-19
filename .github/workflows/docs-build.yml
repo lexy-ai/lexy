@@ -23,7 +23,9 @@ jobs:
             mkdocs-material-
       - run: pip install -r docs/requirements-docs.txt
       - run: pip install pydantic
-      - run: mkdocs gh-deploy --force -f docs/mkdocs.yml
+      - run: pip freeze
+      - run: mkdocs get-deps --verbose -f docs/mkdocs.yml
+      - run: mkdocs gh-deploy --verbose --force -f docs/mkdocs.yml
 env:
   MKDOCS_ENCRYPT_PW_LEXY: ${{ secrets.MKDOCS_ENCRYPT_PW_LEXY }}
   MKDOCS_ENCRYPT_PW_PARTNER1: ${{ secrets.MKDOCS_ENCRYPT_PW_PARTNER1 }}
