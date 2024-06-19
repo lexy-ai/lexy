@@ -40,15 +40,22 @@ def expand_transformer_imports(transformer_imports: set[str]) -> set[str]:
 
 class AppSettings(BaseSettings):
 
-    # API settings
+    # FastAPI settings
     TITLE: str = "Lexy Server"
     VERSION: str = "1.0.0"
-    DESCRIPTION: str = "Lexy Server API"
+    SUMMARY: str = "REST API for Lexy Server"
+    LICENSE_INFO: dict = {
+        "name": "Apache 2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+    }
     OPENAPI_PREFIX: str = ""
     DOCS_URL: str = "/docs"
     REDOC_URL: str = "/redoc"
     OPENAPI_URL: str = "/openapi.json"
     API_PREFIX: str = "/api"
+    SERVERS: list[dict] = [
+        {"url": "http://localhost:9900"}
+    ]
 
     # Security settings
     # Uncomment the line below if you want to generate a new secret key every time the server restarts. Then, to use a

@@ -1,0 +1,69 @@
+name: Build Python Package and Publish to PyPI
+
+on:
+  push:
+    tags:
+      - v*
+
+env:
+  POETRY_VERSION: "1.8.2"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    environment:
+      name: release
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip 
+          pip install "poetry==$POETRY_VERSION"
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+          cache: "poetry"
+      - name: Build lexy package
+        run: |
+          pwd
+          poetry build
+          ls -lah dist
+      - name: Build lexy-py package
+        run: |
+          cd sdk-python
+          pwd
+          poetry build
+          ls -lah dist
+      - name: Publish lexy package to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.TEST_PYPI_TOKEN }}
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: dist/
+          skip-existing: true
+      - name: Publish lexy-py package to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.TEST_PYPI_TOKEN }}
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: sdk-python/dist/
+          skip-existing: true
+      - name: Publish lexy package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          packages-dir: dist/
+      - name: Publish lexy-py package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          packages-dir: sdk-python/dist/

@@ -27,7 +27,7 @@ Review the following tutorials for a step-by-step guide on how to use Lexy.
 
 ## Reference
 
-See the [API reference](reference/lexy_api/overview.md) for detailed documentation on Lexy's API.
+See the [API reference](reference/rest-api/index.md) for detailed documentation on Lexy's API.
 
 The [Python SDK](reference/lexy_py/client.md) is a Python client for Lexy, with detailed documentation.
 

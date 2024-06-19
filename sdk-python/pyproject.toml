@@ -5,6 +5,8 @@ description = "A Python client for Lexy. Lexy is a data framework for building A
 authors = ["Reza Shabani"]
 license = "Apache 2.0"
 readme = "README.md"
+homepage = "https://getlexy.com"
+repository = "https://github.com/lexy-ai/lexy"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
