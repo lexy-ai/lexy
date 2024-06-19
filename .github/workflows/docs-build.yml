@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - rs/test-docs-build
 permissions:
   contents: write
 jobs:
@@ -21,6 +22,7 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - run: pip install -r docs/requirements-docs.txt
+      - run: pip install pydantic
       - run: mkdocs gh-deploy --force -f docs/mkdocs.yml
 env:
   MKDOCS_ENCRYPT_PW_LEXY: ${{ secrets.MKDOCS_ENCRYPT_PW_LEXY }}
