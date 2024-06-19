@@ -26,6 +26,9 @@ jobs:
       - run: pip freeze
       - run: env
       - run: python -c "import sys; print(sys.path)"
+      - run: echo "PYTHONPATH=$PYTHONPATH:./sdk-python" >> $GITHUB_ENV
+      - run: env
+      - run: python -c "import sys; print(sys.path)"
       - run: mkdocs get-deps --verbose -f docs/mkdocs.yml
       - run: mkdocs build --verbose -f docs/mkdocs.yml
       - run: mkdocs gh-deploy --verbose --force -f docs/mkdocs.yml
