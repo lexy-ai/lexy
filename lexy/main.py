@@ -37,10 +37,12 @@ async def app_lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.TITLE,
     version=settings.VERSION,
-    description=settings.DESCRIPTION,
+    summary=settings.SUMMARY,
+    license_info=settings.LICENSE_INFO,
     openapi_prefix=settings.OPENAPI_PREFIX,
     docs_url=settings.DOCS_URL,
     openapi_url=settings.OPENAPI_URL,
+    servers=settings.SERVERS,
     lifespan=app_lifespan
 )
 app.include_router(lexy_api, prefix=settings.API_PREFIX)

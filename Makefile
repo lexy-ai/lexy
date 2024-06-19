@@ -20,6 +20,9 @@ check-lexy-server:
 	@echo "Checking if lexy-server container is running..."
 	@docker inspect --format='{{.State.Running}}' lexy-server | grep -q true || (echo "lexy-server container is not running. Please start the container and try again." && exit 1)
 
+export-openapi-for-docs: check-env
+	python scripts/export_openapi.py
+
 serve-docs: check-env
 	mkdocs serve -f docs/mkdocs.yml
 
