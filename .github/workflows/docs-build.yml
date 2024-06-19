@@ -23,6 +23,7 @@ jobs:
             mkdocs-material-
       - run: pip install -r docs/requirements-docs.txt
       - run: pip install pydantic
+      - run: pip install -e sdk-python
       - run: pip freeze
       - run: env
       - run: python -c "import sys; print(sys.path)"
