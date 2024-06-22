@@ -48,7 +48,7 @@ install-dev: check-env
 	lexy init --no-input
 
 build-dev:
-	# Build docker images
+	# Build and run docker containers
 	docker compose up --build -d
 
 update-dev-env: check-env
