@@ -48,8 +48,8 @@ To stop the containers, run `docker compose down`.
 ## Install from PyPI
 
 Use this method if you're already familiar with Lexy and are using it as a dependency in your own project. You'll need 
-to provide instances of the Lexy server, worker, and database. See the [Quickstart](quickstart.md) guide for more 
-information and a detailed example.
+to provide instances of the Lexy server, worker, and database. See the [Quickstart](https://getlexy.com/quickstart/) 
+guide for more information and a detailed example.
 
 ```Shell
 # Install server
