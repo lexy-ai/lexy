@@ -145,6 +145,8 @@ make rebuild-dev-containers
 
 Lexy comes with a built-in dashboard to visualize pipelines. This is still under development, but you can run it locally.
 
+![lexy-dashboard.png](assets%2Fimages%2Flexy-dashboard.png)
+
 To start the dashboard, make sure you have Node.js installed. Then, from the root directory, run the following commands:
 
 ```shell
