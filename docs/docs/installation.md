@@ -1,13 +1,7 @@
 # Installation
 
-To run Lexy locally, you'll need [Docker](https://www.docker.com/get-started/) installed. You'll also need Python 3.11 or greater.
-
-## Install from PyPI (coming soon)
-
-```Shell
-# Doesn't work yet!
-pip install lexy[all]
-```
+To run Lexy locally, you'll need [Docker](https://www.docker.com/get-started/) installed. You'll also need Python 3.11 
+or greater. To install Lexy, you can either build from source (recommended) or install from PyPI (standalone mode).
 
 ## Build from source
 
@@ -17,33 +11,56 @@ pip install lexy[all]
 git clone https://github.com/lexy-ai/lexy.git
 ```
 
-
 ### Install dependencies
 
-#### Create a virtual env
-
-First create a virtual environment. Make sure that you're using Python 3.11 or greater. You can check your Python version by running `python3 --version`.
+First create a virtual environment. Make sure that you're using Python 3.11 or greater. You can check your Python 
+version by running `python3 --version`.
 
 ```Shell
-# create a virtualenv
+# Change to the lexy directory
+cd lexy
+# Create a virtualenv
 python3 -m venv venv 
 source venv/bin/activate
 ```
 
-#### Install dev dependencies
-
-This will also create an `.env` file in the working directory if it doesn't exist already.
+Next, install the dev dependencies. This will also create a `.env` file in the working directory if it doesn't 
+exist already.
 
 ```Shell
-# install dev dependencies
+# Install dev dependencies
 make install-dev
 ```
 
-#### Build docker containers
+### Run docker compose
+
+To build and run the docker containers, run the following command:
 
 ```Shell
-# build docker containers
-make build-dev
+# Build and run docker containers
+docker compose up --build -d
+```
+
+To stop the containers, run `docker compose down`.
+
+## Install from PyPI
+
+Use this method if you're already familiar with Lexy and are using it as a dependency in your own project. You'll need 
+to provide instances of the Lexy server, worker, and database. See the [Quickstart](quickstart.md) guide for more 
+information and a detailed example.
+
+```Shell
+# Install server
+pip install lexy[all]
+
+# Install Python client
+pip install lexy-py
+
+# Initialize Lexy
+lexy init
+
+# Optional: Create a docker-compose file
+lexy docker
 ```
 
 ## Configuring storage
@@ -72,9 +89,9 @@ command line).
 
 ### Google Cloud Storage
 
-To use Google Cloud Storage, you'll need to create a service account, and set the `GOOGLE_APPLICATION_CREDENTIALS` 
-environment variable to the path of your service account credentials. You can do so by adding the following to your 
-`.env` file:
+To use Google Cloud Storage, you'll need to set `DEFAULT_STORAGE_SERVICE=gcs` in your `.env` file. You'll also need to 
+create a service account, and set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to the path of your service 
+account credentials. You can do so by adding the following to your `.env` file:
 
 ```Shell
 GOOGLE_APPLICATION_CREDENTIALS=<path-to-your-service-account-credentials>
@@ -87,7 +104,7 @@ Remember to rebuild your dev containers for the change to take effect (run `make
 command line).
 
 
-??? example "Example .env settings"
+???+ example "Example .env settings"
 
     === "Amazon S3"
     
@@ -120,13 +137,15 @@ Do this before building your docker containers. Or, if you've already run `docke
 following to rebuild the server and worker containers.
 
 ```shell
-# rebuild the server and worker containers
+# Rebuild the server and worker containers
 make rebuild-dev-containers
 ```
 
 ## Lexy dashboard (WIP)
 
 Lexy comes with a built-in dashboard to visualize pipelines. This is still under development, but you can run it locally.
+
+![lexy-dashboard.png](assets%2Fimages%2Flexy-dashboard.png)
 
 To start the dashboard, make sure you have Node.js installed. Then, from the root directory, run the following commands:
 
@@ -135,6 +154,8 @@ cd dashboard
 npm install
 npm run dev
 ```
+
+The dashboard will be running at http://localhost:3000.
 
 ## Where to find services
 

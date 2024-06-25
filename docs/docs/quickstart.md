@@ -36,12 +36,14 @@ my-project
 │   ├── parse_code_comments.py
 │   └── pdf_embeddings.py
 ├── .env
-└── docker-compose.yml
+└── docker-compose.yaml  # (3)!
 ```
 
 1.  The modules in this directory are imported and run by the `lexyworker` container.
 2.  Extra requirements for your pipelines or custom transformers. These packages will be installed in the `lexyworker` 
     container.
+3.  You can generate this file using the Lexy CLI. Run `lexy docker` on the command line to create a sample compose 
+    file.
 
 
 ### Pipelines
