@@ -1,6 +1,11 @@
 # Lexy
 
-Welcome to Lexy!
+Lexy is a data platform for building AI-powered applications. You can use Lexy to:
+
+- Build Retrieval Augmented Generation (RAG) applications.
+- Provide relevant context for AI agents.
+- Add long-term memory to chat-based applications.
+- Extract structured data from unstructured documents.
 
 To run Lexy locally, you'll need [Docker](https://www.docker.com/get-started/) installed. You'll also need Python 3.11 
 or greater. To install Lexy, you can either build from source (recommended) or install from PyPI (standalone mode).

@@ -357,3 +357,4 @@ Check out the following tutorials to learn more about Lexy.
 - [Multimodal image search](multimodal-image-search.md) for how to use Lexy to build a multimodal search engine.
 - [Custom transformers](custom-transformers.md) for using your own functions as transformers.
 - [Document filters](document-filters.md) shows how to build pipelines for different types of documents.
+- [Structured data extraction](structured-data-extraction.md) for how to extract structured data from documents.

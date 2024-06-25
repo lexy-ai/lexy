@@ -107,6 +107,7 @@ nav:
     - Multimodal image search: tutorials/multimodal-image-search.md
     - Custom transformers: tutorials/custom-transformers.md
     - Document filters: tutorials/document-filters.md
+    - Structured data extraction: tutorials/structured-data-extraction.md
   - REST API: reference/rest-api/index.md
   - Python SDK:
     - Binding: reference/lexy_py/binding.md
