@@ -34,7 +34,9 @@ class DocumentBase(SQLModel):
 
     @property
     def is_stored_object(self) -> bool:
-        return bool(self.meta.get('storage_service') and self.meta.get('s3_bucket') and self.meta.get('s3_key'))
+        return bool(
+            self.meta.get('storage_service') and self.meta.get('storage_bucket') and self.meta.get('storage_key')
+        )
 
     @property
     def image(self) -> Image:

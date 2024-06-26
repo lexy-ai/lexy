@@ -49,13 +49,12 @@ class GCSClient(StorageClient):
             blob.upload_from_filename(fileobj)
         else:
             blob.upload_from_file(fileobj, rewind=rewind)
-        # FIXME: refactor
         return {
             "storage_service": "gcs",
-            "s3_bucket": bucket_name,
-            "s3_key": object_name,
-            # "s3_url": f"https://storage.googleapis.com/{bucket_name}/{object_name}",
-            # "s3_uri": f"gs://{bucket_name}/{object_name}",
+            "storage_bucket": bucket_name,
+            "storage_key": object_name,
+            # "storage_url": f"https://storage.googleapis.com/{bucket_name}/{object_name}",
+            # "storage_uri": f"gs://{bucket_name}/{object_name}",
         }
 
     def generate_presigned_url(self, bucket_name: str, object_name: str, expiration: int = 3600) -> str:
