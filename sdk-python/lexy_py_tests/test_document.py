@@ -268,8 +268,8 @@ class TestDocumentClient:
         img = Image.open(BytesIO(r3.content))
         assert isinstance(img, Image.Image)
         assert img_doc.meta['filename'] == 'lexy-dalle.jpeg'
-        assert img_doc.meta['s3_bucket'] == storage_bucket
-        assert img_doc.meta['s3_key'] == f"lexy_tests/collections/{tmp_collection_id}/documents/lexy-dalle.jpeg"
+        assert img_doc.meta['storage_bucket'] == storage_bucket
+        assert img_doc.meta['storage_key'] == f"lexy_tests/collections/{tmp_collection_id}/documents/lexy-dalle.jpeg"
         assert img_doc.meta['size'] == 113352
         assert img_doc.meta['type'] == 'image'
         assert img_doc.meta['content_type'] == 'image/jpeg'
@@ -279,8 +279,8 @@ class TestDocumentClient:
         thumbnail_dims = list(settings.IMAGE_THUMBNAIL_SIZES)[0]
         thumbnail_dims_str = f"{thumbnail_dims[0]}x{thumbnail_dims[1]}"
         assert thumbnail_dims_str in img_doc.meta['image']['thumbnails']
-        assert img_doc.meta['image']['thumbnails'][thumbnail_dims_str]['s3_bucket'] == storage_bucket
-        assert img_doc.meta['image']['thumbnails'][thumbnail_dims_str]['s3_key'] == (
+        assert img_doc.meta['image']['thumbnails'][thumbnail_dims_str]['storage_bucket'] == storage_bucket
+        assert img_doc.meta['image']['thumbnails'][thumbnail_dims_str]['storage_key'] == (
             f"lexy_tests/collections/{tmp_collection_id}/thumbnails/{thumbnail_dims_str}/lexy-dalle.jpeg"
         )
 
@@ -322,8 +322,8 @@ class TestDocumentClient:
         # FIXME: lx_client.get() returns a 404 but httpx.get() returns a 200
         # assert pdf_doc.image is None
         assert pdf_doc.meta['filename'] == 'StarCoder.pdf'
-        assert pdf_doc.meta['s3_bucket'] == storage_bucket
-        assert pdf_doc.meta['s3_key'] == f"lexy_tests/collections/{tmp_collection_id}/documents/StarCoder.pdf"
+        assert pdf_doc.meta['storage_bucket'] == storage_bucket
+        assert pdf_doc.meta['storage_key'] == f"lexy_tests/collections/{tmp_collection_id}/documents/StarCoder.pdf"
         assert pdf_doc.meta['size'] == 629980
         assert pdf_doc.meta['type'] == 'pdf'
         assert pdf_doc.meta['content_type'] == 'application/pdf'
@@ -338,8 +338,8 @@ class TestDocumentClient:
         # FIXME: lx_client.get() returns a 404 but httpx.get() returns a 200
         # assert video_doc.image is None
         assert video_doc.meta['filename'] == 'fluid.mp4'
-        assert video_doc.meta['s3_bucket'] == storage_bucket
-        assert video_doc.meta['s3_key'] == f"lexy_tests/collections/{tmp_collection_id}/documents/fluid.mp4"
+        assert video_doc.meta['storage_bucket'] == storage_bucket
+        assert video_doc.meta['storage_key'] == f"lexy_tests/collections/{tmp_collection_id}/documents/fluid.mp4"
         assert video_doc.meta['size'] == 323778
         assert video_doc.meta['type'] == 'video'
         assert video_doc.meta['content_type'] == 'video/mp4'
@@ -356,8 +356,8 @@ class TestDocumentClient:
         # FIXME: lx_client.get() returns a 404 but httpx.get() returns a 200
         # assert text_doc.image is None
         assert text_doc.meta['filename'] == 'hotd.txt'
-        assert text_doc.meta['s3_bucket'] == storage_bucket
-        assert text_doc.meta['s3_key'] == f"lexy_tests/collections/{tmp_collection_id}/documents/hotd.txt"
+        assert text_doc.meta['storage_bucket'] == storage_bucket
+        assert text_doc.meta['storage_key'] == f"lexy_tests/collections/{tmp_collection_id}/documents/hotd.txt"
         assert text_doc.meta['size'] == 3143
         assert text_doc.meta['type'] == 'text'
         assert text_doc.meta['content_type'] == 'text/plain'

@@ -61,10 +61,10 @@ def generate_signed_urls_for_document(document: Union["Document", "DocumentBase"
     presigned_urls = {}
 
     # url for the document object
-    if document.meta.get('s3_bucket') and document.meta.get('s3_key'):
+    if document.meta.get('storage_bucket') and document.meta.get('storage_key'):
         presigned_urls["object"] = (
-            storage_client.generate_presigned_url(bucket_name=document.meta.get('s3_bucket'),
-                                                  object_name=document.meta.get('s3_key'),
+            storage_client.generate_presigned_url(bucket_name=document.meta.get('storage_bucket'),
+                                                  object_name=document.meta.get('storage_key'),
                                                   expiration=expiration)
         )
 
@@ -73,8 +73,8 @@ def generate_signed_urls_for_document(document: Union["Document", "DocumentBase"
         presigned_urls["thumbnails"] = {}
         for dims, vals in document.meta.get('image').get('thumbnails').items():
             presigned_urls["thumbnails"][dims] = (
-                storage_client.generate_presigned_url(bucket_name=vals.get('s3_bucket'),
-                                                      object_name=vals.get('s3_key'),
+                storage_client.generate_presigned_url(bucket_name=vals.get('storage_bucket'),
+                                                      object_name=vals.get('storage_key'),
                                                       expiration=expiration)
             )
 

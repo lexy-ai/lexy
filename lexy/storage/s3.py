@@ -38,13 +38,12 @@ class S3Client(StorageClient):
             if rewind:
                 fileobj.seek(0)
         self.client.upload_fileobj(fileobj, bucket_name, object_name)
-        # FIXME: refactor
         return {
             "storage_service": "s3",
-            "s3_bucket": bucket_name,
-            "s3_key": object_name,
-            # "s3_url": f"https://{bucket_name}.s3.amazonaws.com/{object_name}",
-            # "s3_uri": f"s3://{bucket_name}/{object_name}",
+            "storage_bucket": bucket_name,
+            "storage_key": object_name,
+            # "storage_url": f"https://{bucket_name}.s3.amazonaws.com/{object_name}",
+            # "storage_uri": f"s3://{bucket_name}/{object_name}",
         }
 
     def generate_presigned_url(self, bucket_name: str, object_name: str, expiration: int = 3600) -> str:
