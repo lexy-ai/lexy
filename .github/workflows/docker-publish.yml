@@ -50,7 +50,7 @@ jobs:
       - name: Prepare platform format
         run: |
           platform=${{ matrix.platform }}
-          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV 
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
 
       - name: Checkout code
         uses: actions/checkout@v4
@@ -65,7 +65,7 @@ jobs:
       # https://github.com/docker/setup-qemu-action
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-        
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -125,7 +125,7 @@ jobs:
         run: |
           mkdir -p /tmp/digests/server
           digest="${{ steps.build-server.outputs.digest }}"
-          touch "/tmp/digests/server/${digest#sha256:}"          
+          touch "/tmp/digests/server/${digest#sha256:}"
 
       - name: Upload server digest
         uses: actions/upload-artifact@v4
@@ -136,7 +136,7 @@ jobs:
           retention-days: 1
 
       ### Lexy Worker ###
-      
+
       - name: Metadata for worker
         id: meta-worker
         uses: docker/metadata-action@v5
@@ -168,7 +168,7 @@ jobs:
         run: |
           mkdir -p /tmp/digests/worker
           digest="${{ steps.build-worker.outputs.digest }}"
-          touch "/tmp/digests/worker/${digest#sha256:}"          
+          touch "/tmp/digests/worker/${digest#sha256:}"
 
       - name: Upload worker digest
         uses: actions/upload-artifact@v4
@@ -179,7 +179,7 @@ jobs:
           retention-days: 1
 
       ### Lexy Postgres ###
-      
+
       - name: Metadata for postgres
         id: meta-postgres
         uses: docker/metadata-action@v5
@@ -210,7 +210,7 @@ jobs:
         run: |
           mkdir -p /tmp/digests/postgres
           digest="${{ steps.build-postgres.outputs.digest }}"
-          touch "/tmp/digests/postgres/${digest#sha256:}"          
+          touch "/tmp/digests/postgres/${digest#sha256:}"
 
       - name: Upload postgres digest
         uses: actions/upload-artifact@v4
@@ -269,7 +269,7 @@ jobs:
           images: ${{ env.IMAGE_NAME_LEXY_SERVER }}
           # labels: |
           #   org.opencontainers.image.title=Lexy Server
-          #   org.opencontainers.image.description=Lexy API Server 
+          #   org.opencontainers.image.description=Lexy API Server
           #   org.opencontainers.image.vendor=Lexy AI
 
       - name: Metadata check for server
@@ -281,7 +281,7 @@ jobs:
         working-directory: /tmp/digests/server
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.IMAGE_NAME_LEXY_SERVER }}@sha256:%s ' *)          
+            $(printf '${{ env.IMAGE_NAME_LEXY_SERVER }}@sha256:%s ' *)
 
       - name: Inspect server image
         run: |
@@ -297,7 +297,7 @@ jobs:
           images: ${{ env.IMAGE_NAME_LEXY_WORKER }}
           # labels: |
           #   org.opencontainers.image.title=Lexy Worker
-          #   org.opencontainers.image.description=Lexy Worker Instance 
+          #   org.opencontainers.image.description=Lexy Worker Instance
           #   org.opencontainers.image.vendor=Lexy AI
 
       - name: Metadata check for worker
@@ -309,7 +309,7 @@ jobs:
         working-directory: /tmp/digests/worker
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.IMAGE_NAME_LEXY_WORKER }}@sha256:%s ' *)          
+            $(printf '${{ env.IMAGE_NAME_LEXY_WORKER }}@sha256:%s ' *)
 
       - name: Inspect worker image
         run: |
@@ -325,7 +325,7 @@ jobs:
           images: ${{ env.IMAGE_NAME_LEXY_POSTGRES }}
           # labels: |
           #   org.opencontainers.image.title=Lexy Postgres
-          #   org.opencontainers.image.description=Lexy Postgres Database 
+          #   org.opencontainers.image.description=Lexy Postgres Database
           #   org.opencontainers.image.vendor=Lexy AI
 
       - name: Metadata check for postgres
@@ -337,7 +337,7 @@ jobs:
         working-directory: /tmp/digests/postgres
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.IMAGE_NAME_LEXY_POSTGRES }}@sha256:%s ' *)          
+            $(printf '${{ env.IMAGE_NAME_LEXY_POSTGRES }}@sha256:%s ' *)
 
       - name: Inspect postgres image
         run: |

@@ -2,37 +2,37 @@
 
 ## Introduction
 
-Let's go through a basic implementation of **Retrieval-Augmented Generation (RAG)** using Lexy. RAG describes the process of using 
-a retriever to find relevant documents to include as context in the prompt for a language model. 
+Let's go through a basic implementation of **Retrieval-Augmented Generation (RAG)** using Lexy. RAG describes the process of using
+a retriever to find relevant documents to include as context in the prompt for a language model.
 
-In this example, we'll use Lexy to store and retrieve documents describing characters from the TV show *House of the 
-Dragon*. We'll then use those documents to construct a prompt that GPT-4 can use to answer questions about the 
+In this example, we'll use Lexy to store and retrieve documents describing characters from the TV show *House of the
+Dragon*. We'll then use those documents to construct a prompt that GPT-4 can use to answer questions about the
 characters.
 
 !!! example "Notebook available"
-    You can find the complete code for this example in the [Lexy GitHub repository](https://github.com/lexy-ai/lexy). 
+    You can find the complete code for this example in the [Lexy GitHub repository](https://github.com/lexy-ai/lexy).
     Follow along with this tutorial using the notebook [`examples/basic_rag.ipynb`](https://github.com/lexy-ai/lexy/blob/main/examples/basic_rag.ipynb).
 
-This tutorial is a **simplified introduction** to RAG, and not a real-world application. This is done intentionally to 
-teach the basic concept of RAG and how it is implemented. We'll point out some of these simplifications as we go along, 
-and discuss them in more detail in the section [Real-world considerations](#Real-world-considerations). We'll also 
+This tutorial is a **simplified introduction** to RAG, and not a real-world application. This is done intentionally to
+teach the basic concept of RAG and how it is implemented. We'll point out some of these simplifications as we go along,
+and discuss them in more detail in the section [Real-world considerations](#Real-world-considerations). We'll also
 provide links to additional tutorials which cover the complexities typically encountered in real-world RAG applications.
 
 ### OpenAI API Key
 
-This example requires an OpenAI API key in order to (1) generate embeddings and (2) interact with 
-GPT-4. Although this example uses OpenAI, you can use Lexy with any language model and any embedding model, including 
+This example requires an OpenAI API key in order to (1) generate embeddings and (2) interact with
+GPT-4. Although this example uses OpenAI, you can use Lexy with any language model and any embedding model, including
 free, open-source models such as `SentenceTransformer`.
 
-You can add your API key as an environment variable using the `.env` 
-file in the root directory of the Lexy repository. See [How do I add a new environment variable](../faq.md#how-do-i-add-a-new-environment-variable) on the 
+You can add your API key as an environment variable using the `.env`
+file in the root directory of the Lexy repository. See [How do I add a new environment variable](../faq.md#how-do-i-add-a-new-environment-variable) on the
 [FAQ page](../faq.md) for more details.
 
 ```shell title=".env"
 OPENAI_API_KEY=your_secret_api_key
 ```
 
-Remember to rebuild your containers after adding the environment variable (otherwise your container won't see the newly 
+Remember to rebuild your containers after adding the environment variable (otherwise your container won't see the newly
 added variable). Simply run the following on the command line (ensure you're at the root directory for the Lexy repo):
 
 ```shell
@@ -55,13 +55,13 @@ if "OPENAI_API_KEY" not in os.environ:
 
 ## Sample data
 
-Our data is in the [`sample_data/documents`](https://github.com/lexy-ai/lexy/tree/main/sample_data/documents) directory of the Lexy repo. Let's import it and take a look at the first few lines. 
+Our data is in the [`sample_data/documents`](https://github.com/lexy-ai/lexy/tree/main/sample_data/documents) directory of the Lexy repo. Let's import it and take a look at the first few lines.
 
 
 ```python
 with open("../sample_data/documents/hotd.txt") as f:
     lines = f.read().splitlines()
-    
+
 lines[:3]
 ```
 
@@ -90,7 +90,7 @@ lx = LexyClient()
 ```python
 # create a new collection
 collection = lx.create_collection(
-    collection_name="house_of_the_dragon", 
+    collection_name="house_of_the_dragon",
     description="House of the Dragon characters"
 )
 collection
@@ -146,17 +146,17 @@ index_fields = {
     "embedding": {"type": "embedding", "extras": {"dims": 1536, "model": "text.embeddings.openai-3-small"}}
 }
 index = lx.create_index(
-    index_id="hotd_embeddings", 
+    index_id="hotd_embeddings",
     description="Text embeddings for House of the Dragon collection",
     index_fields=index_fields
 )
 ```
 
-To embed each document and store the result in our index, we'll create a 
+To embed each document and store the result in our index, we'll create a
 [`Binding`](../reference/lexy_py/binding.md#lexy_py.binding.models.Binding) which connects our "**house_of_the_dragon**"
-collection to our "**hotd_embeddings**" index using a 
-[`Transformer`](../reference/lexy_py/transformer.md#lexy_py.transformer.models.Transformer). The 
-[`LexyClient.transformers`](../reference/lexy_py/client.md#lexy_py.client.LexyClient.transformers) property shows a 
+collection to our "**hotd_embeddings**" index using a
+[`Transformer`](../reference/lexy_py/transformer.md#lexy_py.transformer.models.Transformer). The
+[`LexyClient.transformers`](../reference/lexy_py/client.md#lexy_py.client.LexyClient.transformers) property shows a
 list of available transformers.
 
 
@@ -190,8 +190,8 @@ binding
 <Binding(id=5, status=ON, collection='house_of_the_dragon', transformer='text.embeddings.openai-3-small', index='hotd_embeddings')>
 ```
 
-Our binding was created successfully and is now active (i.e., `binding.status = ON`). Any new documents added to our 
-collection will automatically be embedded and added to our index. The diagram below shows the relationship between our 
+Our binding was created successfully and is now active (i.e., `binding.status = ON`). Any new documents added to our
+collection will automatically be embedded and added to our index. The diagram below shows the relationship between our
 collection, transformer, and index.
 
 <div style="text-align: center;">
@@ -199,16 +199,16 @@ collection, transformer, and index.
 ```mermaid
 flowchart LR
     collection["Collection
-      
-    &quot;house_of_the_dragon&quot;"] 
-    --> 
-    transformer["Transformer 
-    
+
+    &quot;house_of_the_dragon&quot;"]
+    -->
+    transformer["Transformer
+
     &quot;text.embeddings.openai-3-small&quot;"]
     -->
     index["Index
-    
-    &quot;hotd_embeddings&quot;"];   
+
+    &quot;hotd_embeddings&quot;"];
 ```
 
 </div>
@@ -216,12 +216,12 @@ flowchart LR
 
 ## Retrieve documents
 
-Now that our documents are embedded and those embeddings are stored in our index, we can use the 
-[`Index.query`](../reference/lexy_py/indexes.md#lexy_py.index.models.Index.query) method to retrieve the most relevant 
-documents for a given query. Specifically, the method returns the `k` documents that are most similar to our query 
-string, as measured by **cosine similarity**. 
+Now that our documents are embedded and those embeddings are stored in our index, we can use the
+[`Index.query`](../reference/lexy_py/indexes.md#lexy_py.index.models.Index.query) method to retrieve the most relevant
+documents for a given query. Specifically, the method returns the `k` documents that are most similar to our query
+string, as measured by **cosine similarity**.
 
-Let's test this out by retrieving the two most relevant documents for the query "parents in Westeros". 
+Let's test this out by retrieving the two most relevant documents for the query "parents in Westeros".
 
 
 ```python
@@ -245,20 +245,20 @@ index.query(query_text="parents in Westeros", k=2)
 
 
 !!! info
-    The `distance` field in the results shows the cosine distance between that document and the query text. The lower 
+    The `distance` field in the results shows the cosine distance between that document and the query text. The lower
     the distance, the more similar the document is to the query text.
 
-The documents returned by our query are profiles of Viserys Targaryen and Alicent Hightower, whose profiles specifically 
-describe them as parents. Notice that none of the documents returned contain any of the exact words in the phrase 
-"parents in Westeros". Yet the embedding model is able to identify these documents as being semantically similar to the 
+The documents returned by our query are profiles of Viserys Targaryen and Alicent Hightower, whose profiles specifically
+describe them as parents. Notice that none of the documents returned contain any of the exact words in the phrase
+"parents in Westeros". Yet the embedding model is able to identify these documents as being semantically similar to the
 text in our query, most likely because they contain the phrases "_...the father of..._" and "_...the mother of..._".
 
 ??? note "Note on cosine similarity"
     If you find yourself thinking that cosine similarity doesn't necessarily mean the documents are the most relevant,
-    you're absolutely right! Cosine similarity is just one way to measure the similarity between two vectors. There are 
+    you're absolutely right! Cosine similarity is just one way to measure the similarity between two vectors. There are
     many other ways to measure document relevance, and the best approach often depends on the specific use case.
     In future tutorials, we'll explore more advanced methods, including those that combine multiple similarity metrics.
-    
+
 
 ## Context for GPT-4
 
@@ -276,7 +276,7 @@ system_prompt = (
 )
 
 question_template = """\
-Question: 
+Question:
 {question}
 
 Context:
@@ -303,7 +303,7 @@ print(prompt_ex)
 ```
 
 ```{ .text .no-copy .result #code-output }
-Question: 
+Question:
 who is the dragon ridden by Daemon Targaryen?
 
 Context:
@@ -338,7 +338,7 @@ print(oai_response.choices[0].message.content)
 ```
 
 ```{ .text .no-copy .result #code-output-textwrap }
-The dragon ridden by Daemon Targaryen is Caraxes. Caraxes, also known as the Blood Wyrm, is known for his red scales and fierce temperament. 
+The dragon ridden by Daemon Targaryen is Caraxes. Caraxes, also known as the Blood Wyrm, is known for his red scales and fierce temperament.
 [doc_id: 8baa2a34-10f7-48e5-b053-1c6b8317af94]
 [doc_id: a01b386d-12ad-4edb-9784-c5e0ee80d1fb]
 ```
@@ -347,16 +347,16 @@ The dragon ridden by Daemon Targaryen is Caraxes. Caraxes, also known as the Blo
 We can see that GPT-4 has used the context we provided to answer the question, and has specifically cited the second document as relevant context for our search result.
 
 !!! note "Note on GPT-4 completions"
-    Keep in mind that the response from GPT-4 varies, and the responses shown here may differ from the ones 
-    you'll see when running the same code. In particular, the response will often list document references in 
-    inconsistent ways. If you need a more structured response, you may want to try OpenAI's 
+    Keep in mind that the response from GPT-4 varies, and the responses shown here may differ from the ones
+    you'll see when running the same code. In particular, the response will often list document references in
+    inconsistent ways. If you need a more structured response, you may want to try OpenAI's
     [JSON mode](https://platform.openai.com/docs/guides/text-generation/json-mode).
 
 Let's put everything together into two functions: `construct_prompt` will construct a prompt given a user question, and `chat_completion` will prompt a completion from GPT-4.
 
 
 ```python
-def construct_prompt(question: str,  
+def construct_prompt(question: str,
                      result_template: str = "[doc_id: {r[document_id]}] {r[document.content]}",
                      **query_kwargs):
     # retrieve most relevant results
@@ -369,7 +369,7 @@ def construct_prompt(question: str,
     return question_template.format(question=question, context=context)
 
 def chat_completion(message: str,
-                    system: str = system_prompt, 
+                    system: str = system_prompt,
                     **chat_kwargs):
     # generate response
     return openai_client.chat.completions.create(
@@ -393,7 +393,7 @@ print(oai_response.choices[0].message.content)
 ```
 
 ```{ .text .no-copy .result #code-output-textwrap }
-The blue dragon is Dreamfyre, ridden by Helaena Targaryen. She is known for her pale blue scales and graceful flight. 
+The blue dragon is Dreamfyre, ridden by Helaena Targaryen. She is known for her pale blue scales and graceful flight.
 [doc_id: 8aca8431-c146-4db2-a4d3-d57673fb0f7c]
 ```
 
@@ -419,7 +419,7 @@ print(oai_response.choices[0].message.content)
 ```
 
 ```{ .text .no-copy .result #code-output-textwrap }
-The second son of King Viserys I Targaryen is Aemond Targaryen. 
+The second son of King Viserys I Targaryen is Aemond Targaryen.
 [doc_id: d319aced-f363-4287-b034-260c6f5e5c70]
 ```
 
@@ -431,19 +431,19 @@ print(oai_response.choices[0].message.content)
 ```
 
 ```{ .text .no-copy .result #code-output-textwrap }
-The heir to the throne after King Viserys I Targaryen is Rhaenyra Targaryen, who is his eldest child. Following Rhaenyra, the heir is Daemon Targaryen, the king's younger brother. Aegon II Targaryen, the second-born child of Viserys I, is also a claimant to the throne. 
-[doc_id: 82cf6758-049a-49c9-a4b2-155f5bf3635e] 
-[doc_id: 8baa2a34-10f7-48e5-b053-1c6b8317af94] 
+The heir to the throne after King Viserys I Targaryen is Rhaenyra Targaryen, who is his eldest child. Following Rhaenyra, the heir is Daemon Targaryen, the king's younger brother. Aegon II Targaryen, the second-born child of Viserys I, is also a claimant to the throne.
+[doc_id: 82cf6758-049a-49c9-a4b2-155f5bf3635e]
+[doc_id: 8baa2a34-10f7-48e5-b053-1c6b8317af94]
 [doc_id: a2418a31-870e-4876-b5b2-96eaf61b0f69]
 ```
 
 ## Using metadata as context
 
-We often want to use additional metadata in our prompts to provide even more context or useful instructions to our 
-language model. Let's look at an example where we might want to include document metadata when constructing our 
+We often want to use additional metadata in our prompts to provide even more context or useful instructions to our
+language model. Let's look at an example where we might want to include document metadata when constructing our
 prompts.
 
-First, let's ask "which is the largest Targaryen dragon?". We get the correct answer, Balerion.  
+First, let's ask "which is the largest Targaryen dragon?". We get the correct answer, Balerion.
 
 
 ```python
@@ -453,17 +453,17 @@ print(oai_response.choices[0].message.content)
 ```
 
 ```{ .text .no-copy .result #code-output-textwrap }
-The largest Targaryen dragon was Balerion, also known as the Black Dread. He was ridden by Aegon the Conqueror and King Viserys I Targaryen. 
+The largest Targaryen dragon was Balerion, also known as the Black Dread. He was ridden by Aegon the Conqueror and King Viserys I Targaryen.
 [doc_id: 9271dfb9-c8f2-48b4-9124-e54c0e0bf725]
 ```
 
 
-But what if we want to add new documents to our collection, and those documents contain new or contradictory 
-information? In that case, we'll want to include additional metadata in our prompt which the language model can use when 
-deriving an answer. 
+But what if we want to add new documents to our collection, and those documents contain new or contradictory
+information? In that case, we'll want to include additional metadata in our prompt which the language model can use when
+deriving an answer.
 
-Let's add a new document to our collection which describes a new dragon that is larger than Balerion. Because the 
-binding we created earlier has status set to ON, our new document will automatically be embedded and added to our index. 
+Let's add a new document to our collection which describes a new dragon that is larger than Balerion. Because the
+binding we created earlier has status set to ON, our new document will automatically be embedded and added to our index.
 This document will be a more recent document, as measured by the value of its `updated_at` field.
 
 
@@ -487,15 +487,15 @@ new_result_template = \
     "[doc_id: {r[document_id]}, updated_at: {r[document.updated_at]}] {r[document.content]}"
 
 new_prompt = construct_prompt(
-    question="which is the largest Targaryen dragon?", 
-    result_template=new_result_template, 
+    question="which is the largest Targaryen dragon?",
+    result_template=new_result_template,
     return_fields=["document.content", "document.updated_at"]
 )
 print(new_prompt)
 ```
 
 ```{ .text .no-copy .result #code-output }
-Question: 
+Question:
 which is the largest Targaryen dragon?
 
 Context:
@@ -527,8 +527,8 @@ Now when asking GPT-4 again, we see the updated answer with the new data.
 q = "which is the largest Targaryen dragon?"
 oai_response = chat_completion(
     message=construct_prompt(
-        question=q, 
-        result_template=new_result_template, 
+        question=q,
+        result_template=new_result_template,
         return_fields=["document.content", "document.updated_at"]
     ),
     system=new_system_prompt
@@ -537,56 +537,56 @@ print(oai_response.choices[0].message.content)
 ```
 
 ```{ .text .no-copy .result #code-output-textwrap }
-The largest Targaryen dragon is Lexy, as indicated in the most recent document. 
+The largest Targaryen dragon is Lexy, as indicated in the most recent document.
 [doc_id: c5dd2ec7-fbb8-415e-bc6b-2510e3354e74, updated_at: 2024-03-06T04:21:26.292323+00:00]
 ```
 
 ## Real-world considerations
 
-As mentioned earlier, this tutorial is intended to teach the basics of RAG and how it's implemented. Let's briefly 
-review some of the simplifications we've made. Our future tutorials will cover these topics in more detail, and 
+As mentioned earlier, this tutorial is intended to teach the basics of RAG and how it's implemented. Let's briefly
+review some of the simplifications we've made. Our future tutorials will cover these topics in more detail, and
 show how Lexy helps to address them when building real-world AI applications.
 
-- **Dataset size**: Our [sample dataset](https://github.com/lexy-ai/lexy/blob/main/sample_data/documents/hotd.txt) is 
-  small, both in the number of documents and the size of each document. In fact, our dataset is so small that we don't 
-  even need to perform retrieval; we could simply choose to include all of our documents in the prompt with each API 
-  call. But in real world applications, we might have millions of documents, in which case we'll need to 
+- **Dataset size**: Our [sample dataset](https://github.com/lexy-ai/lexy/blob/main/sample_data/documents/hotd.txt) is
+  small, both in the number of documents and the size of each document. In fact, our dataset is so small that we don't
+  even need to perform retrieval; we could simply choose to include all of our documents in the prompt with each API
+  call. But in real world applications, we might have millions of documents, in which case we'll need to
   dynamically retrieve the documents that are most relevant for a particular query.
-- **Document chunking**: We've used the full text of each document as context for our language model. Documents used in 
-  real-world applications will be much longer. We'll often want to break our documents up into smaller pieces (i.e., 
+- **Document chunking**: We've used the full text of each document as context for our language model. Documents used in
+  real-world applications will be much longer. We'll often want to break our documents up into smaller pieces (i.e.,
   chunks), and use those pieces to construct more informative prompts for our language model.
-- **Multimodal data**: Our documents only contain text data. In practice, real-world data will include other types of data 
-  including images, audio, and video. We'll often want to embed and retrieve multimodal data, and to query for one 
+- **Multimodal data**: Our documents only contain text data. In practice, real-world data will include other types of data
+  including images, audio, and video. We'll often want to embed and retrieve multimodal data, and to query for one
   modality using another (e.g., search for images using audio, or search for text using video).
-- **File-based documents**: Our documents consist of "free form" text. In practice, our documents may be stored as 
-  external files in a variety of file formats, including PDFs, Word documents, and images. We'll often want to 
-  catalogue, ingest, and process these file-based documents, and to use different parsing logic based on the file or 
+- **File-based documents**: Our documents consist of "free form" text. In practice, our documents may be stored as
+  external files in a variety of file formats, including PDFs, Word documents, and images. We'll often want to
+  catalogue, ingest, and process these file-based documents, and to use different parsing logic based on the file or
   the specific application.
-- **Metadata and relationships**: We've only used the `updated_at` field as an example of metadata. In the real world, 
-  our document metadata will contain many more fields, including complex relationships with other documents and 
-  entities. For example, we may choose to chunk and embed a function docstring, which resides in a single file of 
+- **Metadata and relationships**: We've only used the `updated_at` field as an example of metadata. In the real world,
+  our document metadata will contain many more fields, including complex relationships with other documents and
+  entities. For example, we may choose to chunk and embed a function docstring, which resides in a single file of
   Python code, which is part of a larger source code repository, and which could be accessible to multiple organizations.
-- **Retrieval methods**: We've used a simple cosine similarity search to retrieve documents. In a real-world 
+- **Retrieval methods**: We've used a simple cosine similarity search to retrieve documents. In a real-world
   application, we will want to use more advanced retrieval methods, such as BM25.
-- **Custom transformations**: We've used the OpenAI API to transform our text documents into vector embeddings. We may 
-  want to use more advanced transformations, such as a custom (i.e., fine-tuned) embedding model, or a combination of 
+- **Custom transformations**: We've used the OpenAI API to transform our text documents into vector embeddings. We may
+  want to use more advanced transformations, such as a custom (i.e., fine-tuned) embedding model, or a combination of
   multiple Transformer models, some of which might require running your own servers.
-- **Topic relevance**: In practice, one of the most difficult aspects of this type of dynamic RAG application is 
-  knowing **_when_** to use it (i.e., which requests should trigger it) and **_how_** to use it (i.e., which template 
-  should be populated). This is especially true in cases where the language model already contains some information on 
-  the underlying topic (i.e., the information contained in our documents is part of the dataset used to train the 
-  language model). This is certainly the case with our example (GPT-4 already knows about House of the Dragon, and can 
-  answer our questions without the need to refer to our documents). We plan on discussing this topic as part of a 
+- **Topic relevance**: In practice, one of the most difficult aspects of this type of dynamic RAG application is
+  knowing **_when_** to use it (i.e., which requests should trigger it) and **_how_** to use it (i.e., which template
+  should be populated). This is especially true in cases where the language model already contains some information on
+  the underlying topic (i.e., the information contained in our documents is part of the dataset used to train the
+  language model). This is certainly the case with our example (GPT-4 already knows about House of the Dragon, and can
+  answer our questions without the need to refer to our documents). We plan on discussing this topic as part of a
   future blog post.
 
 
 ## Next steps
 
-In this tutorial we learned how to implement Retrieval-Augmented Generation (RAG) using Lexy. Specifically, we've seen 
-how to use Lexy to store and retrieve documents, and how to include those documents and their metadata as context for a 
+In this tutorial we learned how to implement Retrieval-Augmented Generation (RAG) using Lexy. Specifically, we've seen
+how to use Lexy to store and retrieve documents, and how to include those documents and their metadata as context for a
 language model like GPT-4.
 
-While this is a simple example, the basic principles are powerful. As we'll see, they can be applied to build far more 
+While this is a simple example, the basic principles are powerful. As we'll see, they can be applied to build far more
 complex AI applications. In the coming examples we'll learn:
 
 - How to parse and store custom metadata along with our documents.

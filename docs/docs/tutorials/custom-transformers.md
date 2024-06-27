@@ -4,13 +4,13 @@ This tutorial shows how to create custom transformers for use in your data pipel
 
 
 Up until now, we've only used the default transformers included in Lexy. These include common methods for embedding text
-and images. But we'll often want to apply custom transformations to our documents based on metadata or our own custom 
+and images. But we'll often want to apply custom transformations to our documents based on metadata or our own custom
 logic. In this tutorial, we'll create our own transformer for parsing comments from source code.
 
 
 ## Add transformer code
 
-Add your transformer code in a new module with the path `lexy.transformers.<your_module>`. Assuming your module is 
+Add your transformer code in a new module with the path `lexy.transformers.<your_module>`. Assuming your module is
 called `code`, your project should have the following structure:
 
 ```hl_lines="4"
@@ -52,15 +52,15 @@ def get_comments(doc: Document) -> list[dict]:
     return comments
 ```
 
-1.  The `@lexy_transformer` decorator registers your function as a transformer. The `name` argument is the transformer 
-    ID. This is how you'll refer to your transformer when creating bindings. The `name` should be unique across all 
+1.  The `@lexy_transformer` decorator registers your function as a transformer. The `name` argument is the transformer
+    ID. This is how you'll refer to your transformer when creating bindings. The `name` should be unique across all
     transformers.
 
 ## Install optional dependencies
 
 Make sure to install any dependencies required for your custom transformer code.
 
-In development, you can install your dependencies using `docker exec`. This will be temporary (for the life of the 
+In development, you can install your dependencies using `docker exec`. This will be temporary (for the life of the
 docker container), but makes it easy to work with your packages in development.
 
 ```bash
@@ -68,7 +68,7 @@ docker exec lexy-server pip install <your_package>
 docker exec lexy-celeryworker pip install <your_package>
 ```
 
-In production, you'll want to update `pyproject.toml` to include your package in the list of `lexy_transformers` 
+In production, you'll want to update `pyproject.toml` to include your package in the list of `lexy_transformers`
 extras.
 
 ```toml hl_lines="6 9" title="pyproject.toml"
@@ -85,7 +85,7 @@ lexy_transformers = ["transformers", "sentence-transformers", "<your_package>"]
 
 ## Update configuration
 
-In `lexy.core.config`, update the values for `LEXY_SERVER_TRANSFORMER_IMPORTS` and `LEXY_WORKER_TRANSFORMER_IMPORTS` 
+In `lexy.core.config`, update the values for `LEXY_SERVER_TRANSFORMER_IMPORTS` and `LEXY_WORKER_TRANSFORMER_IMPORTS`
 to include your new module.
 
 ```python hl_lines="8 15" title="lexy/core/config.py"
@@ -94,7 +94,7 @@ to include your new module.
 class AppSettings(BaseSettings):
 
     # other settings...
-    
+
     LEXY_SERVER_TRANSFORMER_IMPORTS: set[str] = { # (1)!
         'lexy.transformers.code',  # add your module here
         'lexy.transformers.counter',
@@ -109,11 +109,11 @@ class AppSettings(BaseSettings):
         'lexy.transformers.multimodal',
         'lexy.transformers.openai',
     }
-    
+
     # more settings...
 ```
 
-1.  These modules are imported by the Lexy server at startup. If the transformer requires significant resources, you 
+1.  These modules are imported by the Lexy server at startup. If the transformer requires significant resources, you
     should omit it from this list and instead import it in the worker.
 2.  These modules are imported each time a worker is created or restarted.
 
@@ -125,8 +125,8 @@ docker compose restart lexyserver lexyworker
 
 ## Create transformer
 
-Finally, create your transformer so that it's stored in the database and available to the Lexy server. You can do this 
-by calling the [`create_transformer`](../reference/lexy_py/transformer.md#lexy_py.transformer.client.TransformerClient.add_transformer) 
+Finally, create your transformer so that it's stored in the database and available to the Lexy server. You can do this
+by calling the [`create_transformer`](../reference/lexy_py/transformer.md#lexy_py.transformer.client.TransformerClient.add_transformer)
 method.
 
 ```python
@@ -135,7 +135,7 @@ from lexy_py import LexyClient
 lx = LexyClient()
 
 lx.create_transformer(
-    transformer_id='code.extract_comments.v1', 
+    transformer_id='code.extract_comments.v1',
     path='lexy.transformers.code.get_comments',
     description='Parse comments and docstrings.'
 )
@@ -145,7 +145,7 @@ lx.create_transformer(
 <Transformer('code.extract_comments.v1', description='Parse comments and docstrings')>
 ```
 
-Now when you call the [`.transformers`](../reference/lexy_py/client.md#lexy_py.client.LexyClient.transformers) property of the Lexy client, you'll be able to see your transformer listed. 
+Now when you call the [`.transformers`](../reference/lexy_py/client.md#lexy_py.client.LexyClient.transformers) property of the Lexy client, you'll be able to see your transformer listed.
 
 ```python
 lx.transformers
@@ -165,14 +165,14 @@ You're now ready to use your custom transformer to process documents!
 
 ### Testing with sample documents
 
-You can use the [`transform_document`](../reference/lexy_py/transformer.md#lexy_py.transformer.client.TransformerClient.transform_document) 
+You can use the [`transform_document`](../reference/lexy_py/transformer.md#lexy_py.transformer.client.TransformerClient.transform_document)
 method of the `Transformer` class to test your transformer on sample documents.
 
 ```python
 code_transformer = lx.get_transformer('code.extract_comments.v1')
 
 sample_doc = {
-    'content': 'print("hello world")', 
+    'content': 'print("hello world")',
     'meta': {
       'filename': 'example.py'
     }
@@ -182,6 +182,6 @@ code_transformer.transform_document(sample_doc)
 ```
 
 ```{ .text .no-copy .result #code-output }
-{'task_id': '65ecd2f7-bac4-4747-9e65-a6d21a72f585', 
+{'task_id': '65ecd2f7-bac4-4747-9e65-a6d21a72f585',
  'result': [{'comment_text': 'my comment', 'comment_meta': {'line_no': 1, 'filename': 'example.py'}}]}
 ```
