@@ -77,7 +77,7 @@ class DatabaseTask(Task):
 
     def print_index_manager_models(self):
         sorted_models = sorted(self.index_manager.index_models.items(), key=lambda x: x[0])
-        print(f"index_manager.index_models:\n", "\n".join([f"{k}: {v}" for k, v in sorted_models]))
+        print("index_manager.index_models:\n", "\n".join([f"{k}: {v}" for k, v in sorted_models]))
 
 
 def convert_arrays_to_lists(obj):

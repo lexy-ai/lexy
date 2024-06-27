@@ -18,7 +18,7 @@ To run tests locally, you can use the following make command.
 make run-tests
 ```
 
-This command will run tests for the Lexy server and Lexy Python SDK. If you want to run the tests separately, you can 
+This command will run tests for the Lexy server and Lexy Python SDK. If you want to run the tests separately, you can
 use the following commands.
 
 ```bash
@@ -35,7 +35,7 @@ To run tests inside of an already running lexy-server container, use the followi
 make run-tests-docker
 ```
 
-To create a new lexy-server container and run tests, use the following command. This requires the rest of the stack to 
+To create a new lexy-server container and run tests, use the following command. This requires the rest of the stack to
 be running.
 
 ```bash
@@ -67,7 +67,7 @@ Add the migration file to version control and open a pull request.
 
 ### Updating Docker containers
 
-When you pull changes from the repository, you may need to update your local Docker containers. To rebuild the 
+When you pull changes from the repository, you may need to update your local Docker containers. To rebuild the
 server and worker containers, and apply database migrations, you can run the following make command:
 
 ```bash
@@ -87,14 +87,14 @@ docker exec lexy-server poetry install --no-root -E "lexy_transformers"
 docker exec lexy-celeryworker poetry install --no-root -E "lexy_transformers"
 ```
 
-### Release Docker containers 
+### Release Docker containers
 
-Docker containers are built for each [release](https://github.com/lexy-ai/lexy/releases) and hosted on GitHub Container 
+Docker containers are built for each [release](https://github.com/lexy-ai/lexy/releases) and hosted on GitHub Container
 Registry. Packages are available [here](https://github.com/orgs/lexy-ai/packages?repo_name=lexy).
 
 ### Pip installing into Docker containers
 
-Sometimes you may need to install a new package into the Docker container, since it's much faster than updating 
+Sometimes you may need to install a new package into the Docker container, since it's much faster than updating
 `pyproject.toml` and rebuilding. You can do this by running the following:
 
 ```bash

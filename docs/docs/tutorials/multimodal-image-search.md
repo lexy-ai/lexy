@@ -31,9 +31,9 @@ images_tutorial
 
 ### Define index
 
-First we'll define our index to store our embedded images. We use **`*.embeddings.clip`** as the transformer model name 
-to indicate that we want to use the CLIP embeddings model, but that the embedding field can use any model that matches 
-this pattern, including **`image.embeddings.clip`** and **`text.embeddings.clip`**. 
+First we'll define our index to store our embedded images. We use **`*.embeddings.clip`** as the transformer model name
+to indicate that we want to use the CLIP embeddings model, but that the embedding field can use any model that matches
+this pattern, including **`image.embeddings.clip`** and **`text.embeddings.clip`**.
 
 
 ```python
@@ -44,7 +44,7 @@ index_fields = {
 
 # create index
 idx = lx.create_index(
-    index_id='image_tutorial_index', 
+    index_id='image_tutorial_index',
     description='Index for images tutorial',
     index_fields=index_fields
 )
@@ -58,7 +58,7 @@ idx
 ```
 
 
-We'll use the CLIP image embeddings transformer available on [HuggingFace](https://huggingface.co/openai/clip-vit-base-patch32). This transformer uses the [CLIP](https://openai.com/blog/clip/) model from OpenAI to create embeddings for images. 
+We'll use the CLIP image embeddings transformer available on [HuggingFace](https://huggingface.co/openai/clip-vit-base-patch32). This transformer uses the [CLIP](https://openai.com/blog/clip/) model from OpenAI to create embeddings for images.
 
 The CLIP model is a transformer model that was trained on a large dataset of images and text pairs. The model learns to map images and text to a shared embedding space, where the embeddings of matching images and text are close together. We can use this model to create embeddings for images, and then use those embeddings to find matching images for a given text query, or vice versa.
 
@@ -81,7 +81,7 @@ lx.transformers
 
 ### Create binding
 
-We'll create a binding that will process images added to our **`images_tutorial`** collection using the CLIP image 
+We'll create a binding that will process images added to our **`images_tutorial`** collection using the CLIP image
 embeddings transformer, and store the results in **`image_tutorial_index`**.
 
 
@@ -104,7 +104,7 @@ binding
 
 ## Upload images to the collection
 
-Let's upload some images from the [image-text-demo dataset](https://huggingface.co/datasets/shabani1/image-text-demo) to the collection. This dataset is from HuggingFace 
+Let's upload some images from the [image-text-demo dataset](https://huggingface.co/datasets/shabani1/image-text-demo) to the collection. This dataset is from HuggingFace
 datasets and requires the `datasets` package to be installed.
 
 
@@ -137,8 +137,8 @@ len(data)
 # add documents to the collection
 for i, row in enumerate(data, start=1):
     print(i, row['text'])
-    lx.upload_documents(files=row['image'], 
-                        filenames=row['text'] + '.jpg', 
+    lx.upload_documents(files=row['image'],
+                        filenames=row['text'] + '.jpg',
                         collection_name='images_tutorial')
 ```
 
@@ -209,7 +209,7 @@ import httpx
 from IPython.display import display, HTML
 from PIL import Image
 
-def image_from_url(url): 
+def image_from_url(url):
     response = httpx.get(url)
     response.raise_for_status()
     return Image.open(response)
@@ -542,4 +542,3 @@ display_results_html(results)
 </div>
 
 </div>
-

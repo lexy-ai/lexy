@@ -18,6 +18,3 @@
             - aget_index
             - alist_indexes
             - aupdate_index
-
-
-

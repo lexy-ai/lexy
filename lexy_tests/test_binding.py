@@ -110,7 +110,7 @@ class TestBinding:
         assert collection.collection_id is not None
         assert collection.collection_name == "default"
         b.collection_id = collection.collection_id
-        
+
         binding = Binding(**b.model_dump())
         async_session.add(binding)
         await async_session.commit()

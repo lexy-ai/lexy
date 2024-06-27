@@ -1,6 +1,6 @@
 # Installation
 
-To run Lexy locally, you'll need [Docker](https://www.docker.com/get-started/) installed. You'll also need Python 3.11 
+To run Lexy locally, you'll need [Docker](https://www.docker.com/get-started/) installed. You'll also need Python 3.11
 or greater. To install Lexy, you can either build from source (recommended) or install from PyPI (standalone mode).
 
 ## Build from source
@@ -13,18 +13,18 @@ git clone https://github.com/lexy-ai/lexy.git
 
 ### Install dependencies
 
-First create a virtual environment. Make sure that you're using Python 3.11 or greater. You can check your Python 
+First create a virtual environment. Make sure that you're using Python 3.11 or greater. You can check your Python
 version by running `python3 --version`.
 
 ```Shell
 # Change to the lexy directory
 cd lexy
 # Create a virtualenv
-python3 -m venv venv 
+python3 -m venv venv
 source venv/bin/activate
 ```
 
-Next, install the dev dependencies. This will also create a `.env` file in the working directory if it doesn't 
+Next, install the dev dependencies. This will also create a `.env` file in the working directory if it doesn't
 exist already.
 
 ```Shell
@@ -45,8 +45,8 @@ To stop the containers, run `docker compose down`.
 
 ## Install from PyPI
 
-Use this method if you're already familiar with Lexy and are using it as a dependency in your own project. You'll need 
-to provide instances of the Lexy server, worker, and database. See the [Quickstart](quickstart.md) guide for more 
+Use this method if you're already familiar with Lexy and are using it as a dependency in your own project. You'll need
+to provide instances of the Lexy server, worker, and database. See the [Quickstart](quickstart.md) guide for more
 information and a detailed example.
 
 ```Shell
@@ -69,10 +69,10 @@ In order to upload and store files to Lexy, you'll need to configure either Amaz
 
 ### Amazon S3
 
-To configure Amazon S3, you can use `aws configure` on the command line (recommended) or set the value of 
-`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in your `.env` file. 
+To configure Amazon S3, you can use `aws configure` on the command line (recommended) or set the value of
+`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in your `.env` file.
 
-If you choose to use `aws configure`, make sure to uncomment the following line in `docker-compose.yaml` 
+If you choose to use `aws configure`, make sure to uncomment the following line in `docker-compose.yaml`
 in order for your credentials to be available inside of the `lexyserver` container.
 
 ```yaml
@@ -81,33 +81,33 @@ in order for your credentials to be available inside of the `lexyserver` contain
       - $HOME/.aws/credentials:/root/.aws/credentials:ro
 ```
 
-You'll also need to specify an S3 bucket for file storage (for which your AWS credentials should have full access). 
-You can do so by adding `DEFAULT_STORAGE_BUCKET=<name-of-your-S3-bucket>` to your `.env` file. 
+You'll also need to specify an S3 bucket for file storage (for which your AWS credentials should have full access).
+You can do so by adding `DEFAULT_STORAGE_BUCKET=<name-of-your-S3-bucket>` to your `.env` file.
 
-Remember to rebuild your dev containers for the change to take effect (run `make rebuild-dev-containers` on the 
+Remember to rebuild your dev containers for the change to take effect (run `make rebuild-dev-containers` on the
 command line).
 
 ### Google Cloud Storage
 
-To use Google Cloud Storage, you'll need to set `DEFAULT_STORAGE_SERVICE=gcs` in your `.env` file. You'll also need to 
-create a service account, and set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to the path of your service 
+To use Google Cloud Storage, you'll need to set `DEFAULT_STORAGE_SERVICE=gcs` in your `.env` file. You'll also need to
+create a service account, and set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to the path of your service
 account credentials. You can do so by adding the following to your `.env` file:
 
 ```Shell
 GOOGLE_APPLICATION_CREDENTIALS=<path-to-your-service-account-credentials>
 ```
 
-You'll also need to specify a GCS bucket for file storage (for which your service account should have full access). 
+You'll also need to specify a GCS bucket for file storage (for which your service account should have full access).
 You can do so by adding `DEFAULT_STORAGE_BUCKET=<name-of-your-GCS-bucket>` to your `.env` file.
 
-Remember to rebuild your dev containers for the change to take effect (run `make rebuild-dev-containers` on the 
+Remember to rebuild your dev containers for the change to take effect (run `make rebuild-dev-containers` on the
 command line).
 
 
 ???+ example "Example .env settings"
 
     === "Amazon S3"
-    
+
         ```shell
         DEFAULT_STORAGE_SERVICE=s3
         DEFAULT_STORAGE_BUCKET=your_s3_bucket_name
@@ -116,7 +116,7 @@ command line).
         ```
 
     === "Google Cloud Storage"
-    
+
         ```shell
         DEFAULT_STORAGE_SERVICE=gcs
         DEFAULT_STORAGE_BUCKET=your_gcs_bucket_name
@@ -126,14 +126,14 @@ command line).
 
 ## Using OpenAI transformers
 
-To use OpenAI embeddings in Lexy, you'll need to set the `OPENAI_API_KEY` environment variable. You can do so by adding 
+To use OpenAI embeddings in Lexy, you'll need to set the `OPENAI_API_KEY` environment variable. You can do so by adding
 the following to your `.env` file:
 
 ```Shell
 OPENAI_API_KEY=<your-openai-api-key>
 ```
 
-Do this before building your docker containers. Or, if you've already run `docker compose up`, you can run the 
+Do this before building your docker containers. Or, if you've already run `docker compose up`, you can run the
 following to rebuild the server and worker containers.
 
 ```shell
@@ -176,5 +176,5 @@ The server will be running at http://localhost:9900. In addition, you can find t
 
 ### PyCharm issues
 
-If your virtualenv keeps getting bjorked by PyCharm, make sure that you're following the instructions above verbatim, 
+If your virtualenv keeps getting bjorked by PyCharm, make sure that you're following the instructions above verbatim,
 and using `venv` instead of `.venv` for the path of your virtual environment.

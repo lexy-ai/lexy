@@ -83,7 +83,7 @@ def init(ctx, project_dir, pipeline_dir, overwrite, no_input):
                 set_key(env_file, "PIPELINE_DIR", pipeline_dir)
                 click.secho(f"Set PIPELINE_DIR in .env file: {pipeline_dir}", fg="blue")
             else:
-                click.secho(f"Existing value for PIPELINE_DIR. Use --overwrite to overwrite.",
+                click.secho("Existing value for PIPELINE_DIR. Use --overwrite to overwrite.",
                             err=True, fg="red")
                 raise click.Abort()
     else:
@@ -112,7 +112,7 @@ def init(ctx, project_dir, pipeline_dir, overwrite, no_input):
             if ctx.obj['debug']:
                 click.secho(f"Copied {file} to {pipeline_dir}", fg="blue")
 
-    click.secho(f"Finished initializing Lexy", fg="green")
+    click.secho("Finished initializing Lexy", fg="green")
 
 
 @cli.command(help="Create docker-compose file")

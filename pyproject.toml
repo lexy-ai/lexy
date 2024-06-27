@@ -106,6 +106,8 @@ lexy = "lexy.cli:cli"
 
 [tool.poetry.group.dev.dependencies]
 alembic = "^1.13.1"
+ruff = "^0.4.10"
+pre-commit = "^3.7.1"
 
 
 [tool.poetry.group.test.dependencies]
@@ -142,6 +144,10 @@ env = [
     "LEXY_CONFIG=testing",  # Overwritten in lexy_tests/__init__.py
     "CELERY_CONFIG=testing",  # Overwritten in lexy_tests/__init__.py
 ]
+
+
+[tool.ruff.lint.per-file-ignores]
+"sdk-python/lexy_py_tests/conftest.py" = ["F401", "F811"]
 
 
 [build-system]

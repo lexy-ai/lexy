@@ -2,7 +2,7 @@
 
 ## First steps
 
-Let's get started by instantiating the Lexy client. By default, this will connect to the Lexy server running at 
+Let's get started by instantiating the Lexy client. By default, this will connect to the Lexy server running at
 `http://localhost:9900`. You can visit the OpenAPI documentation for the server at [`http://localhost:9900/docs`](http://localhost:9900/docs).
 
 ```python
@@ -38,7 +38,7 @@ Lexy server <http://localhost:9900/api>
 ```
 
 
-Let's add some documents to our "**default**" collection. We can add them using the [`LexyClient.add_documents`](../reference/lexy_py/document.md#lexy_py.document.client.DocumentClient.add_documents) 
+Let's add some documents to our "**default**" collection. We can add them using the [`LexyClient.add_documents`](../reference/lexy_py/document.md#lexy_py.document.client.DocumentClient.add_documents)
 method.
 
 
@@ -64,16 +64,16 @@ Documents that are added to the "**default**" collection are automatically embed
 ```mermaid
 flowchart LR
     collection["Collection
-      
-    &quot;default&quot;"] 
-    --> 
-    transformer["Transformer 
-    
+
+    &quot;default&quot;"]
+    -->
+    transformer["Transformer
+
     &quot;text.embeddings.minilm&quot;"]
     -->
     index["Index
-    
-    &quot;default_text_embeddings&quot;"];   
+
+    &quot;default_text_embeddings&quot;"];
 ```
 
 </div>
@@ -109,8 +109,8 @@ lx.query_index('what is deep learning')
 
 ## Example: Famous biographies
 
-Let's go through a longer example to see how **Collections**, **Documents**, **Indexes**, **Bindings**, and 
-**Transformers** interact with one another. We'll use Lexy to create and query embeddings for a new collection of 
+Let's go through a longer example to see how **Collections**, **Documents**, **Indexes**, **Bindings**, and
+**Transformers** interact with one another. We'll use Lexy to create and query embeddings for a new collection of
 documents.
 
 ### Collections
@@ -143,7 +143,7 @@ bios
 
 ### Documents
 
-We can use the [`Collection.list_documents`](../reference/lexy_py/collection.md#lexy_py.collection.models.Collection.list_documents) 
+We can use the [`Collection.list_documents`](../reference/lexy_py/collection.md#lexy_py.collection.models.Collection.list_documents)
 method to see that our new collection is empty.
 
 ```python
@@ -177,8 +177,8 @@ bios.add_documents([
 
 ### Transformers
 
-Now we want to create embeddings for the documents in our new collection. We'll use a **`Transformer`** to generate 
-embeddings for our documents. We can use the [`LexyClient.transformers`](../reference/lexy_py/client.md#lexy_py.client.LexyClient.transformers) property to see a list of available 
+Now we want to create embeddings for the documents in our new collection. We'll use a **`Transformer`** to generate
+embeddings for our documents. We can use the [`LexyClient.transformers`](../reference/lexy_py/client.md#lexy_py.client.LexyClient.transformers) property to see a list of available
 transformers.
 
 
@@ -202,10 +202,10 @@ For our example, we'll use the "**text.embeddings.minilm**" transformer, which u
 
 ### Indexes
 
-Before we can bind this transformer to our collection, we need to create an **`Index`** for storing the resulting 
+Before we can bind this transformer to our collection, we need to create an **`Index`** for storing the resulting
 embeddings.
 
-Let's create a new index called "**bios_index**" with embeddings for our new collection. Our index will have a single 
+Let's create a new index called "**bios_index**" with embeddings for our new collection. Our index will have a single
 field called **`bio_embedding`** that will store the embeddings output from the MiniLM sentence transformer.
 
 
@@ -219,8 +219,8 @@ index_fields = {
 
 # create index
 index = lx.create_index(
-    index_id='bios_index', 
-    description='Biography embeddings', 
+    index_id='bios_index',
+    description='Biography embeddings',
     index_fields=index_fields
 )
 index
@@ -244,16 +244,16 @@ Now let's create a **`Binding`**. Our binding will:
 ```mermaid
 flowchart LR
     collection["Collection
-      
-    &quot;bios&quot;"] 
-    --> 
-    transformer["Transformer 
-    
+
+    &quot;bios&quot;"]
+    -->
+    transformer["Transformer
+
     &quot;text.embeddings.minilm&quot;"]
     -->
     index["Index
-    
-    &quot;bios_index&quot;"];   
+
+    &quot;bios_index&quot;"];
 ```
 
 </div>
@@ -305,7 +305,7 @@ index.query(query_text='famous artists', query_field='bio_embedding', k=3)
 
 
 Because our binding has status set to "`ON`", any new documents added to our collection will automatically be processed by our transformer and inserted into our index as embeddings.
- 
+
 Let's add another document.
 
 

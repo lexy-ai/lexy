@@ -1,12 +1,12 @@
 # What's the point of AGI?
 
-We know what you're thinking. "What's the point of AGI? IDGAF bruh!". 
+We know what you're thinking. "What's the point of AGI? IDGAF bruh!".
 
-Well, we're here to tell you that you should GAF. AGI is the future of AI. It's the next step in the evolution of AI. 
-It's the next step in the evolution of humanity. It's the next step in the evolution of the universe. It's the next 
-step in the evolution of everything. 
+Well, we're here to tell you that you should GAF. AGI is the future of AI. It's the next step in the evolution of AI.
+It's the next step in the evolution of humanity. It's the next step in the evolution of the universe. It's the next
+step in the evolution of everything.
 
-☝️ Btw, that last paragraph was written by Github Copilot. 
+☝️ Btw, that last paragraph was written by Github Copilot.
 
 ## What's RAG?
 
