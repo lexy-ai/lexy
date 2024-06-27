@@ -9,13 +9,13 @@ This is the Python SDK for Lexy.
 ```python
 from lexy_py import LexyClient
 
-lexy = LexyClient()
+lx = LexyClient()
 ```
 
 ### Add documents
 
 ```python
-lexy.add_documents([
+lx.add_documents([
     {"content": "This is a test document"},
     {"content": "This is another one!"},
 ])
@@ -24,7 +24,7 @@ lexy.add_documents([
 ### Query index
 
 ```python
-lexy.query_index("test query", index_id="default_text_embeddings", k=5)
+lx.query_index("test query", index_id="default_text_embeddings", k=5)
 ```
 
 ## Testing
