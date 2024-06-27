@@ -5,7 +5,6 @@ from lexy.models.collection import Collection, CollectionCreate, CollectionUpdat
 
 
 class TestCollection:
-
     def test_hello(self):
         assert True
 
@@ -24,7 +23,7 @@ class TestCollection:
         assert response.status_code == 200, response.text
         data = response.json()
         assert len(data) > 1
-        collection_names = [c['collection_name'] for c in data]
+        collection_names = [c["collection_name"] for c in data]
         assert "default" in collection_names
 
     @pytest.mark.asyncio
@@ -35,12 +34,14 @@ class TestCollection:
         assert response.status_code == 200, response.text
         data = response.json()
         assert len(data) > 1
-        collection_names = [c['collection_name'] for c in data]
+        collection_names = [c["collection_name"] for c in data]
         assert "default" in collection_names
 
     @pytest.mark.asyncio
     async def test_create_collection(self, async_session, settings):
-        collection = Collection(collection_name="test_collection", description="Test Collection")
+        collection = Collection(
+            collection_name="test_collection", description="Test Collection"
+        )
         async_session.add(collection)
         await async_session.commit()
         await async_session.refresh(collection)
@@ -63,7 +64,8 @@ class TestCollection:
     @pytest.mark.asyncio
     async def test_create_collection_with_model_validate(self, async_session, settings):
         collection = CollectionCreate(
-            collection_name="test_collection_validated", description="Test Collection Validated"
+            collection_name="test_collection_validated",
+            description="Test Collection Validated",
         )
         assert collection.collection_name == "test_collection_validated"
         assert collection.description == "Test Collection Validated"
@@ -81,7 +83,9 @@ class TestCollection:
         assert db_collection.updated_at is not None
 
         result = await async_session.exec(
-            select(Collection).where(Collection.collection_name == "test_collection_validated")
+            select(Collection).where(
+                Collection.collection_name == "test_collection_validated"
+            )
         )
         collections = result.all()
         assert len(collections) == 1
@@ -107,7 +111,9 @@ class TestCollection:
 
         # get collection
         result = await async_session.exec(
-            select(Collection).where(Collection.collection_name == "test_collection_crud")
+            select(Collection).where(
+                Collection.collection_name == "test_collection_crud"
+            )
         )
         collections = result.all()
         assert len(collections) == 1
@@ -130,7 +136,9 @@ class TestCollection:
 
         # delete collection
         result = await async_session.exec(
-            select(Collection).where(Collection.collection_name == "test_collection_crud")
+            select(Collection).where(
+                Collection.collection_name == "test_collection_crud"
+            )
         )
         collection = result.first()
         assert collection is not None
@@ -138,14 +146,15 @@ class TestCollection:
         await async_session.commit()
 
         result = await async_session.exec(
-            select(Collection).where(Collection.collection_name == "test_collection_crud")
+            select(Collection).where(
+                Collection.collection_name == "test_collection_crud"
+            )
         )
         collection = result.first()
         assert collection is None
 
 
 class TestCollectionModel:
-
     def test_create_collection_model(self):
         collection = CollectionCreate(collection_name="test_collection")
         assert collection.collection_name == "test_collection"
@@ -158,20 +167,32 @@ class TestCollectionModel:
         with pytest.raises(ValueError):
             CollectionCreate(collection_name="", description="Test Collection")  # blank
         with pytest.raises(ValueError):
-            CollectionCreate(collection_name="test collection", description="Test Collection")  # space
+            CollectionCreate(
+                collection_name="test collection", description="Test Collection"
+            )  # space
         with pytest.raises(ValueError):
-            CollectionCreate(collection_name="test-collection", description="Test Collection")  # hyphen
+            CollectionCreate(
+                collection_name="test-collection", description="Test Collection"
+            )  # hyphen
         with pytest.raises(ValueError):
-            CollectionCreate(collection_name="Test", description="Test Collection")  # uppercase
+            CollectionCreate(
+                collection_name="Test", description="Test Collection"
+            )  # uppercase
         with pytest.raises(ValueError):
-            CollectionCreate(collection_name="1abc", description="Test Collection")  # starts with number
+            CollectionCreate(
+                collection_name="1abc", description="Test Collection"
+            )  # starts with number
         with pytest.raises(ValueError):
-            CollectionCreate(collection_name="_mytable" * 8, description="Test Collection")  # too long
+            CollectionCreate(
+                collection_name="_mytable" * 8, description="Test Collection"
+            )  # too long
 
     def test_update_collection_model(self):
         collection_update = CollectionUpdate(collection_name="test_collection")
         assert collection_update.collection_name == "test_collection"
-        collection_update = CollectionUpdate(collection_name="_te5t", description="Updated description")
+        collection_update = CollectionUpdate(
+            collection_name="_te5t", description="Updated description"
+        )
         assert collection_update.collection_name == "_te5t"
         assert collection_update.description == "Updated description"
         collection_update = CollectionUpdate(description="Updated description")
@@ -182,12 +203,22 @@ class TestCollectionModel:
         with pytest.raises(ValueError):
             CollectionUpdate(collection_name="", description="Test Collection")  # blank
         with pytest.raises(ValueError):
-            CollectionUpdate(collection_name="test collection", description="Test Collection")  # space
+            CollectionUpdate(
+                collection_name="test collection", description="Test Collection"
+            )  # space
         with pytest.raises(ValueError):
-            CollectionUpdate(collection_name="test-collection", description="Test Collection")  # hyphen
+            CollectionUpdate(
+                collection_name="test-collection", description="Test Collection"
+            )  # hyphen
         with pytest.raises(ValueError):
-            CollectionUpdate(collection_name="Test", description="Test Collection")  # uppercase
+            CollectionUpdate(
+                collection_name="Test", description="Test Collection"
+            )  # uppercase
         with pytest.raises(ValueError):
-            CollectionUpdate(collection_name="1abc", description="Test Collection")  # starts with number
+            CollectionUpdate(
+                collection_name="1abc", description="Test Collection"
+            )  # starts with number
         with pytest.raises(ValueError):
-            CollectionUpdate(collection_name="_mytable" * 8, description="Test Collection")  # too long
+            CollectionUpdate(
+                collection_name="_mytable" * 8, description="Test Collection"
+            )  # too long

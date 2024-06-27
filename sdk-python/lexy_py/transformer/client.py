@@ -1,4 +1,4 @@
-""" Client for interacting with the Transformer API. """
+"""Client for interacting with the Transformer API."""
 
 from typing import Optional, TYPE_CHECKING
 
@@ -33,27 +33,33 @@ class TransformerClient:
         return self._lexy_client.client
 
     def list_transformers(self) -> list[Transformer]:
-        """ Synchronously get a list of all transformers.
+        """Synchronously get a list of all transformers.
 
         Returns:
             list[Transformer]: A list of all transformers.
         """
         r = self.client.get("/transformers")
         handle_response(r)
-        return [Transformer(**transformer, client=self._lexy_client) for transformer in r.json()]
+        return [
+            Transformer(**transformer, client=self._lexy_client)
+            for transformer in r.json()
+        ]
 
     async def alist_transformers(self) -> list[Transformer]:
-        """ Asynchronously get a list of all transformers.
+        """Asynchronously get a list of all transformers.
 
         Returns:
             list[Transformer]: A list of all transformers.
         """
         r = await self.aclient.get("/transformers")
         handle_response(r)
-        return [Transformer(**transformer, client=self._lexy_client) for transformer in r.json()]
+        return [
+            Transformer(**transformer, client=self._lexy_client)
+            for transformer in r.json()
+        ]
 
     def get_transformer(self, transformer_id: str) -> Transformer:
-        """ Synchronously get a transformer.
+        """Synchronously get a transformer.
 
         Args:
             transformer_id (str): The ID of the transformer to get.
@@ -66,7 +72,7 @@ class TransformerClient:
         return Transformer(**r.json(), client=self._lexy_client)
 
     async def aget_transformer(self, transformer_id: str) -> Transformer:
-        """ Asynchronously get a transformer.
+        """Asynchronously get a transformer.
 
         Args:
             transformer_id (str): The ID of the transformer to get.
@@ -78,11 +84,10 @@ class TransformerClient:
         handle_response(r)
         return Transformer(**r.json(), client=self._lexy_client)
 
-    def add_transformer(self,
-                        transformer_id: str,
-                        path: str,
-                        description: Optional[str] = None) -> Transformer:
-        """ Synchronously add a transformer.
+    def add_transformer(
+        self, transformer_id: str, path: str, description: Optional[str] = None
+    ) -> Transformer:
+        """Synchronously add a transformer.
 
         Args:
             transformer_id (str): The ID of the transformer to add.
@@ -99,11 +104,10 @@ class TransformerClient:
         handle_response(r)
         return Transformer(**r.json(), client=self._lexy_client)
 
-    async def aadd_transformer(self,
-                               transformer_id: str,
-                               path: str,
-                               description: Optional[str] = None) -> Transformer:
-        """ Asynchronously add a transformer.
+    async def aadd_transformer(
+        self, transformer_id: str, path: str, description: Optional[str] = None
+    ) -> Transformer:
+        """Asynchronously add a transformer.
 
         Args:
             transformer_id (str): The ID of the transformer to add.
@@ -120,11 +124,13 @@ class TransformerClient:
         handle_response(r)
         return Transformer(**r.json(), client=self._lexy_client)
 
-    def update_transformer(self,
-                           transformer_id: str,
-                           path: Optional[str] = None,
-                           description: Optional[str] = None) -> Transformer:
-        """ Synchronously update a transformer.
+    def update_transformer(
+        self,
+        transformer_id: str,
+        path: Optional[str] = None,
+        description: Optional[str] = None,
+    ) -> Transformer:
+        """Synchronously update a transformer.
 
         Args:
             transformer_id (str): The ID of the transformer to update.
@@ -135,15 +141,20 @@ class TransformerClient:
             Transformer: The updated transformer.
         """
         transformer = TransformerUpdate(path=path, description=description)
-        r = self.client.patch(f"/transformers/{transformer_id}", json=transformer.model_dump(exclude_none=True))
+        r = self.client.patch(
+            f"/transformers/{transformer_id}",
+            json=transformer.model_dump(exclude_none=True),
+        )
         handle_response(r)
         return Transformer(**r.json(), client=self._lexy_client)
 
-    async def aupdate_transformer(self,
-                                  transformer_id: str,
-                                  path: Optional[str] = None,
-                                  description: Optional[str] = None) -> Transformer:
-        """ Asynchronously update a transformer.
+    async def aupdate_transformer(
+        self,
+        transformer_id: str,
+        path: Optional[str] = None,
+        description: Optional[str] = None,
+    ) -> Transformer:
+        """Asynchronously update a transformer.
 
         Args:
             transformer_id (str): The ID of the transformer to update.
@@ -154,12 +165,15 @@ class TransformerClient:
             Transformer: The updated transformer.
         """
         transformer = TransformerUpdate(path=path, description=description)
-        r = await self.aclient.patch(f"/transformers/{transformer_id}", json=transformer.model_dump(exclude_none=True))
+        r = await self.aclient.patch(
+            f"/transformers/{transformer_id}",
+            json=transformer.model_dump(exclude_none=True),
+        )
         handle_response(r)
         return Transformer(**r.json(), client=self._lexy_client)
 
     def delete_transformer(self, transformer_id: str) -> dict:
-        """ Synchronously delete a transformer.
+        """Synchronously delete a transformer.
 
         Args:
             transformer_id (str): The ID of the transformer to delete.
@@ -169,7 +183,7 @@ class TransformerClient:
         return r.json()
 
     async def adelete_transformer(self, transformer_id: str) -> dict:
-        """ Asynchronously delete a transformer.
+        """Asynchronously delete a transformer.
 
         Args:
             transformer_id (str): The ID of the transformer to delete.
@@ -178,12 +192,14 @@ class TransformerClient:
         handle_response(r)
         return r.json()
 
-    def transform_document(self,
-                           transformer_id: str,
-                           document: Document | dict,
-                           transformer_params: dict = None,
-                           content_only: bool = False) -> dict:
-        """ Synchronously transform a document.
+    def transform_document(
+        self,
+        transformer_id: str,
+        document: Document | dict,
+        transformer_params: dict = None,
+        content_only: bool = False,
+    ) -> dict:
+        """Synchronously transform a document.
 
         Args:
             transformer_id (str): The ID of the transformer to use.
@@ -203,7 +219,7 @@ class TransformerClient:
         """
         if isinstance(document, dict):
             document = Document(**document)
-        data = {"document": document.model_dump(mode='json')}
+        data = {"document": document.model_dump(mode="json")}
         if transformer_params:
             data["transformer_params"] = transformer_params
         if content_only:

@@ -8,7 +8,7 @@ from lexy.core.celery_config import settings as celery_settings
 
 def create_celery(celery_settings=celery_settings, lexy_settings=lexy_settings):
     celery_app = Celery()
-    celery_app.config_from_object(celery_settings, namespace='CELERY')
+    celery_app.config_from_object(celery_settings, namespace="CELERY")
 
     # list of modules to import when the Celery worker starts.
     # celery_app.conf.update(imports=(

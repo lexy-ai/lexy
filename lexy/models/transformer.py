@@ -21,7 +21,7 @@ class TransformerBase(SQLModel):
         max_length=255,
         # TODO: switch back to `regex=` (or `pattern=`) once SQLModel bug is fixed
         #   https://github.com/tiangolo/sqlmodel/discussions/735
-        schema_extra={"pattern": r"^[a-zA-Z][a-zA-Z0-9_.-]+$"}
+        schema_extra={"pattern": r"^[a-zA-Z][a-zA-Z0-9_.-]+$"},
     )
     path: Optional[str] = Field(
         default=None,
@@ -29,7 +29,7 @@ class TransformerBase(SQLModel):
         max_length=255,
         # TODO: switch back to `regex=` (or `pattern=`) once SQLModel bug is fixed
         #   https://github.com/tiangolo/sqlmodel/discussions/735
-        schema_extra={"pattern": r"^[a-zA-Z][a-zA-Z0-9_.]+$"}
+        schema_extra={"pattern": r"^[a-zA-Z][a-zA-Z0-9_.]+$"},
     )
     description: Optional[str] = None
 
@@ -38,16 +38,25 @@ class Transformer(TransformerBase, table=True):
     __tablename__ = "transformers"
     created_at: datetime = Field(
         default=None,
-        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now()),
+        sa_column=Column(
+            DateTime(timezone=True), nullable=False, server_default=func.now()
+        ),
     )
     updated_at: datetime = Field(
         default=None,
-        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
+        sa_column=Column(
+            DateTime(timezone=True),
+            nullable=False,
+            server_default=func.now(),
+            onupdate=func.now(),
+        ),
     )
     bindings: list["Binding"] = Relationship(back_populates="transformer")
     celery_task_name: Optional[str] = Field(
         default=None,
-        sa_column=Column(String, default=default_celery_task_name, nullable=True, unique=True)
+        sa_column=Column(
+            String, default=default_celery_task_name, nullable=True, unique=True
+        ),
     )
 
 

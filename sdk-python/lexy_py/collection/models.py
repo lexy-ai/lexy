@@ -11,7 +11,8 @@ if TYPE_CHECKING:
 
 
 class CollectionModel(BaseModel):
-    """ Collection model """
+    """Collection model"""
+
     collection_name: str = Field(
         title="Collection Name",
         description="The name of the collection. Must be unique across collections.",
@@ -30,7 +31,8 @@ class CollectionModel(BaseModel):
 
 
 class CollectionUpdate(BaseModel):
-    """ Collection update model """
+    """Collection update model"""
+
     collection_name: Optional[str] = Field(
         default=None,
         title="Collection Name",
@@ -49,7 +51,7 @@ class Collection(CollectionModel):
 
     def __init__(self, **data: Any):
         super().__init__(**data)
-        self._client = data.pop('client', None)
+        self._client = data.pop("client", None)
 
     @property
     def client(self) -> "LexyClient":
@@ -57,11 +59,10 @@ class Collection(CollectionModel):
             raise ValueError("API client has not been set.")
         return self._client
 
-    def add_documents(self,
-                      docs: Document | dict | list[Document | dict],
-                      *,
-                      batch_size: int = 100) -> list[Document]:
-        """ Synchronously add documents to the collection in batches.
+    def add_documents(
+        self, docs: Document | dict | list[Document | dict], *, batch_size: int = 100
+    ) -> list[Document]:
+        """Synchronously add documents to the collection in batches.
 
         Args:
             docs (Document | dict | list[Document | dict]): The documents to add.
@@ -70,11 +71,13 @@ class Collection(CollectionModel):
         Returns:
             Documents: A list of created documents.
         """
-        return self.client.document.add_documents(docs, collection_id=self.collection_id, batch_size=batch_size)
+        return self.client.document.add_documents(
+            docs, collection_id=self.collection_id, batch_size=batch_size
+        )
 
     # TODO: add pagination
     def list_documents(self, *, limit: int = 100, offset: int = 0) -> list[Document]:
-        """ Synchronously get a list of documents in the collection.
+        """Synchronously get a list of documents in the collection.
 
         Args:
             limit (int): The maximum number of documents to return. Defaults to 100. Maximum allowed is 1000.
@@ -83,14 +86,18 @@ class Collection(CollectionModel):
         Returns:
             Documents: A list of documents in the collection.
         """
-        return self.client.document.list_documents(collection_id=self.collection_id, limit=limit, offset=offset)
+        return self.client.document.list_documents(
+            collection_id=self.collection_id, limit=limit, offset=offset
+        )
 
-    def upload_documents(self,
-                         files: str | Image.Image | list[str | Image.Image],
-                         filenames: str | list[str] = None,
-                         *,
-                         batch_size: int = 5) -> list[Document]:
-        """ Synchronously upload files to the collection in batches.
+    def upload_documents(
+        self,
+        files: str | Image.Image | list[str | Image.Image],
+        filenames: str | list[str] = None,
+        *,
+        batch_size: int = 5,
+    ) -> list[Document]:
+        """Synchronously upload files to the collection in batches.
 
         Args:
             files (str | Image.Image | list[str | Image.Image]): The files to upload. Can be a single instance or a
@@ -119,7 +126,9 @@ class Collection(CollectionModel):
             ...     ]
             ... )
         """
-        return self.client.document.upload_documents(files=files,
-                                                     filenames=filenames,
-                                                     collection_id=self.collection_id,
-                                                     batch_size=batch_size)
+        return self.client.document.upload_documents(
+            files=files,
+            filenames=filenames,
+            collection_id=self.collection_id,
+            batch_size=batch_size,
+        )

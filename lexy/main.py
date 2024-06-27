@@ -43,7 +43,7 @@ app = FastAPI(
     docs_url=settings.DOCS_URL,
     openapi_url=settings.OPENAPI_URL,
     servers=settings.SERVERS,
-    lifespan=app_lifespan
+    lifespan=app_lifespan,
 )
 app.include_router(lexy_api, prefix=settings.API_PREFIX)
 

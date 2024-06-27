@@ -13,9 +13,8 @@ def pdf_reader_from_url(url: str) -> pypdf.PdfReader:
     return pypdf.PdfReader(BytesIO(response.content))
 
 
-@lexy_transformer(name='pdf.embed_pages.text_only')
+@lexy_transformer(name="pdf.embed_pages.text_only")
 def embed_pdf_pages(doc: Document) -> list[dict]:
-
     pdf = pdf_reader_from_url(doc.object_url)
     pages = []
 
@@ -23,14 +22,14 @@ def embed_pdf_pages(doc: Document) -> list[dict]:
         page_text = page.extract_text()
         images = [im.name for im in page.images]
         p = {
-            'page_text': page_text,
-            'page_text_embedding': text_embeddings(page_text),
-            'page_meta': {
-                'page_num': page_num,
-                'page_text_length': len(page_text),
-                'images': images,
-                'n_images': len(images)
-            }
+            "page_text": page_text,
+            "page_text_embedding": text_embeddings(page_text),
+            "page_meta": {
+                "page_num": page_num,
+                "page_text_length": len(page_text),
+                "images": images,
+                "n_images": len(images),
+            },
         }
         pages.append(p)
 

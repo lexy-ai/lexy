@@ -35,15 +35,17 @@ class DocumentBase(SQLModel):
     @property
     def is_stored_object(self) -> bool:
         return bool(
-            self.meta.get('storage_service') and self.meta.get('storage_bucket') and self.meta.get('storage_key')
+            self.meta.get("storage_service")
+            and self.meta.get("storage_bucket")
+            and self.meta.get("storage_key")
         )
 
     @property
     def image(self) -> Image:
         if not self._image:
-            self._image = self.meta.get('image', {}).get('im')
+            self._image = self.meta.get("image", {}).get("im")
         if not self._image:
-            base64_str = self.meta.get('image', {}).get('base64')
+            base64_str = self.meta.get("image", {}).get("base64")
             if base64_str:
                 self._image = self.image_from_base64_str(base64_str)
         if not self._image:
@@ -53,22 +55,24 @@ class DocumentBase(SQLModel):
 
     @property
     def object_url(self) -> Optional[str]:
-        if not self.meta.get('_urls'):
+        if not self.meta.get("_urls"):
             self.refresh_object_urls()
-        url = self.meta.get('_urls', {}).get('object')
+        url = self.meta.get("_urls", {}).get("object")
         # check if url is expired and refresh if needed
-        storage_service = self.meta.get('storage_service')
+        storage_service = self.meta.get("storage_service")
         if url and presigned_url_is_expired(url, storage_service=storage_service):
             self.refresh_object_urls()
-            url = self.meta.get('_urls', {}).get('object')
+            url = self.meta.get("_urls", {}).get("object")
         return url
 
     # FIXME: storage_client is required, but not passed in with object_url's self.refresh_object_urls()
-    def refresh_object_urls(self,
-                            storage_client: "StorageClient" = None,
-                            expiration: int = 3600) -> None:
-        urls = generate_signed_urls_for_document(self, storage_client=storage_client, expiration=expiration)
-        self.meta['_urls'] = urls
+    def refresh_object_urls(
+        self, storage_client: "StorageClient" = None, expiration: int = 3600
+    ) -> None:
+        urls = generate_signed_urls_for_document(
+            self, storage_client=storage_client, expiration=expiration
+        )
+        self.meta["_urls"] = urls
 
     # TODO: move to future ImageDocument class
     @staticmethod
@@ -93,18 +97,22 @@ class Document(DocumentBase, table=True):
     )
     created_at: datetime = Field(
         default=None,
-        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now()),
+        sa_column=Column(
+            DateTime(timezone=True), nullable=False, server_default=func.now()
+        ),
     )
     updated_at: datetime = Field(
         default=None,
-        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
+        sa_column=Column(
+            DateTime(timezone=True),
+            nullable=False,
+            server_default=func.now(),
+            onupdate=func.now(),
+        ),
     )
     collection_id: str = Field(default=None, foreign_key="collections.collection_id")
     collection: Collection = Relationship(
-        back_populates="documents",
-        sa_relationship_kwargs={
-            'lazy': 'selectin'
-        }
+        back_populates="documents", sa_relationship_kwargs={"lazy": "selectin"}
     )
 
 

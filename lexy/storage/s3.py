@@ -10,10 +10,9 @@ logger.setLevel(logging.INFO)
 
 
 class S3Client(StorageClient):
-
     def __init__(self, **kwargs):
         logger.info("Creating S3 client")
-        self.client = boto3.client('s3', **kwargs)
+        self.client = boto3.client("s3", **kwargs)
 
     def is_authenticated(self) -> bool:
         try:
@@ -28,11 +27,13 @@ class S3Client(StorageClient):
 
     def list_buckets(self) -> list[str]:
         response = self.client.list_buckets()
-        return [bucket['Name'] for bucket in response['Buckets']]
+        return [bucket["Name"] for bucket in response["Buckets"]]
 
-    def upload_object(self, fileobj, bucket_name: str, object_name: str, rewind: bool = True) -> dict:
+    def upload_object(
+        self, fileobj, bucket_name: str, object_name: str, rewind: bool = True
+    ) -> dict:
         if isinstance(fileobj, str):
-            with open(fileobj, 'rb') as f:
+            with open(fileobj, "rb") as f:
                 fileobj = f
         else:
             if rewind:
@@ -46,13 +47,14 @@ class S3Client(StorageClient):
             # "storage_uri": f"s3://{bucket_name}/{object_name}",
         }
 
-    def generate_presigned_url(self, bucket_name: str, object_name: str, expiration: int = 3600) -> str:
-        url = self.client.generate_presigned_url('get_object',
-                                                 Params={
-                                                     'Bucket': bucket_name,
-                                                     'Key': object_name
-                                                 },
-                                                 ExpiresIn=expiration)
+    def generate_presigned_url(
+        self, bucket_name: str, object_name: str, expiration: int = 3600
+    ) -> str:
+        url = self.client.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": bucket_name, "Key": object_name},
+            ExpiresIn=expiration,
+        )
         return url
 
     def delete_object(self, bucket_name: str, object_name: str) -> None:

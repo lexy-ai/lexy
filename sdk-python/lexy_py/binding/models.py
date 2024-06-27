@@ -22,7 +22,8 @@ class BindingStatus(str, Enum):
 
 # shared properties
 class BindingBase(BaseModel):
-    """ Binding base model """
+    """Binding base model"""
+
     description: Optional[str] = None
     execution_params: Optional[dict[str, Any]] = Field(default={})
     transformer_params: Optional[dict[str, Any]] = Field(default={})
@@ -30,7 +31,7 @@ class BindingBase(BaseModel):
     status: Optional[BindingStatus] = Field(default=BindingStatus.PENDING)
 
     # if a FilterBuilder instance is provided for `filter`, convert it to a dict
-    @field_validator('filter', mode='before')
+    @field_validator("filter", mode="before")
     @classmethod
     def filter_to_dict(cls, value: Optional[FilterBuilder | dict]) -> Optional[dict]:
         if isinstance(value, FilterBuilder):
@@ -39,7 +40,8 @@ class BindingBase(BaseModel):
 
 
 class BindingModel(BindingBase):
-    """ Binding model """
+    """Binding model"""
+
     binding_id: int
     collection_id: str
     transformer_id: str
@@ -51,16 +53,19 @@ class BindingModel(BindingBase):
     updated_at: datetime
 
     def __repr__(self):
-        return f"<Binding(" \
-               f"id={self.binding_id}, " \
-               f"status={self.status.name}, " \
-               f"collection='{self.collection_id}', " \
-               f"transformer='{self.transformer_id}', " \
-               f"index='{self.index_id}')>"
+        return (
+            f"<Binding("
+            f"id={self.binding_id}, "
+            f"status={self.status.name}, "
+            f"collection='{self.collection_id}', "
+            f"transformer='{self.transformer_id}', "
+            f"index='{self.index_id}')>"
+        )
 
 
 class BindingCreate(BindingBase):
-    """ Binding create model """
+    """Binding create model"""
+
     collection_name: Optional[str] = None
     collection_id: Optional[str] = None
     transformer_name: Optional[str] = None
@@ -69,19 +74,22 @@ class BindingCreate(BindingBase):
     index_id: Optional[str] = None
 
     # make sure either `_name` or `_id` is provided for collection, transformer, and index
-    @model_validator(mode='before')
+    @model_validator(mode="before")
     def check_identifiers(cls, values):
-        if not values.get('collection_name') and not values.get('collection_id'):
-            raise ValueError('Either collection_name or collection_id must be provided')
-        if not values.get('transformer_name') and not values.get('transformer_id'):
-            raise ValueError('Either transformer_name or transformer_id must be provided')
-        if not values.get('index_name') and not values.get('index_id'):
-            raise ValueError('Either index_name or index_id must be provided')
+        if not values.get("collection_name") and not values.get("collection_id"):
+            raise ValueError("Either collection_name or collection_id must be provided")
+        if not values.get("transformer_name") and not values.get("transformer_id"):
+            raise ValueError(
+                "Either transformer_name or transformer_id must be provided"
+            )
+        if not values.get("index_name") and not values.get("index_id"):
+            raise ValueError("Either index_name or index_id must be provided")
         return values
 
 
 class BindingUpdate(BindingBase):
-    """ Binding update model """
+    """Binding update model"""
+
     description: Optional[str] = None
     execution_params: Optional[dict[str, Any]] = None
     transformer_params: Optional[dict[str, Any]] = None
@@ -95,10 +103,14 @@ class Binding(BindingModel):
 
     def __init__(self, **data: Any):
         super().__init__(**data)
-        self._client = data.pop('client', None)
-        self.collection: Collection = Collection(**self.collection.model_dump(), client=self._client)
+        self._client = data.pop("client", None)
+        self.collection: Collection = Collection(
+            **self.collection.model_dump(), client=self._client
+        )
         self.index: Index = Index(**self.index.model_dump(), client=self._client)
-        self.transformer: Transformer = Transformer(**self.transformer.model_dump(), client=self._client)
+        self.transformer: Transformer = Transformer(
+            **self.transformer.model_dump(), client=self._client
+        )
 
     @property
     def client(self) -> "LexyClient":

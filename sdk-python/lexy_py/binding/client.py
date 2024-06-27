@@ -1,4 +1,4 @@
-""" Client for interacting with the Bindings API. """
+"""Client for interacting with the Bindings API."""
 
 from typing import Optional, TYPE_CHECKING
 
@@ -33,7 +33,7 @@ class BindingClient:
         return self._lexy_client.client
 
     def list_bindings(self) -> list[Binding]:
-        """ Synchronously get a list of all bindings.
+        """Synchronously get a list of all bindings.
 
         Returns:
             list[Binding]: A list of all bindings.
@@ -43,7 +43,7 @@ class BindingClient:
         return [Binding(**binding, client=self._lexy_client) for binding in r.json()]
 
     async def alist_bindings(self) -> list[Binding]:
-        """ Asynchronously get a list of all bindings.
+        """Asynchronously get a list of all bindings.
 
         Returns:
             list[Binding]: A list of all bindings.
@@ -52,20 +52,22 @@ class BindingClient:
         handle_response(r)
         return [Binding(**binding, client=self._lexy_client) for binding in r.json()]
 
-    def add_binding(self,
-                    *,
-                    collection_name: str = None,
-                    collection_id: str = None,
-                    transformer_name: str = None,
-                    transformer_id: str = None,
-                    index_name: str = None,
-                    index_id: str = None,
-                    description: Optional[str] = None,
-                    execution_params: Optional[dict] = None,
-                    transformer_params: Optional[dict] = None,
-                    filters: Optional[dict | FilterBuilder] = None,
-                    status: Optional[str] = None) -> Binding:
-        """ Synchronously add a new binding.
+    def add_binding(
+        self,
+        *,
+        collection_name: str = None,
+        collection_id: str = None,
+        transformer_name: str = None,
+        transformer_id: str = None,
+        index_name: str = None,
+        index_id: str = None,
+        description: Optional[str] = None,
+        execution_params: Optional[dict] = None,
+        transformer_params: Optional[dict] = None,
+        filters: Optional[dict | FilterBuilder] = None,
+        status: Optional[str] = None,
+    ) -> Binding:
+        """Synchronously add a new binding.
 
         One of either `_name` or `_id` is required for each of `collection`, `transformer`, and `index`. If both
         `_name` and `_id` are provided, `_id` will be used.
@@ -120,26 +122,28 @@ class BindingClient:
             execution_params=execution_params,
             transformer_params=transformer_params,
             filter=filters,
-            status=status
+            status=status,
         )
         r = self.client.post("/bindings", json=binding.model_dump(exclude_none=True))
         handle_response(r)
         return Binding(**r.json()["binding"], client=self._lexy_client)
 
-    async def aadd_binding(self,
-                           *,
-                           collection_name: str = None,
-                           collection_id: str = None,
-                           transformer_name: str = None,
-                           transformer_id: str = None,
-                           index_name: str = None,
-                           index_id: str = None,
-                           description: Optional[str] = None,
-                           execution_params: Optional[dict] = None,
-                           transformer_params: Optional[dict] = None,
-                           filters: Optional[dict | FilterBuilder] = None,
-                           status: Optional[str] = None) -> Binding:
-        """ Asynchronously add a new binding.
+    async def aadd_binding(
+        self,
+        *,
+        collection_name: str = None,
+        collection_id: str = None,
+        transformer_name: str = None,
+        transformer_id: str = None,
+        index_name: str = None,
+        index_id: str = None,
+        description: Optional[str] = None,
+        execution_params: Optional[dict] = None,
+        transformer_params: Optional[dict] = None,
+        filters: Optional[dict | FilterBuilder] = None,
+        status: Optional[str] = None,
+    ) -> Binding:
+        """Asynchronously add a new binding.
 
         One of either `_name` or `_id` is required for each of `collection`, `transformer`, and `index`. If both
         `_name` and `_id` are provided, `_id` will be used.
@@ -180,14 +184,16 @@ class BindingClient:
             execution_params=execution_params,
             transformer_params=transformer_params,
             filter=filters,
-            status=status
+            status=status,
         )
-        r = await self.aclient.post("/bindings", json=binding.model_dump(exclude_none=True))
+        r = await self.aclient.post(
+            "/bindings", json=binding.model_dump(exclude_none=True)
+        )
         handle_response(r)
         return Binding(**r.json()["binding"], client=self._lexy_client)
 
     def get_binding(self, binding_id: int) -> Binding:
-        """ Synchronously get a binding.
+        """Synchronously get a binding.
 
         Args:
             binding_id (int): The ID of the binding to get.
@@ -200,7 +206,7 @@ class BindingClient:
         return Binding(**r.json(), client=self._lexy_client)
 
     async def aget_binding(self, binding_id: int) -> Binding:
-        """ Asynchronously get a binding.
+        """Asynchronously get a binding.
 
         Args:
             binding_id (int): The ID of the binding to get.
@@ -212,15 +218,17 @@ class BindingClient:
         handle_response(r)
         return Binding(**r.json(), client=self._lexy_client)
 
-    def update_binding(self,
-                       binding_id: int,
-                       *,
-                       description: Optional[str] = None,
-                       execution_params: Optional[dict] = None,
-                       transformer_params: Optional[dict] = None,
-                       filters: Optional[dict | FilterBuilder] = None,
-                       status: Optional[str] = None) -> Binding:
-        """ Synchronously update a binding.
+    def update_binding(
+        self,
+        binding_id: int,
+        *,
+        description: Optional[str] = None,
+        execution_params: Optional[dict] = None,
+        transformer_params: Optional[dict] = None,
+        filters: Optional[dict | FilterBuilder] = None,
+        status: Optional[str] = None,
+    ) -> Binding:
+        """Synchronously update a binding.
 
         Args:
             binding_id (int): The ID of the binding to update.
@@ -239,7 +247,7 @@ class BindingClient:
             execution_params=execution_params,
             transformer_params=transformer_params,
             filter=filters,
-            status=status
+            status=status,
         )
         json_payload = binding.model_dump(exclude_none=True)
         if json_payload["filter"] == {}:  # explicitly removed filters
@@ -248,15 +256,17 @@ class BindingClient:
         handle_response(r)
         return Binding(**r.json()["binding"], client=self._lexy_client)
 
-    async def aupdate_binding(self,
-                              *,
-                              binding_id: int,
-                              description: Optional[str] = None,
-                              execution_params: Optional[dict] = None,
-                              transformer_params: Optional[dict] = None,
-                              filters: Optional[dict | FilterBuilder] = None,
-                              status: Optional[str] = None) -> Binding:
-        """ Asynchronously update a binding.
+    async def aupdate_binding(
+        self,
+        *,
+        binding_id: int,
+        description: Optional[str] = None,
+        execution_params: Optional[dict] = None,
+        transformer_params: Optional[dict] = None,
+        filters: Optional[dict | FilterBuilder] = None,
+        status: Optional[str] = None,
+    ) -> Binding:
+        """Asynchronously update a binding.
 
         Args:
             binding_id (int): The ID of the binding to update.
@@ -275,7 +285,7 @@ class BindingClient:
             execution_params=execution_params,
             transformer_params=transformer_params,
             filter=filters,
-            status=status
+            status=status,
         )
         json_payload = binding.model_dump(exclude_none=True)
         if json_payload["filter"] == {}:  # explicitly removed filters
@@ -285,7 +295,7 @@ class BindingClient:
         return Binding(**r.json()["binding"], client=self._lexy_client)
 
     def delete_binding(self, binding_id: int) -> dict:
-        """ Synchronously delete a binding.
+        """Synchronously delete a binding.
 
         Args:
             binding_id (int): The ID of the binding to delete.
@@ -295,7 +305,7 @@ class BindingClient:
         return r.json()
 
     async def adelete_binding(self, binding_id: int) -> dict:
-        """ Asynchronously delete a binding.
+        """Asynchronously delete a binding.
 
         Args:
             binding_id (int): The ID of the binding to delete.

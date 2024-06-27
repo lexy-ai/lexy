@@ -14,19 +14,27 @@ logger.setLevel(logging.INFO)
 
 class GoogleCredentialsError(Exception):
     """Raised when missing credentials file."""
+
     pass
 
 
 class GCSClient(StorageClient):
-
-    def __init__(self, credentials_file: str = settings.GOOGLE_APPLICATION_CREDENTIALS, **kwargs):
+    def __init__(
+        self, credentials_file: str = settings.GOOGLE_APPLICATION_CREDENTIALS, **kwargs
+    ):
         if credentials_file:
-            logger.info(f"Creating GCS client using credentials file: {credentials_file}")
-            credentials = service_account.Credentials.from_service_account_file(credentials_file)
+            logger.info(
+                f"Creating GCS client using credentials file: {credentials_file}"
+            )
+            credentials = service_account.Credentials.from_service_account_file(
+                credentials_file
+            )
         else:
-            raise GoogleCredentialsError("Missing credentials file for Google Cloud Storage. Make sure to set "
-                                         "`GOOGLE_APPLICATION_CREDENTIALS` to a valid JSON file containing "
-                                         "service account credentials.")
+            raise GoogleCredentialsError(
+                "Missing credentials file for Google Cloud Storage. Make sure to set "
+                "`GOOGLE_APPLICATION_CREDENTIALS` to a valid JSON file containing "
+                "service account credentials."
+            )
         self.client = storage.Client(credentials=credentials, **kwargs)
 
     def is_authenticated(self) -> bool:
@@ -42,7 +50,9 @@ class GCSClient(StorageClient):
         buckets = self.client.list_buckets()
         return [bucket.name for bucket in buckets]
 
-    def upload_object(self, fileobj, bucket_name: str, object_name: str, rewind: bool = True) -> dict:
+    def upload_object(
+        self, fileobj, bucket_name: str, object_name: str, rewind: bool = True
+    ) -> dict:
         bucket = self.client.bucket(bucket_name)
         blob: storage.blob.Blob = bucket.blob(object_name)
         if isinstance(fileobj, str):
@@ -57,11 +67,14 @@ class GCSClient(StorageClient):
             # "storage_uri": f"gs://{bucket_name}/{object_name}",
         }
 
-    def generate_presigned_url(self, bucket_name: str, object_name: str, expiration: int = 3600) -> str:
+    def generate_presigned_url(
+        self, bucket_name: str, object_name: str, expiration: int = 3600
+    ) -> str:
         bucket = self.client.bucket(bucket_name)
         blob: storage.blob.Blob = bucket.blob(object_name)
-        url = blob.generate_signed_url(expiration=datetime.timedelta(seconds=expiration),
-                                       version="v4")
+        url = blob.generate_signed_url(
+            expiration=datetime.timedelta(seconds=expiration), version="v4"
+        )
         return url
 
     def delete_object(self, bucket_name: str, object_name: str) -> None:

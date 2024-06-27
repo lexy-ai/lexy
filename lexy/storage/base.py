@@ -13,11 +13,15 @@ class StorageClient(ABC):
         pass
 
     @abstractmethod
-    def upload_object(self, fileobj, bucket_name: str, object_name: str, rewind: bool = True) -> dict:
+    def upload_object(
+        self, fileobj, bucket_name: str, object_name: str, rewind: bool = True
+    ) -> dict:
         pass
 
     @abstractmethod
-    def generate_presigned_url(self, bucket_name: str, object_name: str, expiration: int = 3600) -> str:
+    def generate_presigned_url(
+        self, bucket_name: str, object_name: str, expiration: int = 3600
+    ) -> str:
         pass
 
     @abstractmethod

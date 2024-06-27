@@ -25,38 +25,43 @@ class CollectionBase(SQLModel):
         # Postgres identifiers are limited to 63 characters (so 63 - len('zzcol__') = 56)
         # TODO: switch back to `regex=` (or `pattern=`) once SQLModel bug is fixed
         #   https://github.com/tiangolo/sqlmodel/discussions/735
-        schema_extra={"pattern": r"^[a-z_][a-z0-9_]{0,55}$"}
+        schema_extra={"pattern": r"^[a-z_][a-z0-9_]{0,55}$"},
     )
     description: Optional[str] = None
-    config: Optional[dict[str, Any]] = Field(sa_column=Column(JSONB), default=settings.COLLECTION_DEFAULT_CONFIG)
+    config: Optional[dict[str, Any]] = Field(
+        sa_column=Column(JSONB), default=settings.COLLECTION_DEFAULT_CONFIG
+    )
 
 
 class Collection(CollectionBase, table=True):
     __tablename__ = "collections"
     collection_id: str = Field(
         default=None,
-        sa_column=Column(String(length=8), default=generate_short_uid, primary_key=True, unique=True)
+        sa_column=Column(
+            String(length=8), default=generate_short_uid, primary_key=True, unique=True
+        ),
     )
     created_at: datetime = Field(
         default=None,
-        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now()),
+        sa_column=Column(
+            DateTime(timezone=True), nullable=False, server_default=func.now()
+        ),
     )
     updated_at: datetime = Field(
         default=None,
-        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()),
+        sa_column=Column(
+            DateTime(timezone=True),
+            nullable=False,
+            server_default=func.now(),
+            onupdate=func.now(),
+        ),
     )
     documents: list["Document"] = Relationship(
-        back_populates="collection",
-        sa_relationship_kwargs={
-            "lazy": "select"
-        }
+        back_populates="collection", sa_relationship_kwargs={"lazy": "select"}
     )
     bindings: list["Binding"] = Relationship(
         back_populates="collection",
-        sa_relationship_kwargs={
-            "lazy": "selectin",
-            "cascade": "all, delete-orphan"
-        }
+        sa_relationship_kwargs={"lazy": "selectin", "cascade": "all, delete-orphan"},
     )
 
 
@@ -73,7 +78,7 @@ class CollectionUpdate(CollectionBase):
         # Postgres identifiers are limited to 63 characters (so 63 - len('zzcol__') = 56)
         # TODO: switch back to `regex=` (or `pattern=`) once SQLModel bug is fixed
         #   https://github.com/tiangolo/sqlmodel/discussions/735
-        schema_extra={"pattern": r"^[a-z_][a-z0-9_]{0,55}$"}
+        schema_extra={"pattern": r"^[a-z_][a-z0-9_]{0,55}$"},
     )
     description: Optional[str] = None
     config: Optional[dict[str, Any]] = None

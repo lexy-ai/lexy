@@ -15,26 +15,31 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # TODO: move this to the proper config location
-celery_db_worker = 'celery@celeryworker'
+celery_db_worker = "celery@celeryworker"
 
 
-@router.get("/indexes",
-            response_model=list[Index],
-            status_code=status.HTTP_200_OK,
-            name="get_indexes",
-            description="Get all indexes")
+@router.get(
+    "/indexes",
+    response_model=list[Index],
+    status_code=status.HTTP_200_OK,
+    name="get_indexes",
+    description="Get all indexes",
+)
 async def get_indexes(session: AsyncSession = Depends(get_session)) -> list[Index]:
     result = await session.exec(select(Index))
     indexes = result.all()
     return indexes
 
 
-@router.post("/indexes",
-             status_code=status.HTTP_201_CREATED,
-             name="add_index",
-             description="Create a new index")
-async def add_index(index: IndexCreate,
-                    session: AsyncSession = Depends(get_session)) -> Index:
+@router.post(
+    "/indexes",
+    status_code=status.HTTP_201_CREATED,
+    name="add_index",
+    description="Create a new index",
+)
+async def add_index(
+    index: IndexCreate, session: AsyncSession = Depends(get_session)
+) -> Index:
     # check if index already exists
     existing_index = await session.get(Index, index.index_id)
     if existing_index:
@@ -48,8 +53,10 @@ async def add_index(index: IndexCreate,
 
     # create the index model and table
     _ = index_manager.create_index_model_and_table(index_id=db_index.index_id)
-    logger.info(f"Restarting db worker '{celery_db_worker}' following creation of index table "
-                f"for index_id: {db_index.index_id}")
+    logger.info(
+        f"Restarting db worker '{celery_db_worker}' following creation of index table "
+        f"for index_id: {db_index.index_id}"
+    )
     time.sleep(0.5)
     celery_restart_response = restart_celery_worker(celery_db_worker)
     logger.info(f"{celery_restart_response = }")
@@ -57,32 +64,41 @@ async def add_index(index: IndexCreate,
     return db_index
 
 
-@router.get("/indexes/{index_id}",
-            response_model=Index,
-            status_code=status.HTTP_200_OK,
-            name="get_index",
-            description="Get an index")
-async def get_index(index_id: str,
-                    session: AsyncSession = Depends(get_session)) -> Index:
+@router.get(
+    "/indexes/{index_id}",
+    response_model=Index,
+    status_code=status.HTTP_200_OK,
+    name="get_index",
+    description="Get an index",
+)
+async def get_index(
+    index_id: str, session: AsyncSession = Depends(get_session)
+) -> Index:
     result = await session.exec(select(Index).where(Index.index_id == index_id))
     index = result.first()
     if not index:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Index not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Index not found"
+        )
     return index
 
 
-@router.patch("/indexes/{index_id}",
-              response_model=Index,
-              status_code=status.HTTP_200_OK,
-              name="update_index",
-              description="Update an index")
-async def update_index(index_id: str,
-                       index: IndexUpdate,
-                       session: AsyncSession = Depends(get_session)) -> Index:
+@router.patch(
+    "/indexes/{index_id}",
+    response_model=Index,
+    status_code=status.HTTP_200_OK,
+    name="update_index",
+    description="Update an index",
+)
+async def update_index(
+    index_id: str, index: IndexUpdate, session: AsyncSession = Depends(get_session)
+) -> Index:
     result = await session.exec(select(Index).where(Index.index_id == index_id))
     db_index = result.first()
     if not db_index:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Index not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Index not found"
+        )
     index_data = index.model_dump(exclude_unset=True)
     for key, value in index_data.items():
         setattr(db_index, key, value)
@@ -92,17 +108,23 @@ async def update_index(index_id: str,
     return db_index
 
 
-@router.delete("/indexes/{index_id}",
-               status_code=status.HTTP_200_OK,
-               name="delete_index",
-               description="Delete an index")
-async def delete_index(index_id: str,
-                       drop_table: bool = False,
-                       session: AsyncSession = Depends(get_session)) -> dict:
+@router.delete(
+    "/indexes/{index_id}",
+    status_code=status.HTTP_200_OK,
+    name="delete_index",
+    description="Delete an index",
+)
+async def delete_index(
+    index_id: str,
+    drop_table: bool = False,
+    session: AsyncSession = Depends(get_session),
+) -> dict:
     result = await session.exec(select(Index).where(Index.index_id == index_id))
     index = result.first()
     if not index:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Index not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Index not found"
+        )
 
     index_table_name = index.index_table_name
 
@@ -117,7 +139,9 @@ async def delete_index(index_id: str,
     await session.commit()
 
     # TODO: restart celery worker here?
-    return {"msg": "Index deleted",
-            "index_id": index_id,
-            "index_table_name": index_table_name,
-            "table_dropped": table_dropped}
+    return {
+        "msg": "Index deleted",
+        "index_id": index_id,
+        "index_table_name": index_table_name,
+        "table_dropped": table_dropped,
+    }

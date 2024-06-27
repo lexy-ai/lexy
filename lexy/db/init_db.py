@@ -49,14 +49,18 @@ def add_default_data_to_db(session=db):
         logger.warning("Binding data already exists - skipping binding data")
     else:
         for b in default_data["bindings"]:
-            c = session.query(models.Collection).filter(
-                models.Collection.collection_name == b["collection_name"]
-            ).first()
+            c = (
+                session.query(models.Collection)
+                .filter(models.Collection.collection_name == b["collection_name"])
+                .first()
+            )
             if c:
                 session.add(models.Binding(**b, collection_id=c.collection_id))
             else:
-                logger.warning(f"Collection '{b['collection_name']}' not found for seed "
-                               f"binding - skipping binding")
+                logger.warning(
+                    f"Collection '{b['collection_name']}' not found for seed "
+                    f"binding - skipping binding"
+                )
         session.commit()
 
 
@@ -70,29 +74,39 @@ def add_sample_docs_to_db(session=db):
         # the default index and binding are created through appropriate crud endpoints
 
         for doc in sample_docs["code_collection_sample_docs"]:
-            c = session.query(models.Collection).filter(
-                models.Collection.collection_name == doc["collection_name"]
-            ).first()
+            c = (
+                session.query(models.Collection)
+                .filter(models.Collection.collection_name == doc["collection_name"])
+                .first()
+            )
             if c:
                 session.add(models.Document(**doc, collection_id=c.collection_id))
                 session.commit()
             else:
-                logger.warning(f"Collection '{doc['collection_name']}' not found for sample "
-                               f"document - skipping sample document")
+                logger.warning(
+                    f"Collection '{doc['collection_name']}' not found for sample "
+                    f"document - skipping sample document"
+                )
 
 
 def add_first_superuser_to_db(session=db, settings=app_settings):
-    superuser = session.query(models.User).filter(models.User.email == settings.FIRST_SUPERUSER_EMAIL).first()
+    superuser = (
+        session.query(models.User)
+        .filter(models.User.email == settings.FIRST_SUPERUSER_EMAIL)
+        .first()
+    )
     if superuser:
         # issue a warning if superuser already exists in the database
         logger.warning("Superuser already exists - skipping superuser")
     else:
         # adding superuser
-        session.add(models.User.create(
-            email=settings.FIRST_SUPERUSER_EMAIL,
-            password=settings.FIRST_SUPERUSER_PASSWORD.get_secret_value(),
-            is_superuser=True
-        ))
+        session.add(
+            models.User.create(
+                email=settings.FIRST_SUPERUSER_EMAIL,
+                password=settings.FIRST_SUPERUSER_PASSWORD.get_secret_value(),
+                is_superuser=True,
+            )
+        )
         session.commit()
 
 
@@ -117,7 +131,7 @@ def init_db(session=db, seed_data=False):
 
 
 def drop_tables(session=db, drop_all=True, dry_run=True):
-    """ Drop all tables in the database
+    """Drop all tables in the database
 
     WARNING: This will drop all indexes and celery tables too!
     If you get an error, you'll need to initiate IndexManager first.
@@ -134,9 +148,11 @@ def drop_tables(session=db, drop_all=True, dry_run=True):
     if drop_all:
         SQLModel.metadata.reflect(bind=session.bind)
     db_table_names = ", ".join(SQLModel.metadata.tables.keys())
-    logger.info(f"Dropping database tables..."
-                f"\n\tengine.url: {sync_engine.url}"
-                f"\n\tdb_table_names: {db_table_names}")
+    logger.info(
+        f"Dropping database tables..."
+        f"\n\tengine.url: {sync_engine.url}"
+        f"\n\tdb_table_names: {db_table_names}"
+    )
     if dry_run is False:
         SQLModel.metadata.drop_all(sync_engine)
         logger.info("Dropped tables")
@@ -145,9 +161,9 @@ def drop_tables(session=db, drop_all=True, dry_run=True):
 
 
 def reset_db(session=db, drop_all=True, dry_run=True):
-    """ Reset the database
+    """Reset the database
 
-        WARNING: this may not work as expected - use the make target `drop-db-tables` instead
+    WARNING: this may not work as expected - use the make target `drop-db-tables` instead
     """
     logger.info("Resetting database")
     drop_tables(session, drop_all=drop_all, dry_run=dry_run)

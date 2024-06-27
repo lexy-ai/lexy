@@ -28,10 +28,12 @@ async def get_storage_client() -> StorageClient | None:
         raise ValueError("Unsupported storage service configured")
 
 
-def generate_signed_urls_for_document(document: Union["Document", "DocumentBase"],
-                                      storage_client: StorageClient,
-                                      expiration: int = 3600) -> dict:
-    """ Generate signed URLs for a document.
+def generate_signed_urls_for_document(
+    document: Union["Document", "DocumentBase"],
+    storage_client: StorageClient,
+    expiration: int = 3600,
+) -> dict:
+    """Generate signed URLs for a document.
 
     Args:
         document (Document): The document object.
@@ -61,29 +63,34 @@ def generate_signed_urls_for_document(document: Union["Document", "DocumentBase"
     presigned_urls = {}
 
     # url for the document object
-    if document.meta.get('storage_bucket') and document.meta.get('storage_key'):
-        presigned_urls["object"] = (
-            storage_client.generate_presigned_url(bucket_name=document.meta.get('storage_bucket'),
-                                                  object_name=document.meta.get('storage_key'),
-                                                  expiration=expiration)
+    if document.meta.get("storage_bucket") and document.meta.get("storage_key"):
+        presigned_urls["object"] = storage_client.generate_presigned_url(
+            bucket_name=document.meta.get("storage_bucket"),
+            object_name=document.meta.get("storage_key"),
+            expiration=expiration,
         )
 
     # urls for thumbnails
-    if document.meta.get('image') and document.meta.get('image').get('thumbnails'):
+    if document.meta.get("image") and document.meta.get("image").get("thumbnails"):
         presigned_urls["thumbnails"] = {}
-        for dims, vals in document.meta.get('image').get('thumbnails').items():
-            presigned_urls["thumbnails"][dims] = (
-                storage_client.generate_presigned_url(bucket_name=vals.get('storage_bucket'),
-                                                      object_name=vals.get('storage_key'),
-                                                      expiration=expiration)
+        for dims, vals in document.meta.get("image").get("thumbnails").items():
+            presigned_urls["thumbnails"][dims] = storage_client.generate_presigned_url(
+                bucket_name=vals.get("storage_bucket"),
+                object_name=vals.get("storage_key"),
+                expiration=expiration,
             )
 
     return presigned_urls
 
 
-async def construct_key_for_document(document: "Document" = None, collection_id: str = None, document_id: str = None,
-                                     path_prefix: str = None, filename: str = None) -> str:
-    """ Construct a storage key (object name) for a document.
+async def construct_key_for_document(
+    document: "Document" = None,
+    collection_id: str = None,
+    document_id: str = None,
+    path_prefix: str = None,
+    filename: str = None,
+) -> str:
+    """Construct a storage key (object name) for a document.
 
     Args:
         document (Document): The document object.
@@ -116,7 +123,9 @@ async def construct_key_for_document(document: "Document" = None, collection_id:
     elif collection_id and document_id:
         key = f"collections/{collection_id}/documents/{document_id}"
     else:
-        raise ValueError("Either a document object or collection_id and document_id must be provided.")
+        raise ValueError(
+            "Either a document object or collection_id and document_id must be provided."
+        )
     if path_prefix:
         key = f"{path_prefix.rstrip('/')}/{key}"
     if filename:
@@ -124,9 +133,15 @@ async def construct_key_for_document(document: "Document" = None, collection_id:
     return key
 
 
-async def construct_key_for_thumbnail(dims: tuple[int, int], document: "Document" = None, collection_id: str = None,
-                                      document_id: str = None, path_prefix: str = None, filename: str = None) -> str:
-    """ Construct a storage key (object name) for thumbnails of a document.
+async def construct_key_for_thumbnail(
+    dims: tuple[int, int],
+    document: "Document" = None,
+    collection_id: str = None,
+    document_id: str = None,
+    path_prefix: str = None,
+    filename: str = None,
+) -> str:
+    """Construct a storage key (object name) for thumbnails of a document.
 
     Args:
         dims (tuple[int, int]): The dimensions of the thumbnail.
@@ -161,9 +176,13 @@ async def construct_key_for_thumbnail(dims: tuple[int, int], document: "Document
     if document and document.collection_id and document.document_id:
         key = f"collections/{document.collection_id}/thumbnails/{dims[0]}x{dims[1]}/{document.document_id}"
     elif collection_id and document_id:
-        key = f"collections/{collection_id}/thumbnails/{dims[0]}x{dims[1]}/{document_id}"
+        key = (
+            f"collections/{collection_id}/thumbnails/{dims[0]}x{dims[1]}/{document_id}"
+        )
     else:
-        raise ValueError("Either a document object or collection_id and document_id must be provided.")
+        raise ValueError(
+            "Either a document object or collection_id and document_id must be provided."
+        )
     if path_prefix:
         key = f"{path_prefix.rstrip('/')}/{key}"
     if filename:

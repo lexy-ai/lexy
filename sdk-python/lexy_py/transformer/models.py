@@ -10,19 +10,27 @@ if TYPE_CHECKING:
 
 
 class TransformerModel(BaseModel):
-    """ Transformer model """
-    transformer_id: str = Field(..., min_length=1, max_length=255, pattern=r"^[a-zA-Z][a-zA-Z0-9_.-]+$")
-    path: Optional[str] = Field(default=None, min_length=1, max_length=255, pattern=r"^[a-zA-Z][a-zA-Z0-9_.]+$")
+    """Transformer model"""
+
+    transformer_id: str = Field(
+        ..., min_length=1, max_length=255, pattern=r"^[a-zA-Z][a-zA-Z0-9_.-]+$"
+    )
+    path: Optional[str] = Field(
+        default=None, min_length=1, max_length=255, pattern=r"^[a-zA-Z][a-zA-Z0-9_.]+$"
+    )
     description: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
     def __repr__(self):
-        return f"<Transformer('{self.transformer_id}', description='{self.description}')>"
+        return (
+            f"<Transformer('{self.transformer_id}', description='{self.description}')>"
+        )
 
 
 class TransformerUpdate(BaseModel):
-    """ Transformer update model """
+    """Transformer update model"""
+
     path: Optional[str] = None
     description: Optional[str] = None
 
@@ -33,7 +41,7 @@ class Transformer(TransformerModel):
 
     def __init__(self, **data: Any):
         super().__init__(**data)
-        self._client = data.pop('client', None)
+        self._client = data.pop("client", None)
 
     @property
     def client(self) -> "LexyClient":
@@ -41,11 +49,13 @@ class Transformer(TransformerModel):
             raise ValueError("API client has not been set.")
         return self._client
 
-    def transform_document(self,
-                           document: Document | dict,
-                           transformer_params: dict = None,
-                           content_only: bool = False) -> dict:
-        """ Synchronously transform a document.
+    def transform_document(
+        self,
+        document: Document | dict,
+        transformer_params: dict = None,
+        content_only: bool = False,
+    ) -> dict:
+        """Synchronously transform a document.
 
         Args:
             document (Document | dict): The document to transform.
@@ -64,7 +74,9 @@ class Transformer(TransformerModel):
             {'task_id': '449d9d79-4a57-4191-95d3-9c38955c8ced',
              'result': [-0.03085244633257389, 0.028894789516925812, ...]}
         """
-        return self.client.transformer.transform_document(transformer_id=self.transformer_id,
-                                                          document=document,
-                                                          transformer_params=transformer_params,
-                                                          content_only=content_only)
+        return self.client.transformer.transform_document(
+            transformer_id=self.transformer_id,
+            document=document,
+            transformer_params=transformer_params,
+            content_only=content_only,
+        )

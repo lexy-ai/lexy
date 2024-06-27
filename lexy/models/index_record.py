@@ -14,9 +14,7 @@ from sqlmodel import SQLModel, Field
 
 class IndexRecordBase(SQLModel):
     document_id: Optional[UUID] = Field(
-        foreign_key='documents.document_id',
-        index=True,
-        nullable=True
+        foreign_key="documents.document_id", index=True, nullable=True
     )
     custom_id: Optional[str] = Field(default=None)
     meta: Optional[dict[Any, Any]] = Field(default={}, sa_type=JSONB)
@@ -49,11 +47,11 @@ class IndexRecordBaseTable(IndexRecordBase):
     updated_at: datetime = Field(
         default=None,
         sa_type=DateTime(timezone=True),  # type: ignore
-        sa_column_kwargs=dict(nullable=False, server_default=func.now(), onupdate=func.now()),
+        sa_column_kwargs=dict(
+            nullable=False, server_default=func.now(), onupdate=func.now()
+        ),
     )
     task_id: Optional[UUID] = Field(default=None)
     binding_id: Optional[int] = Field(
-        foreign_key='bindings.binding_id',
-        index=True,
-        nullable=True
+        foreign_key="bindings.binding_id", index=True, nullable=True
     )
