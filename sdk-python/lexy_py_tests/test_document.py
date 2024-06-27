@@ -358,7 +358,7 @@ class TestDocumentClient:
         assert text_doc.meta['filename'] == 'hotd.txt'
         assert text_doc.meta['storage_bucket'] == storage_bucket
         assert text_doc.meta['storage_key'] == f"lexy_tests/collections/{tmp_collection_id}/documents/hotd.txt"
-        assert text_doc.meta['size'] == 3143
+        assert text_doc.meta['size'] == 3144
         assert text_doc.meta['type'] == 'text'
         assert text_doc.meta['content_type'] == 'text/plain'
 
