@@ -27,7 +27,7 @@ os.environ["CELERY_RESULT_BACKEND"] = celery_settings.result_backend
 # We need to import the app **after** forcefully setting the env vars, since Celery doesn't
 #  let you assign any value other than the environment variable if one is set.
 #  See https://github.com/celery/celery/issues/4284.
-from lexy.main import app as lexy_test_app  # noqa: F401
+from lexy.main import app as lexy_test_app  # noqa: E402
 
 
 # the value of LEXY_CONFIG and CELERY_CONFIG are set using pytest-env plugin in pyproject.toml

@@ -13,7 +13,7 @@ class TestFixtures:
         assert response.json() == {"Say": "Hello!"}
 
     @pytest.mark.asyncio
-    async def test_get_root_with_client(self, client):
+    async def test_get_root_with_client(self, client):  # noqa: F811
         response = client.get("/api")
         assert response.status_code == 200
         assert response.json() == {"Say": "Hello!"}
@@ -35,7 +35,7 @@ class TestFixtures:
         assert data == {"ping": "pong!"}
 
     @pytest.mark.asyncio
-    async def test_get_ping_with_client(self, client):
+    async def test_get_ping_with_client(self, client):  # noqa: F811
         response = client.get(
             "/api/ping",
         )
@@ -61,7 +61,7 @@ class TestFixtures:
         assert len(data) > 1
 
     @pytest.mark.asyncio
-    async def test_get_db_endpoint_with_client(self, client):
+    async def test_get_db_endpoint_with_client(self, client):  # noqa: F811
         response = client.get(
             "/api/collections",
         )
