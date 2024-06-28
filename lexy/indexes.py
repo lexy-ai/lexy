@@ -22,33 +22,28 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 LEXY_INDEX_FIELD_TYPES: Dict = {
-    'int': int,
-    'integer': int,
-    'float': float,
-
-    'str': str,
-    'string': str,
-    'text': str,
-    'bytes': bytes,
-    'bytearray': bytearray,
-
-    'date': date,
-    'datetime': datetime,
-    'time': time,
-
-    'uuid': UUID,
-    'uuid1': uuid1,
-    'uuid3': uuid3,
-    'uuid4': uuid4,
-    'uuid5': uuid5,
-
-    'bool': bool,
-    'boolean': bool,
-
-    'dict': dict,
-    'object': dict,
-    'list': list,
-    'array': list,
+    "int": int,
+    "integer": int,
+    "float": float,
+    "str": str,
+    "string": str,
+    "text": str,
+    "bytes": bytes,
+    "bytearray": bytearray,
+    "date": date,
+    "datetime": datetime,
+    "time": time,
+    "uuid": UUID,
+    "uuid1": uuid1,
+    "uuid3": uuid3,
+    "uuid4": uuid4,
+    "uuid5": uuid5,
+    "bool": bool,
+    "boolean": bool,
+    "dict": dict,
+    "object": dict,
+    "list": list,
+    "array": list,
 }
 
 
@@ -82,7 +77,7 @@ def map_tablename_to_class(SQLModel) -> dict:
     for mapper in SQLModel._sa_registry.mappers:
         cls = mapper.class_
         classname = cls.__name__
-        if not classname.startswith('_'):
+        if not classname.startswith("_"):
             tblname = cls.__tablename__
             tbl_to_cls[tblname] = cls
     return tbl_to_cls
@@ -93,7 +88,6 @@ TBLNAME_TO_CLASS = map_tablename_to_class(SQLModel)
 
 # TODO: add hnsw index type (e.g., cosine, euclidean, etc.) to DDL statement
 class IndexManager(object):
-
     TBLNAME_TO_CLASS: dict | None = TBLNAME_TO_CLASS
 
     def __init__(self, engine: Engine):
@@ -102,14 +96,18 @@ class IndexManager(object):
         self._inspector: Inspector | None = None
 
         self.index_models: dict[str, Type[IndexRecordBaseTable]] = {}
-        logger.info(f"IndexManager initialized with db url '{repr(self.db.bind.engine.url)}'")
+        logger.info(
+            f"IndexManager initialized with db url '{repr(self.db.bind.engine.url)}'"
+        )
 
     # TODO: Make session management more robust, specifically by
     #  ensuring that distinct API requests don't use the same session
     @property
     def db(self) -> Session:
         if self._db is None:
-            sync_session_local = sessionmaker(class_=Session, autocommit=False, autoflush=False, bind=self._engine)
+            sync_session_local = sessionmaker(
+                class_=Session, autocommit=False, autoflush=False, bind=self._engine
+            )
             self._db = sync_session_local()
         return self._db
 
@@ -120,12 +118,12 @@ class IndexManager(object):
         return self._inspector
 
     def get_indexes(self) -> list[Index]:
-        """ Get all indexes """
+        """Get all indexes"""
         indexes = self.db.exec(select(Index)).all()
         return indexes
 
     def get_index(self, index_id: str) -> Index:
-        """ Get an index by id
+        """Get an index by id
 
         Args:
             index_id (str): index id
@@ -146,26 +144,37 @@ class IndexManager(object):
         indexes = self.get_indexes()
         for index in indexes:
             if self.index_models.get(index.index_id):
-                logger.warning(f"create_index_models -- Index model {index.index_id} already exists.")
+                logger.warning(
+                    f"create_index_models -- Index model {index.index_id} already exists."
+                )
             index_model = self.create_index_model(index)
             if self.table_exists(index.index_table_name):
-                logger.info(f"create_index_models -- Index table {index.index_table_name} already exists.")
+                logger.info(
+                    f"create_index_models -- Index table {index.index_table_name} already exists."
+                )
             else:
-                logger.info(f"create_index_models -- Creating new Index table {index.index_table_name}.")
+                logger.info(
+                    f"create_index_models -- Creating new Index table {index.index_table_name}."
+                )
                 created = self._create_index_table(index_model)
                 if created:
-                    logger.info(f"create_index_models -- Created new Index table {index.index_table_name}.")
+                    logger.info(
+                        f"create_index_models -- Created new Index table {index.index_table_name}."
+                    )
                 else:
-                    logger.warning(f"create_index_models -- Failed to create Index table {index.index_table_name}.")
+                    logger.warning(
+                        f"create_index_models -- Failed to create Index table {index.index_table_name}."
+                    )
 
     def create_index_model(self, index: Index) -> Type[IndexRecordBaseTable]:
-
         index_table_name = index.index_table_name
         model_name = index.index_table_schema.get("title", index_table_name)
 
         # if index_table_name is already in SQLModel's _sa_registry, log a warning and return the existing model
         if index_table_name in self.TBLNAME_TO_CLASS.keys():
-            logger.warning(f"create_index_model -- Index table {index_table_name} exists in TBLNAME_TO_CLASS.keys().")
+            logger.warning(
+                f"create_index_model -- Index table {index_table_name} exists in TBLNAME_TO_CLASS.keys()."
+            )
             index_model = self.TBLNAME_TO_CLASS.get(index_table_name)
             self.index_models[index.index_id] = index_model
             return index_model
@@ -178,14 +187,16 @@ class IndexManager(object):
             __tablename__ = index.index_table_name
             __index_id__ = index.index_id
             document_id: Optional[UUID] = Field(
-                sa_column_args=(ForeignKey('documents.document_id', ondelete='CASCADE'),),
+                sa_column_args=(
+                    ForeignKey("documents.document_id", ondelete="CASCADE"),
+                ),
                 index=True,
-                nullable=True
+                nullable=True,
             )
             binding_id: Optional[int] = Field(
-                sa_column_args=(ForeignKey('bindings.binding_id', ondelete='CASCADE'),),
+                sa_column_args=(ForeignKey("bindings.binding_id", ondelete="CASCADE"),),
                 index=True,
-                nullable=True
+                nullable=True,
             )
 
         # relationship definitions
@@ -194,11 +205,10 @@ class IndexManager(object):
             #   document: "Document" = Relationship(back_populates="index_records")
             # TODO: add back_populates to RelationshipInfo() once index_records is added to Document
             "document": (ForwardRef("Document"), RelationshipInfo()),
-
             # add the Binding relationship, i.e., the equivalent of the following field:
             #   binding: "Binding" = Relationship(back_populates="index_records")
             # TODO: add back_populates to RelationshipInfo() once index_records is added to Binding
-            "binding": (ForwardRef("Binding"), RelationshipInfo())
+            "binding": (ForwardRef("Binding"), RelationshipInfo()),
         }
 
         index_model = create_model(
@@ -211,7 +221,9 @@ class IndexManager(object):
         )
 
         # attach event listener to create index on embedding fields
-        embedding_ddl = self.get_ddl_for_embedding_fields(index.index_fields, index_table_name)
+        embedding_ddl = self.get_ddl_for_embedding_fields(
+            index.index_fields, index_table_name
+        )
         for colname, ddl in embedding_ddl.items():
             event.listen(
                 index_model.__table__,
@@ -222,8 +234,10 @@ class IndexManager(object):
         self.index_models[index.index_id] = index_model
         return index_model
 
-    def get_or_create_index_model(self, index: Index) -> tuple[Type[IndexRecordBaseTable], bool]:
-        """ Get or create an index model from an Index object.
+    def get_or_create_index_model(
+        self, index: Index
+    ) -> tuple[Type[IndexRecordBaseTable], bool]:
+        """Get or create an index model from an Index object.
 
         Args:
             index (Index): The index object to get or create the model for.
@@ -233,15 +247,19 @@ class IndexManager(object):
                 model was created.
         """
         if index.index_id in self.index_models.keys():
-            logger.debug(f"get_or_create_index_model -- Index model {index.index_id} already exists.")
+            logger.debug(
+                f"get_or_create_index_model -- Index model {index.index_id} already exists."
+            )
             return self.index_models.get(index.index_id), False
         else:
-            logger.debug(f"get_or_create_index_model -- Index model {index.index_id} does not exist "
-                         f"- will try to create it")
+            logger.debug(
+                f"get_or_create_index_model -- Index model {index.index_id} does not exist "
+                f"- will try to create it"
+            )
             return self.create_index_model(index), True
 
     def create_index_model_and_table(self, index_id: str) -> tuple[bool, bool]:
-        """ Create a new index model and its associated table.
+        """Create a new index model and its associated table.
 
         **This requires that the index row already exists in the database.**
 
@@ -274,12 +292,14 @@ class IndexManager(object):
         # create index table in the database
         table_created = self._create_index_table(index_model)
         if not table_created:
-            logger.warning(f"Index table {index.index_table_name} already exists. Skipping creation.")
+            logger.warning(
+                f"Index table {index.index_table_name} already exists. Skipping creation."
+            )
 
         return model_created, table_created
 
     def drop_index_table(self, index_id: str) -> bool:
-        """ Drops the index table from the database and removes the index model from the index manager.
+        """Drops the index table from the database and removes the index model from the index manager.
 
         Args:
             index_id (str): The ID of the index to drop.
@@ -304,7 +324,9 @@ class IndexManager(object):
             return False
 
         logger.debug(f"about to drop table for index_model: {index_model}")
-        index_model.metadata.drop_all(self.db.bind.engine, tables=[index_model.__table__])
+        index_model.metadata.drop_all(
+            self.db.bind.engine, tables=[index_model.__table__]
+        )
         index_model.metadata.remove(index_model.__table__)
         # clear the inspector cache to ensure that `self.table_exists` works as expected
         self.inspector.clear_cache()
@@ -316,13 +338,15 @@ class IndexManager(object):
         return self.inspector.has_table(index_table_name)
 
     def _create_index_table(self, index_model: Type[IndexRecordBaseTable]) -> bool:
-        """ Create index table from an Index model """
+        """Create index table from an Index model"""
         # if the tablename is None, raise an error
         if index_model.__tablename__ is None:
             raise ValueError("Index model must have a __tablename__ attribute")
         # if the table already exists, log a warning and return
         if self.table_exists(index_model.__tablename__):
-            logger.warning(f"Index table {index_model.__tablename__} already exists. Skipping creation.")
+            logger.warning(
+                f"Index table {index_model.__tablename__} already exists. Skipping creation."
+            )
             return False
         index_model.metadata.create_all(self.db.bind.engine)
         # clear the inspector cache to ensure that `self.table_exists` works as expected
@@ -331,7 +355,7 @@ class IndexManager(object):
 
     @staticmethod
     def get_field_definitions(index_fields: dict) -> dict[str, tuple[type, Field]]:
-        """ Get field definitions from index fields
+        """Get field definitions from index fields
 
         Args:
             index_fields: dict representation of index fields
@@ -351,16 +375,16 @@ class IndexManager(object):
         for fk, fv in index_fields.items():
             fd_info = None
 
-            if fv['type'] == 'embedding':
-                embedding_args = fv['extras']
+            if fv["type"] == "embedding":
+                embedding_args = fv["extras"]
                 fd_type = list[float]
-                fd_info = Field(sa_column=Column(Vector(dim=embedding_args['dims'])))
+                fd_info = Field(sa_column=Column(Vector(dim=embedding_args["dims"])))
             else:
-                fd_type = LEXY_INDEX_FIELD_TYPES.get(fv['type'])
-                if 'optional' in fv and fv['optional'] is True:
+                fd_type = LEXY_INDEX_FIELD_TYPES.get(fv["type"])
+                if "optional" in fv and fv["optional"] is True:
                     fd_type = Optional[fd_type]
 
-                if fv['type'] in ['dict', 'object', 'list', 'array']:
+                if fv["type"] in ["dict", "object", "list", "array"]:
                     fd_info = Field(sa_column=Column(JSONB), default=None)
 
             field_defs[fk] = (fd_type, fd_info)
@@ -369,11 +393,13 @@ class IndexManager(object):
 
     @staticmethod
     def get_ddl_for_embedding_fields(
-            index_fields: dict,
-            tablename: str,
-            vector_ops_type: Literal['vector_cosine_ops', 'vector_l2_ops', 'vector_ip_ops'] = 'vector_cosine_ops') \
-            -> dict:
-        """ Get DDL statements for index fields of type 'embedding'
+        index_fields: dict,
+        tablename: str,
+        vector_ops_type: Literal[
+            "vector_cosine_ops", "vector_l2_ops", "vector_ip_ops"
+        ] = "vector_cosine_ops",
+    ) -> dict:
+        """Get DDL statements for index fields of type 'embedding'
 
         Args:
             index_fields: dict representation of index fields
@@ -393,7 +419,7 @@ class IndexManager(object):
         """
         embedding_ddl = {}
         for fk, fv in index_fields.items():
-            if fv['type'] == 'embedding':
+            if fv["type"] == "embedding":
                 colname = fk
                 embedding_ddl[fk] = DDL(
                     f"CREATE INDEX IF NOT EXISTS ix_{tablename}_{colname}_hnsw "

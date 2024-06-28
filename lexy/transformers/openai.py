@@ -16,10 +16,9 @@ else:
 
 
 @lexy_transformer(name="text.embeddings.openai")
-def text_embeddings(text: list[str | DocumentBase] | str | DocumentBase,
-                    *,
-                    model: str,
-                    **kwargs) -> list[list[float]] | list[float]:
+def text_embeddings(
+    text: list[str | DocumentBase] | str | DocumentBase, *, model: str, **kwargs
+) -> list[list[float]] | list[float]:
     """Embed text using the OpenAI API.
 
     Any additional keyword arguments are passed to the client's :func:`OpenAI.embeddings.create` method.
@@ -51,11 +50,7 @@ def text_embeddings(text: list[str | DocumentBase] | str | DocumentBase,
     elif isinstance(text, list):
         text = [s.content if isinstance(s, DocumentBase) else s for s in text]
 
-    api_response = openai_client.embeddings.create(
-        model=model,
-        input=text,
-        **kwargs
-    )
+    api_response = openai_client.embeddings.create(model=model, input=text, **kwargs)
 
     if isinstance(text, list):
         return [e.embedding for e in api_response.data]
@@ -64,8 +59,9 @@ def text_embeddings(text: list[str | DocumentBase] | str | DocumentBase,
 
 
 @lexy_transformer(name="text.embeddings.openai-3-small")
-def text_embeddings_3_small(text: list[str | DocumentBase] | str | DocumentBase,
-                            **kwargs) -> list[list[float]] | list[float]:
+def text_embeddings_3_small(
+    text: list[str | DocumentBase] | str | DocumentBase, **kwargs
+) -> list[list[float]] | list[float]:
     """Embed text using OpenAI's "text-embedding-3-small" model.
 
     This runs :func:`lexy.transformers.openai.text_embeddings` with `model="text-embedding-3-small"`.
@@ -83,8 +79,9 @@ def text_embeddings_3_small(text: list[str | DocumentBase] | str | DocumentBase,
 
 
 @lexy_transformer(name="text.embeddings.openai-3-large")
-def text_embeddings_3_large(text: list[str | DocumentBase] | str | DocumentBase,
-                            **kwargs) -> list[list[float]] | list[float]:
+def text_embeddings_3_large(
+    text: list[str | DocumentBase] | str | DocumentBase, **kwargs
+) -> list[list[float]] | list[float]:
     """Embed text using OpenAI's "text-embedding-3-large" model.
 
     This runs :func:`lexy.transformers.openai.text_embeddings` with `model="text-embedding-3-large"`.
@@ -102,8 +99,9 @@ def text_embeddings_3_large(text: list[str | DocumentBase] | str | DocumentBase,
 
 
 @lexy_transformer(name="text.embeddings.openai-ada-002")
-def text_embeddings_ada_002(text: list[str | DocumentBase] | str | DocumentBase,
-                            **kwargs) -> list[list[float]] | list[float]:
+def text_embeddings_ada_002(
+    text: list[str | DocumentBase] | str | DocumentBase, **kwargs
+) -> list[list[float]] | list[float]:
     """Embed text using OpenAI's "text-embedding-ada-002" model.
 
     This runs :func:`lexy.transformers.openai.text_embeddings` with `model="text-embedding-ada-002"`.

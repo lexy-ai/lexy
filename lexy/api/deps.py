@@ -17,14 +17,18 @@ async def get_user_by_email(db: AsyncSession, email: str) -> User:
     return user
 
 
-async def get_current_user(db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)) -> User:
+async def get_current_user(
+    db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)
+) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY.get_secret_value(), algorithms=[ALGORITHM])
+        payload = jwt.decode(
+            token, settings.SECRET_KEY.get_secret_value(), algorithms=[ALGORITHM]
+        )
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
@@ -43,9 +47,13 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
     return current_user
 
 
-async def get_current_active_superuser(current_user: User = Depends(get_current_active_user)):
+async def get_current_active_superuser(
+    current_user: User = Depends(get_current_active_user),
+):
     if not current_user.is_superuser:
-        raise HTTPException(status_code=403, detail="User does not have enough privileges")
+        raise HTTPException(
+            status_code=403, detail="User does not have enough privileges"
+        )
     return current_user
 
 

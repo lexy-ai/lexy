@@ -105,12 +105,9 @@ class FilterBuilder:
                 - `in`
             value: The value to be matched against
         """
-        self.conditions.append({
-            "field": field,
-            "operation": operation,
-            "value": value,
-            "negate": False
-        })
+        self.conditions.append(
+            {"field": field, "operation": operation, "value": value, "negate": False}
+        )
         return self
 
     def exclude(self, field: str, operation: str, value: Any):
@@ -135,24 +132,17 @@ class FilterBuilder:
                 - `in`
             value: The value to be matched against
         """
-        self.conditions.append({
-            "field": field,
-            "operation": operation,
-            "value": value,
-            "negate": True
-        })
+        self.conditions.append(
+            {"field": field, "operation": operation, "value": value, "negate": True}
+        )
         return self
 
     def to_dict(self) -> dict:
-        return {
-            "conditions": self.conditions,
-            "combination": self.combination
-        }
+        return {"conditions": self.conditions, "combination": self.combination}
 
     def to_json(self) -> str:
-        return json.dumps({
-            "conditions": self.conditions,
-            "combination": self.combination
-        })
+        return json.dumps(
+            {"conditions": self.conditions, "combination": self.combination}
+        )
 
     # TODO: implement from_dict and from_json methods to load an existing filter and modify it

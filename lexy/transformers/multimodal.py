@@ -10,12 +10,14 @@ model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
 processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 
 # move model to device if possible
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = "cuda" if torch.cuda.is_available() else "cpu"
 model.to(device)
 
 
 @lexy_transformer(name="image.embeddings.clip")
-def image_embeddings_clip(images: Image | DocumentBase | list[Image | DocumentBase]) -> torch.Tensor:
+def image_embeddings_clip(
+    images: Image | DocumentBase | list[Image | DocumentBase],
+) -> torch.Tensor:
     """Embed images using CLIP.
 
     Args:
@@ -30,11 +32,9 @@ def image_embeddings_clip(images: Image | DocumentBase | list[Image | DocumentBa
     elif isinstance(images, list):
         images = [i.image if isinstance(i, DocumentBase) else i for i in images]
 
-    image_batch = processor(
-        text=None,
-        images=images,
-        return_tensors='pt'
-    )['pixel_values'].to(device)
+    image_batch = processor(text=None, images=images, return_tensors="pt")[
+        "pixel_values"
+    ].to(device)
 
     if isinstance(images, list):
         return model.get_image_features(image_batch)
@@ -43,7 +43,9 @@ def image_embeddings_clip(images: Image | DocumentBase | list[Image | DocumentBa
 
 
 @lexy_transformer(name="text.embeddings.clip")
-def text_embeddings_clip(text: list[str | DocumentBase] | str | DocumentBase) -> torch.Tensor:
+def text_embeddings_clip(
+    text: list[str | DocumentBase] | str | DocumentBase,
+) -> torch.Tensor:
     """Embed text using CLIP.
 
     Args:
@@ -56,15 +58,10 @@ def text_embeddings_clip(text: list[str | DocumentBase] | str | DocumentBase) ->
         text = text.content
     elif isinstance(text, list):
         text = [s.content if isinstance(s, DocumentBase) else s for s in text]
-    tokens = processor(
-        text=text,
-        padding=True,
-        images=None,
-        return_tensors='pt'
-    ).to(device)
-    text_emb = model.get_text_features(
-        **tokens
+    tokens = processor(text=text, padding=True, images=None, return_tensors="pt").to(
+        device
     )
+    text_emb = model.get_text_features(**tokens)
     if isinstance(text, list):
         return text_emb
     else:

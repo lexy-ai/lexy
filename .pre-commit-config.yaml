@@ -14,3 +14,8 @@ repos:
     rev: v0.4.10
     hooks:
     -   id: ruff
+    -   id: ruff-format
+ci:
+    autofix_commit_msg: 🧿 [pre-commit.ci] auto fixes from pre-commit hooks
+    autoupdate_commit_msg: ⬆ [pre-commit.ci] pre-commit autoupdate
+    autoupdate_schedule: monthly

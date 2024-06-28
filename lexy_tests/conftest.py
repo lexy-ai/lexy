@@ -32,20 +32,26 @@ from lexy.main import app as lexy_test_app  # noqa: E402
 
 # the value of LEXY_CONFIG and CELERY_CONFIG are set using pytest-env plugin in pyproject.toml
 assert os.environ.get("LEXY_CONFIG") == "testing", "LEXY_CONFIG is not set to 'testing'"
-assert os.environ.get("CELERY_CONFIG") == "testing", "CELERY_CONFIG is not set to 'testing'"
+assert (
+    os.environ.get("CELERY_CONFIG") == "testing"
+), "CELERY_CONFIG is not set to 'testing'"
 
 
 test_settings = settings
 test_celery_settings = celery_settings
 
 
-DB_WARNING_MSG = ("There's a good chance you're about to drop the wrong database! "
-                  "Double check your test settings.")
+DB_WARNING_MSG = (
+    "There's a good chance you're about to drop the wrong database! "
+    "Double check your test settings."
+)
 assert test_settings.POSTGRES_DB != "lexy", DB_WARNING_MSG
 
 
-CELERY_DB_WARNING_MSG = ("Test instance of Celery is configured to store results in the wrong database! "
-                         "Double check your test settings.")
+CELERY_DB_WARNING_MSG = (
+    "Test instance of Celery is configured to store results in the wrong database! "
+    "Double check your test settings."
+)
 backend_url_obj = make_url(test_celery_settings.result_backend)
 assert backend_url_obj.database != "lexy", CELERY_DB_WARNING_MSG
 
@@ -61,9 +67,7 @@ def settings() -> TestAppSettings:
 def sync_engine(settings: TestAppSettings):
     """Create a SQLAlchemy sync engine for the test database."""
     engine = create_engine(
-        url=settings.sync_database_url,
-        echo=settings.DB_ECHO_LOG,
-        future=True
+        url=settings.sync_database_url, echo=settings.DB_ECHO_LOG, future=True
     )
     print(f"sync_engine.url: {engine.url}")
     assert engine.url.database != "lexy", DB_WARNING_MSG
@@ -77,7 +81,7 @@ def async_engine(settings: TestAppSettings):
         settings.async_database_url,
         echo=settings.DB_ECHO_LOG,
         future=True,
-        poolclass=NullPool
+        poolclass=NullPool,
     )
     print(f"async_engine.url: {engine.url}")
     assert engine.url.database != "lexy", DB_WARNING_MSG
@@ -94,14 +98,20 @@ def create_test_database(sync_engine, celery_session_app):
     yield
     with sync_engine.begin() as conn:
         lexy_table_names = ", ".join(SQLModel.metadata.tables.keys())
-        celery_table_names = ", ".join(celery_session_app.backend.task_cls.metadata.tables.keys())
+        celery_table_names = ", ".join(
+            celery_session_app.backend.task_cls.metadata.tables.keys()
+        )
         celery_tables = celery_session_app.backend.task_cls.metadata.sorted_tables
-        print(f"Dropping test DB tables..."
-              f"\n\tengine.url: {sync_engine.url}"
-              f"\n\tlexy_table_names: {lexy_table_names}"
-              f"\n\tcelery_table_names: {celery_table_names}")
+        print(
+            f"Dropping test DB tables..."
+            f"\n\tengine.url: {sync_engine.url}"
+            f"\n\tlexy_table_names: {lexy_table_names}"
+            f"\n\tcelery_table_names: {celery_table_names}"
+        )
         SQLModel.metadata.drop_all(conn)
-        celery_session_app.backend.task_cls.metadata.drop_all(conn, tables=celery_tables)
+        celery_session_app.backend.task_cls.metadata.drop_all(
+            conn, tables=celery_tables
+        )
         print("Dropped test DB tables")
 
 
@@ -109,7 +119,9 @@ def create_test_database(sync_engine, celery_session_app):
 def seed_data(settings: TestAppSettings, sync_engine: Engine, create_test_database):
     """Seed the test database with data."""
     # Create a local sync session for seeding the test database
-    local_sessionmaker = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
+    local_sessionmaker = sessionmaker(
+        autocommit=False, autoflush=False, bind=sync_engine
+    )
     local_session = local_sessionmaker()
     # Add seed data to the test database
     print("Seeding the test database with data")
@@ -128,7 +140,7 @@ def seed_data(settings: TestAppSettings, sync_engine: Engine, create_test_databa
         models.Index,
         models.Document,
         models.Collection,
-        models.Transformer
+        models.Transformer,
     ]
     for model in models_to_delete:
         # another way to do it
@@ -168,6 +180,7 @@ async def async_session(async_engine, test_app):
 @pytest.fixture(scope="function")
 def client(test_app, async_session: AsyncSession) -> TestClient:
     """Fixture for providing a synchronous TestClient configured for testing."""
+
     async def override_get_session():
         async with async_session as session:
             yield session
@@ -184,6 +197,7 @@ def client(test_app, async_session: AsyncSession) -> TestClient:
 @pytest.fixture(scope="function")
 async def async_client(test_app, async_session: AsyncSession) -> httpx.AsyncClient:
     """Fixture for providing an asynchronous TestClient configured for testing."""
+
     async def override_get_session():
         async with async_session as session:
             yield session
@@ -208,27 +222,37 @@ def document_storage(settings):
         - DEFAULT_STORAGE_SERVICE is 'gcs' but client is not authenticated
     """
     if settings.DEFAULT_STORAGE_BUCKET is None:
-        warnings.warn("DEFAULT_STORAGE_BUCKET is not set - will skip tests requiring document storage.")
+        warnings.warn(
+            "DEFAULT_STORAGE_BUCKET is not set - will skip tests requiring document storage."
+        )
         pytest.skip("DEFAULT_STORAGE_BUCKET is not set")
 
-    if settings.DEFAULT_STORAGE_SERVICE == 's3':
+    if settings.DEFAULT_STORAGE_SERVICE == "s3":
         from lexy.storage.s3 import S3Client
+
         s3_client = S3Client()
         if not s3_client.is_authenticated():
-            warnings.warn("DEFAULT_STORAGE_SERVICE is 's3' but credentials are unavailable, invalid, or lack access - "
-                          "will skip tests requiring document storage.")
+            warnings.warn(
+                "DEFAULT_STORAGE_SERVICE is 's3' but credentials are unavailable, invalid, or lack access - "
+                "will skip tests requiring document storage."
+            )
             pytest.skip("S3 client is not authenticated")
 
-    elif settings.DEFAULT_STORAGE_SERVICE == 'gcs':
+    elif settings.DEFAULT_STORAGE_SERVICE == "gcs":
         if not settings.GOOGLE_APPLICATION_CREDENTIALS:
-            warnings.warn("DEFAULT_STORAGE_SERVICE is 'gcs', but GOOGLE_APPLICATION_CREDENTIALS is not set - "
-                          "will skip tests requiring document storage.")
+            warnings.warn(
+                "DEFAULT_STORAGE_SERVICE is 'gcs', but GOOGLE_APPLICATION_CREDENTIALS is not set - "
+                "will skip tests requiring document storage."
+            )
             pytest.skip("GOOGLE_APPLICATION_CREDENTIALS is not set")
         from lexy.storage.gcs import GCSClient
+
         gcs_client = GCSClient()
         if not gcs_client.is_authenticated():
-            warnings.warn("DEFAULT_STORAGE_SERVICE is 'gcs' but credentials are not available - "
-                          "will skip tests requiring document storage.")
+            warnings.warn(
+                "DEFAULT_STORAGE_SERVICE is 'gcs' but credentials are not available - "
+                "will skip tests requiring document storage."
+            )
             pytest.skip("GCS client is not authenticated")
 
 

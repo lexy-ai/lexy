@@ -8,7 +8,9 @@ from lexy.core.config import settings
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_PREFIX}/login/access-token")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl=f"{settings.API_PREFIX}/login/access-token"
+)
 
 ALGORITHM = "HS256"
 
@@ -28,5 +30,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY.get_secret_value(), algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, settings.SECRET_KEY.get_secret_value(), algorithm=ALGORITHM
+    )
     return encoded_jwt

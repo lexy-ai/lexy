@@ -24,9 +24,10 @@ def lexy_fields(func):
         >>> add_and_subtract(5, 3)
         (8, 2)
     """
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        fields = kwargs.pop('lexy_fields', [])
+        fields = kwargs.pop("lexy_fields", [])
         results = func(*args, **kwargs)
 
         # if no lexy fields are provided, return the original results
@@ -39,17 +40,21 @@ def lexy_fields(func):
 
         # check if the number of lexy fields matches the number of results
         if len(fields) != len(results):
-            raise ValueError(f"Expected {len(fields)} lexy fields ({', '.join(fields)}), "
-                             f"but got {len(results)} return values from '{func.__name__}'.")
+            raise ValueError(
+                f"Expected {len(fields)} lexy fields ({', '.join(fields)}), "
+                f"but got {len(results)} return values from '{func.__name__}'."
+            )
 
         # zip together labels and results and return as a dictionary inside a list
         return [dict(zip(fields, results))]
 
     # modify the docstring to include documentation for the "lexy_fields" parameter
-    lexy_doc = "\n\n" \
-               "Lexy Transformer options:\n\n" \
-               "\tlexy_fields: list, optional\n" \
-               "\t    A list of field names to be used for the return values.\n"
+    lexy_doc = (
+        "\n\n"
+        "Lexy Transformer options:\n\n"
+        "\tlexy_fields: list, optional\n"
+        "\t    A list of field names to be used for the return values.\n"
+    )
     if func.__doc__:
         wrapper.__doc__ = func.__doc__ + lexy_doc
     else:
@@ -65,10 +70,11 @@ def lexy_transformer(name: str, **task_kwargs):
         name: The name of the transformer. The task will be registered with Celery as "lexy.transformers.{name}"
         **task_kwargs: Keyword arguments to pass to the Celery task decorator
     """
+
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            lexy_index_fields = kwargs.pop('lexy_index_fields', [])
+            lexy_index_fields = kwargs.pop("lexy_index_fields", [])
             results = func(*args, **kwargs)
 
             # if no index fields are provided, return the original results
@@ -81,17 +87,21 @@ def lexy_transformer(name: str, **task_kwargs):
 
             # check if the number of index fields matches the number of results
             if len(lexy_index_fields) != len(results):
-                raise ValueError(f"Expected {len(lexy_index_fields)} index fields ({', '.join(lexy_index_fields)}), "
-                                 f"but got {len(results)} return values from '{func.__name__}'.")
+                raise ValueError(
+                    f"Expected {len(lexy_index_fields)} index fields ({', '.join(lexy_index_fields)}), "
+                    f"but got {len(results)} return values from '{func.__name__}'."
+                )
 
             # zip together labels and results and return as a dictionary inside a list
             return [dict(zip(lexy_index_fields, results))]
 
         # modify the docstring to include documentation for the "lexy_index_fields" parameter
-        lexy_doc = "\n\n" \
-                   "Lexy Transformer options:\n\n" \
-                   "\tlexy_index_fields: list, optional\n" \
-                   "\t    A list of index fields to be used for the return values.\n"
+        lexy_doc = (
+            "\n\n"
+            "Lexy Transformer options:\n\n"
+            "\tlexy_index_fields: list, optional\n"
+            "\t    A list of index fields to be used for the return values.\n"
+        )
         if func.__doc__:
             wrapper.__doc__ = func.__doc__ + lexy_doc
         else:

@@ -17,10 +17,11 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-async def generate_tasks_for_document(doc: Document,
-                                      storage_client: Optional["StorageClient"] = Depends(get_storage_client)) \
-        -> list[dict]:
-    """ Generate tasks for a document based on bindings and filters.
+async def generate_tasks_for_document(
+    doc: Document,
+    storage_client: Optional["StorageClient"] = Depends(get_storage_client),
+) -> list[dict]:
+    """Generate tasks for a document based on bindings and filters.
 
     Args:
         doc (Document): The document for which to generate tasks
@@ -36,47 +37,57 @@ async def generate_tasks_for_document(doc: Document,
 
     # loop through bindings for this document
     for binding in doc.collection.bindings:
-
         # check if binding is enabled
-        if binding.status != 'on':
-            logger.debug(f"Skipping binding {binding} because it is not enabled (status: "
-                         f"{binding.status})")
+        if binding.status != "on":
+            logger.debug(
+                f"Skipping binding {binding} because it is not enabled (status: "
+                f"{binding.status})"
+            )
             continue
 
         # check if document matches binding filters
         if binding.filter and not binding.filter_obj.document_meets_conditions(doc):
-            logger.debug(f"Skipping binding {binding} because document does not match filters")
+            logger.debug(
+                f"Skipping binding {binding} because document does not match filters"
+            )
             continue
 
         # generate the task
         if doc.is_stored_object:
             if not storage_client:
-                raise ValueError("Storage client must be configured when generating tasks for stored objects")
+                raise ValueError(
+                    "Storage client must be configured when generating tasks for stored objects"
+                )
             doc.refresh_object_urls(storage_client=storage_client)
         task_name = binding.transformer.celery_task_name
         task = celery.send_task(
             task_name,
             args=[doc],
             kwargs=binding.transformer_params,
-            link=save_records_to_index.s(document_id=doc.document_id,
-                                         text=doc.content,
-                                         index_id=binding.index_id,
-                                         binding_id=binding.binding_id)
+            link=save_records_to_index.s(
+                document_id=doc.document_id,
+                text=doc.content,
+                index_id=binding.index_id,
+                binding_id=binding.binding_id,
+            ),
         )
 
         tasks.append({"task_id": task.id, "document_id": doc.document_id})
 
-    logger.debug(f"Created {len(tasks)} tasks for document {doc.document_id}: "
-                 f"[{', '.join([t['task_id'] for t in tasks])}]")
+    logger.debug(
+        f"Created {len(tasks)} tasks for document {doc.document_id}: "
+        f"[{', '.join([t['task_id'] for t in tasks])}]"
+    )
     return tasks
 
 
 # TODO: remove session arg and run async after update to SQLAlchemy 2.0
-def process_new_binding(session,
-                        binding: Binding,
-                        storage_client: Optional["StorageClient"] = Depends(get_storage_client)) \
-        -> tuple[Binding, list[dict]]:
-    """ Process a new binding.
+def process_new_binding(
+    session,
+    binding: Binding,
+    storage_client: Optional["StorageClient"] = Depends(get_storage_client),
+) -> tuple[Binding, list[dict]]:
+    """Process a new binding.
 
     Steps involved:
         1. Infer values for "lexy_index_fields" if not specified
@@ -109,21 +120,31 @@ def process_new_binding(session,
 
     # check that the binding has lexy_index_fields defined
     if "lexy_index_fields" not in binding.transformer_params.keys():
-        logger.info(f"{binding = } does not have 'lexy_index_fields' defined in 'transformer_params'")
+        logger.info(
+            f"{binding = } does not have 'lexy_index_fields' defined in 'transformer_params'"
+        )
         if len(binding.index.index_fields) > 0:
-            logger.info(f"Will assign them using 'index_fields' from index '{binding.index.index_id}'.")
+            logger.info(
+                f"Will assign them using 'index_fields' from index '{binding.index.index_id}'."
+            )
 
             # it seems this next line is required because binding.transformer_params is a JSON field
             #   see https://github.com/sqlalchemy/sqlalchemy/discussions/6473
             binding.transformer_params = dict(binding.transformer_params)
 
-            binding.transformer_params["lexy_index_fields"] = list(binding.index.index_fields.keys())
-            logger.info(f"Updated binding.transformer_params: {binding.transformer_params}")
+            binding.transformer_params["lexy_index_fields"] = list(
+                binding.index.index_fields.keys()
+            )
+            logger.info(
+                f"Updated binding.transformer_params: {binding.transformer_params}"
+            )
         else:
-            raise ValueError(f"{binding = } does not have 'lexy_index_fields' defined in 'transformer_params' "
-                             f"and index '{binding.index.index_id}' does not have 'index_fields' defined. Either "
-                             f"define 'lexy_index_fields' in 'transformer_params' or define 'index_fields' for index "
-                             f"'{binding.index.index_id}'.")
+            raise ValueError(
+                f"{binding = } does not have 'lexy_index_fields' defined in 'transformer_params' "
+                f"and index '{binding.index.index_id}' does not have 'index_fields' defined. Either "
+                f"define 'lexy_index_fields' in 'transformer_params' or define 'index_fields' for index "
+                f"'{binding.index.index_id}'."
+            )
 
     # filter documents in the collection that match the binding filters
     if binding.filter:
@@ -140,32 +161,38 @@ def process_new_binding(session,
     for doc in documents:
         if doc.is_stored_object:
             if not storage_client:
-                raise ValueError("Storage client must be configured when generating tasks for stored objects")
+                raise ValueError(
+                    "Storage client must be configured when generating tasks for stored objects"
+                )
             doc.refresh_object_urls(storage_client=storage_client)
         task = celery.send_task(
             task_name,
             args=[doc],
             kwargs=binding.transformer_params,
-            link=save_records_to_index.s(document_id=doc.document_id,
-                                         text=doc.content,
-                                         index_id=binding.index_id,
-                                         binding_id=binding.binding_id)
+            link=save_records_to_index.s(
+                document_id=doc.document_id,
+                text=doc.content,
+                index_id=binding.index_id,
+                binding_id=binding.binding_id,
+            ),
         )
         tasks.append({"task_id": task.id, "document_id": doc.document_id})
 
     # switch binding status to 'on'
     prev_status = binding.status
-    binding.status = 'on'
+    binding.status = "on"
     logger.info(f"Set status for {binding = } - from '{prev_status}' to 'on'")
 
-    logger.info(f"Created {len(tasks)} tasks for {binding = }: "
-                f"[{', '.join([t['task_id'] for t in tasks])}]")
+    logger.info(
+        f"Created {len(tasks)} tasks for {binding = }: "
+        f"[{', '.join([t['task_id'] for t in tasks])}]"
+    )
 
     return binding, tasks
 
 
 def restart_celery_worker(workername: str) -> dict:
-    """ Restart a celery worker.
+    """Restart a celery worker.
 
     Args:
         workername: The hostname of the worker to restart
@@ -175,22 +202,18 @@ def restart_celery_worker(workername: str) -> dict:
     """
     logger.debug(f"Broadcasting signal 'pool_restart' to celery worker {workername}")
 
-    reload_modules = [
-        "lexy.indexes",
-        "lexy.core.celery_tasks"
-    ]
+    reload_modules = ["lexy.indexes", "lexy.core.celery_tasks"]
     transformer_modules = list(settings.worker_transformer_imports)
     reload_modules.extend(transformer_modules)
     print("reload_modules:", reload_modules)
 
-    response = celery.control.broadcast("pool_restart",
-                                        arguments={
-                                            "reload": True,
-                                            "modules": reload_modules
-                                        },
-                                        destination=[workername],
-                                        reply=True,
-                                        timeout=3)
+    response = celery.control.broadcast(
+        "pool_restart",
+        arguments={"reload": True, "modules": reload_modules},
+        destination=[workername],
+        reply=True,
+        timeout=3,
+    )
     if response and "ok" in response[0][workername]:
         logger.info(f"Restarting '{workername}' worker's pool")
     else:
@@ -201,7 +224,7 @@ def restart_celery_worker(workername: str) -> dict:
 
 
 def error_reason(workername, response):
-    """ Extracts error message from response. """
+    """Extracts error message from response."""
     for res in response:
         try:
             return res[workername].get("error", "Unknown reason")

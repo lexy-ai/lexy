@@ -14,10 +14,14 @@ def route_task(name, args, kwargs, options, task=None, **kw):
 
 class BaseConfig:
     # TODO: these should be constructed from lexy_settings
-    broker_url: str = os.environ.get("CELERY_BROKER_URL", "amqp://guest:guest@localhost:5672//")
+    broker_url: str = os.environ.get(
+        "CELERY_BROKER_URL", "amqp://guest:guest@localhost:5672//"
+    )
     pg_host = os.environ.get("POSTGRES_HOST", "localhost")
-    result_backend: str = os.environ.get("CELERY_RESULT_BACKEND",
-                                         f"db+postgresql://postgres:postgres@{pg_host}:5432/lexy")
+    result_backend: str = os.environ.get(
+        "CELERY_RESULT_BACKEND",
+        f"db+postgresql://postgres:postgres@{pg_host}:5432/lexy",
+    )
 
     broker_connection_retry_on_startup = True
     task_track_started = True
@@ -37,19 +41,19 @@ class BaseConfig:
 
     # Task routes
     task_routes = {
-        'lexy.core.celery_tasks': {'queue': 'celery'},
+        "lexy.core.celery_tasks": {"queue": "celery"},
         # 'lexy.transformers.embeddings.text_embeddings': {'queue': 'text:embeddings'},
         # 'lexy.transformers.embeddings.video_embeddings': {'queue': 'video:embeddings'},
     }
     # task_routes = (route_task,)
 
     # Serialization settings
-    task_serializer = 'pickle'
-    result_serializer = 'pickle'
+    task_serializer = "pickle"
+    result_serializer = "pickle"
     accept_content = [
-        'pickle',
-        'json',
-        'application/json',
+        "pickle",
+        "json",
+        "application/json",
         # 'application/x-python-serialize',  # adding for flower
     ]
 

@@ -9,13 +9,14 @@ if TYPE_CHECKING:
 
 
 class IndexModel(BaseModel):
-    """ Index model """
+    """Index model"""
+
     index_id: str = Field(
         default=...,
         min_length=1,
         max_length=56,
         pattern="^[a-z_][a-z0-9_]{0,55}$",
-        description="The ID of the index."
+        description="The ID of the index.",
     )
     description: Optional[str] = None
     index_table_schema: Optional[dict[str, Any]] = Field(default={})
@@ -29,7 +30,8 @@ class IndexModel(BaseModel):
 
 
 class IndexUpdate(BaseModel):
-    """ Index update model """
+    """Index update model"""
+
     description: Optional[str] = None
     index_table_schema: Optional[dict[str, Any]] = None
     index_fields: Optional[dict[str, Any]] = None
@@ -41,7 +43,7 @@ class Index(IndexModel):
 
     def __init__(self, **data: Any):
         super().__init__(**data)
-        self._client = data.pop('client', None)
+        self._client = data.pop("client", None)
 
     @property
     def client(self) -> "LexyClient":
@@ -49,15 +51,17 @@ class Index(IndexModel):
             raise ValueError("API client has not been set.")
         return self._client
 
-    def query(self,
-              query_text: str = None,
-              query_image: Image.Image | str = None,
-              query_field: str = "embedding",
-              k: int = 5,
-              return_fields: list[str] = None,
-              return_document: bool = False,
-              embedding_model: str = None) -> list[dict]:
-        """ Synchronously query an index.
+    def query(
+        self,
+        query_text: str = None,
+        query_image: Image.Image | str = None,
+        query_field: str = "embedding",
+        k: int = 5,
+        return_fields: list[str] = None,
+        return_document: bool = False,
+        embedding_model: str = None,
+    ) -> list[dict]:
+        """Synchronously query an index.
 
         Args:
             query_text (str): The query text.
@@ -73,17 +77,19 @@ class Index(IndexModel):
         Returns:
             Results: A list of query results.
         """
-        return self.client.index.query_index(query_text=query_text,
-                                             query_image=query_image,
-                                             index_id=self.index_id,
-                                             query_field=query_field,
-                                             k=k,
-                                             return_fields=return_fields,
-                                             return_document=return_document,
-                                             embedding_model=embedding_model)
+        return self.client.index.query_index(
+            query_text=query_text,
+            query_image=query_image,
+            index_id=self.index_id,
+            query_field=query_field,
+            k=k,
+            return_fields=return_fields,
+            return_document=return_document,
+            embedding_model=embedding_model,
+        )
 
     def list_records(self, document_id: Optional[str] = None) -> list[dict]:
-        """ Synchronously list all records in the index.
+        """Synchronously list all records in the index.
 
         Args:
             document_id (str, optional): The document ID to filter by. Defaults to None.
@@ -91,4 +97,6 @@ class Index(IndexModel):
         Returns:
             list[dict]: A list of records.
         """
-        return self.client.index.list_index_records(self.index_id, document_id=document_id)
+        return self.client.index.list_index_records(
+            self.index_id, document_id=document_id
+        )

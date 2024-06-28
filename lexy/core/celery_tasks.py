@@ -9,6 +9,7 @@ Sources:
         - https://stackoverflow.com/questions/60281347/is-it-possible-to-extend-celery-so-results-would-be-store-to-several-mongodb-co
         - https://docs.celeryq.dev/en/stable/userguide/configuration.html#override-backends
 """
+
 from typing import Any
 from uuid import UUID
 
@@ -40,48 +41,62 @@ class DatabaseTask(Task):
     @property
     def index_manager(self):
         if self._index_manager is None:
-            task_logger.debug("_index_manager is None - reloading and assigning index manager")
+            task_logger.debug(
+                "_index_manager is None - reloading and assigning index manager"
+            )
             self._index_manager = index_manager
-            task_logger.debug(f"Assigned index manager with index models: {self._index_manager.index_models}")
+            task_logger.debug(
+                f"Assigned index manager with index models: {self._index_manager.index_models}"
+            )
         if self._index_manager.index_models == {}:
-            task_logger.debug("index_manager.index_models is empty - running index_manager.create_index_models()")
+            task_logger.debug(
+                "index_manager.index_models is empty - running index_manager.create_index_models()"
+            )
             self._index_manager.create_index_models()
-            task_logger.debug(f"index_manager.index_models: {self._index_manager.index_models}")
+            task_logger.debug(
+                f"index_manager.index_models: {self._index_manager.index_models}"
+            )
         return self._index_manager
 
     def restart_worker(self, msg):
-        """ Restart the celery worker of the current task. """
+        """Restart the celery worker of the current task."""
         task_logger.info(f"Called restart_worker with message: {msg}")
         task_logger.debug("---------------- prior to restart ----------------")
         self.print_index_manager_models()
-        task_logger.debug(f"Broadcasting signal 'pool_restart' to celery worker {self.request.hostname}")
-        response = self.app.control.broadcast("pool_restart",
-                                              arguments={
-                                                  "reload": True,
-                                                  "modules": [
-                                                      "lexy.api.deps",
-                                                      "lexy.core.celery_tasks"
-                                                  ]
-                                              },
-                                              destination=[self.request.hostname],
-                                              reply=True,
-                                              timeout=3)
+        task_logger.debug(
+            f"Broadcasting signal 'pool_restart' to celery worker {self.request.hostname}"
+        )
+        response = self.app.control.broadcast(
+            "pool_restart",
+            arguments={
+                "reload": True,
+                "modules": ["lexy.api.deps", "lexy.core.celery_tasks"],
+            },
+            destination=[self.request.hostname],
+            reply=True,
+            timeout=3,
+        )
         self.reset_index_manager()
         task_logger.debug("---------------- after restart ----------------")
         self.print_index_manager_models()
         return response
 
     def reset_index_manager(self):
-        task_logger.debug('resetting index manager')
+        task_logger.debug("resetting index manager")
         self._index_manager = None
 
     def print_index_manager_models(self):
-        sorted_models = sorted(self.index_manager.index_models.items(), key=lambda x: x[0])
-        print("index_manager.index_models:\n", "\n".join([f"{k}: {v}" for k, v in sorted_models]))
+        sorted_models = sorted(
+            self.index_manager.index_models.items(), key=lambda x: x[0]
+        )
+        print(
+            "index_manager.index_models:\n",
+            "\n".join([f"{k}: {v}" for k, v in sorted_models]),
+        )
 
 
 def convert_arrays_to_lists(obj):
-    """ Convert numpy arrays and PyTorch tensors to lists in a dictionary or list of dictionaries.
+    """Convert numpy arrays and PyTorch tensors to lists in a dictionary or list of dictionaries.
 
     Args:
         obj: dictionary or list of dictionaries to convert
@@ -109,22 +124,31 @@ def convert_arrays_to_lists(obj):
 
 @celery.task(base=DatabaseTask, bind=True, name="lexy.db.save_result_to_index")
 def save_result_to_index(self, res, document_id, text, index_id):
-    """ Save the result of a transformer to an index. """
-    task_logger.debug(f"Starting DB task 'save_result_to_index' for index {index_id} "
-                      f"with task ID {self.request.id} and parent task ID {self.request.parent_id}")
+    """Save the result of a transformer to an index."""
+    task_logger.debug(
+        f"Starting DB task 'save_result_to_index' for index {index_id} "
+        f"with task ID {self.request.id} and parent task ID {self.request.parent_id}"
+    )
 
     try:
         # noinspection PyPep8Naming
         IndexClass = self.index_manager.index_models[index_id]
     except KeyError:
-        print(f"index model for {index_id} doesn't exist - will attempt to refresh index manager")
+        print(
+            f"index model for {index_id} doesn't exist - will attempt to refresh index manager"
+        )
         self.reset_index_manager()
         # noinspection PyPep8Naming
         IndexClass = self.index_manager.index_models[index_id]
 
     self.db.add(
         # TODO: IndexClass needs to use kwargs from `index_fields`
-        IndexClass(document_id=document_id, embedding=res.tolist(), text=text, task_id=self.request.parent_id)
+        IndexClass(
+            document_id=document_id,
+            embedding=res.tolist(),
+            text=text,
+            task_id=self.request.parent_id,
+        )
     )
     try:
         self.db.commit()
@@ -134,21 +158,27 @@ def save_result_to_index(self, res, document_id, text, index_id):
 
 
 @celery.task(base=DatabaseTask, bind=True, name="lexy.db.save_records_to_index")
-def save_records_to_index(self,
-                          records: list[dict[str, Any]],
-                          document_id: UUID,
-                          text: str,
-                          index_id: str,
-                          binding_id: int = None):
-    """ Save the output of a transformer to an index. """
-    task_logger.debug(f"Starting DB task 'save_records_to_index' for index {index_id} "
-                      f"with task ID {self.request.id} and parent task ID {self.request.parent_id}")
+def save_records_to_index(
+    self,
+    records: list[dict[str, Any]],
+    document_id: UUID,
+    text: str,
+    index_id: str,
+    binding_id: int = None,
+):
+    """Save the output of a transformer to an index."""
+    task_logger.debug(
+        f"Starting DB task 'save_records_to_index' for index {index_id} "
+        f"with task ID {self.request.id} and parent task ID {self.request.parent_id}"
+    )
 
     try:
         # noinspection PyPep8Naming
         IndexClass = self.index_manager.index_models[index_id]
     except KeyError:
-        task_logger.warning(f"index model for {index_id} doesn't exist - will attempt to refresh index manager")
+        task_logger.warning(
+            f"index model for {index_id} doesn't exist - will attempt to refresh index manager"
+        )
         self.reset_index_manager()
         # noinspection PyPep8Naming
         IndexClass = self.index_manager.index_models[index_id]
@@ -161,7 +191,7 @@ def save_records_to_index(self,
                 text=text,
                 task_id=self.request.parent_id,
                 binding_id=binding_id,
-                **record
+                **record,
             )
         )
     try:
@@ -173,7 +203,7 @@ def save_records_to_index(self,
 
 @celery.task(base=DatabaseTask, bind=True, name="lexy.db.restart_db_worker")
 def restart_db_worker(self, msg):
-    """ Restart the celery worker of the current task. """
+    """Restart the celery worker of the current task."""
     response = self.restart_worker(msg=msg)
     task_logger.info(f"restart_db_worker response: {response}")
     return response

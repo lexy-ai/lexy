@@ -9,7 +9,7 @@ from lexy.api.endpoints import (
     login,
     transformers,
     users,
-    utils
+    utils,
 )
 
 

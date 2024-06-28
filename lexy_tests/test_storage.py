@@ -17,9 +17,9 @@ from lexy.storage.s3 import S3Client
 from lexy.models.document import Document
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def s3():
-    s3_client = boto3.client('s3')
+    s3_client = boto3.client("s3")
     try:
         s3_client.list_buckets()
         yield s3_client
@@ -27,7 +27,7 @@ def s3():
         warnings.warn("S3 credentials are not available", UserWarning)
         pytest.skip("S3 credentials are not available")
     except ClientError as e:
-        if e.response['Error']['Code'] in ('AccessDenied', '403'):
+        if e.response["Error"]["Code"] in ("AccessDenied", "403"):
             warnings.warn(f"S3 client access denied: {e.response}", UserWarning)
             pytest.skip("S3 access is denied")
         else:
@@ -35,9 +35,9 @@ def s3():
             pytest.skip("S3 client has an error")
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def s3v4():
-    s3v4_client = boto3.client('s3', config=Config(signature_version='s3v4'))
+    s3v4_client = boto3.client("s3", config=Config(signature_version="s3v4"))
     try:
         s3v4_client.list_buckets()
         yield s3v4_client
@@ -45,7 +45,7 @@ def s3v4():
         warnings.warn("S3 credentials are not available", UserWarning)
         pytest.skip("S3 credentials are not available")
     except ClientError as e:
-        if e.response['Error']['Code'] in ('AccessDenied', '403'):
+        if e.response["Error"]["Code"] in ("AccessDenied", "403"):
             warnings.warn(f"S3 client access denied: {e.response}", UserWarning)
             pytest.skip("S3 access is denied")
         else:
@@ -53,7 +53,7 @@ def s3v4():
             pytest.skip("S3 client has an error")
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def gcs(settings):
     credentials_file = settings.GOOGLE_APPLICATION_CREDENTIALS
     if not credentials_file:
@@ -61,11 +61,13 @@ def gcs(settings):
         pytest.skip("GOOGLE_APPLICATION_CREDENTIALS is not set")
 
     print(f"Creating GCS client using credentials file: {credentials_file}")
-    credentials = service_account.Credentials.from_service_account_file(credentials_file)
+    credentials = service_account.Credentials.from_service_account_file(
+        credentials_file
+    )
     yield storage.Client(credentials=credentials)
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def lx_s3():
     s3_client = S3Client()
     if not s3_client.is_authenticated():
@@ -74,9 +76,9 @@ def lx_s3():
     yield s3_client
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def lx_s3v4():
-    config = Config(signature_version='s3v4')
+    config = Config(signature_version="s3v4")
     s3_client = S3Client(config=config)
     if not s3_client.is_authenticated():
         warnings.warn("S3 client is not authenticated", UserWarning)
@@ -84,7 +86,7 @@ def lx_s3v4():
     yield s3_client
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def lx_gcs(settings):
     credentials_file = settings.GOOGLE_APPLICATION_CREDENTIALS
     if not credentials_file:
@@ -98,17 +100,16 @@ def lx_gcs(settings):
     yield gcs_client
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def test_file_document():
-    return 'sample_data/documents/hotd.txt'
+    return "sample_data/documents/hotd.txt"
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def test_s3_object(s3, test_file_document, settings):
-
     bucket_name = settings.S3_TEST_BUCKET
-    object_prefix = settings.COLLECTION_DEFAULT_CONFIG['storage_prefix']
-    object_name = os.path.join(object_prefix, 'hotd.txt')
+    object_prefix = settings.COLLECTION_DEFAULT_CONFIG["storage_prefix"]
+    object_name = os.path.join(object_prefix, "hotd.txt")
 
     if not bucket_name:
         warnings.warn("S3_TEST_BUCKET is not set", UserWarning)
@@ -125,12 +126,11 @@ def test_s3_object(s3, test_file_document, settings):
     print(f"Deleted test_s3_object: 's3://{bucket_name}/{object_name}'")
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def test_gcs_object(gcs, test_file_document, settings):
-
     bucket_name = settings.GCS_TEST_BUCKET
-    object_prefix = settings.COLLECTION_DEFAULT_CONFIG['storage_prefix']
-    object_name = os.path.join(object_prefix, 'hotd.txt')
+    object_prefix = settings.COLLECTION_DEFAULT_CONFIG["storage_prefix"]
+    object_name = os.path.join(object_prefix, "hotd.txt")
 
     if not bucket_name:
         warnings.warn("GCS_TEST_BUCKET is not set", UserWarning)
@@ -139,7 +139,7 @@ def test_gcs_object(gcs, test_file_document, settings):
     # Upload the test document
     bucket = gcs.bucket(bucket_name)
     blob: storage.blob.Blob = bucket.blob(object_name)
-    with open(test_file_document, 'rb') as file:
+    with open(test_file_document, "rb") as file:
         blob.upload_from_file(file)
     print(f"Created test_gcs_object: 'gs://{bucket_name}/{object_name}'")
 
@@ -173,31 +173,35 @@ class TestStorageClient:
         bucket_name, object_name = test_s3_object
         expiration = 3
 
-        s3_signed_url = s3.generate_presigned_url('get_object',
-                                                  Params={'Bucket': bucket_name, 'Key': object_name},
-                                                  ExpiresIn=expiration)
+        s3_signed_url = s3.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": bucket_name, "Key": object_name},
+            ExpiresIn=expiration,
+        )
         assert s3_signed_url is not None
         # s3 url can also include the region
         assert s3_signed_url.startswith(f"https://{bucket_name}.s3.")
         assert f".amazonaws.com/{object_name}" in s3_signed_url
-        assert signed_url_is_expired(s3_signed_url, svc='Amz') is False
+        assert signed_url_is_expired(s3_signed_url, svc="Amz") is False
         time.sleep(expiration)
-        assert signed_url_is_expired(s3_signed_url, svc='Amz') is True
+        assert signed_url_is_expired(s3_signed_url, svc="Amz") is True
 
     def test_generate_signed_url_s3v4(self, s3v4, test_s3_object):
         bucket_name, object_name = test_s3_object
         expiration = 3
 
-        s3v4_signed_url = s3v4.generate_presigned_url('get_object',
-                                                      Params={'Bucket': bucket_name, 'Key': object_name},
-                                                      ExpiresIn=expiration)
+        s3v4_signed_url = s3v4.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": bucket_name, "Key": object_name},
+            ExpiresIn=expiration,
+        )
         assert s3v4_signed_url is not None
         # s3 url can also include the region
         assert s3v4_signed_url.startswith(f"https://{bucket_name}.s3.")
         assert f".amazonaws.com/{object_name}" in s3v4_signed_url
-        assert signed_url_is_expired(s3v4_signed_url, svc='Amz') is False
+        assert signed_url_is_expired(s3v4_signed_url, svc="Amz") is False
         time.sleep(expiration)
-        assert signed_url_is_expired(s3v4_signed_url, svc='Amz') is True
+        assert signed_url_is_expired(s3v4_signed_url, svc="Amz") is True
 
     def test_generate_signed_url_gcs(self, gcs, test_gcs_object):
         bucket_name, object_name = test_gcs_object
@@ -205,13 +209,16 @@ class TestStorageClient:
 
         bucket = gcs.bucket(bucket_name)
         blob: storage.blob.Blob = bucket.blob(object_name)
-        gcs_signed_url = blob.generate_signed_url(expiration=datetime.timedelta(seconds=expiration),
-                                                  version="v4")
+        gcs_signed_url = blob.generate_signed_url(
+            expiration=datetime.timedelta(seconds=expiration), version="v4"
+        )
         assert gcs_signed_url is not None
-        assert gcs_signed_url.startswith(f"https://storage.googleapis.com/{bucket_name}/{object_name}")
-        assert signed_url_is_expired(gcs_signed_url, svc='Goog') is False
+        assert gcs_signed_url.startswith(
+            f"https://storage.googleapis.com/{bucket_name}/{object_name}"
+        )
+        assert signed_url_is_expired(gcs_signed_url, svc="Goog") is False
         time.sleep(expiration)
-        assert signed_url_is_expired(gcs_signed_url, svc='Goog') is True
+        assert signed_url_is_expired(gcs_signed_url, svc="Goog") is True
 
 
 # TODO: add async tests
@@ -237,38 +244,46 @@ class TestLexyStorageClient:
         bucket_name, object_name = test_s3_object
         expiration = 3
 
-        s3_signed_url = lx_s3.generate_presigned_url(bucket_name, object_name, expiration)
+        s3_signed_url = lx_s3.generate_presigned_url(
+            bucket_name, object_name, expiration
+        )
         assert s3_signed_url is not None
         # s3 url can also include the region
         assert s3_signed_url.startswith(f"https://{bucket_name}.s3.")
         assert f".amazonaws.com/{object_name}" in s3_signed_url
-        assert signed_url_is_expired(s3_signed_url, svc='Amz') is False
+        assert signed_url_is_expired(s3_signed_url, svc="Amz") is False
         time.sleep(expiration)
-        assert signed_url_is_expired(s3_signed_url, svc='Amz') is True
+        assert signed_url_is_expired(s3_signed_url, svc="Amz") is True
 
     def test_generate_presigned_url_lx_s3v4(self, lx_s3v4, test_s3_object):
         bucket_name, object_name = test_s3_object
         expiration = 3
 
-        s3v4_signed_url = lx_s3v4.generate_presigned_url(bucket_name, object_name, expiration)
+        s3v4_signed_url = lx_s3v4.generate_presigned_url(
+            bucket_name, object_name, expiration
+        )
         assert s3v4_signed_url is not None
         # s3 url can also include the region
         assert s3v4_signed_url.startswith(f"https://{bucket_name}.s3.")
         assert f".amazonaws.com/{object_name}" in s3v4_signed_url
-        assert signed_url_is_expired(s3v4_signed_url, svc='Amz') is False
+        assert signed_url_is_expired(s3v4_signed_url, svc="Amz") is False
         time.sleep(expiration)
-        assert signed_url_is_expired(s3v4_signed_url, svc='Amz') is True
+        assert signed_url_is_expired(s3v4_signed_url, svc="Amz") is True
 
     def test_generate_presigned_url_lx_gcs(self, lx_gcs, test_gcs_object):
         bucket_name, object_name = test_gcs_object
         expiration = 3
 
-        gcs_signed_url = lx_gcs.generate_presigned_url(bucket_name, object_name, expiration)
+        gcs_signed_url = lx_gcs.generate_presigned_url(
+            bucket_name, object_name, expiration
+        )
         assert gcs_signed_url is not None
-        assert gcs_signed_url.startswith(f"https://storage.googleapis.com/{bucket_name}/{object_name}")
-        assert signed_url_is_expired(gcs_signed_url, svc='Goog') is False
+        assert gcs_signed_url.startswith(
+            f"https://storage.googleapis.com/{bucket_name}/{object_name}"
+        )
+        assert signed_url_is_expired(gcs_signed_url, svc="Goog") is False
         time.sleep(expiration)
-        assert signed_url_is_expired(gcs_signed_url, svc='Goog') is True
+        assert signed_url_is_expired(gcs_signed_url, svc="Goog") is True
 
 
 class TestConstructStorageKeys:
@@ -294,13 +309,18 @@ class TestConstructStorageKeys:
     @pytest.mark.asyncio
     async def test_construct_key_for_document_with_filename(self):
         document = Document(collection_id="123", document_id="456")
-        key = await construct_key_for_document(document=document, filename="document.jpg")
+        key = await construct_key_for_document(
+            document=document, filename="document.jpg"
+        )
         assert key == "collections/123/documents/456/document.jpg"
 
     @pytest.mark.asyncio
     async def test_construct_key_for_document_without_document_or_ids(self):
-        with pytest.raises(ValueError, match="Either a document object or collection_id and document_id must be "
-                                             "provided."):
+        with pytest.raises(
+            ValueError,
+            match="Either a document object or collection_id and document_id must be "
+            "provided.",
+        ):
             await construct_key_for_document()
 
     @pytest.mark.asyncio
@@ -311,19 +331,25 @@ class TestConstructStorageKeys:
 
     @pytest.mark.asyncio
     async def test_construct_key_for_thumbnail_with_collection_and_document_id(self):
-        key = await construct_key_for_thumbnail((200, 200), collection_id="123", document_id="456")
+        key = await construct_key_for_thumbnail(
+            (200, 200), collection_id="123", document_id="456"
+        )
         assert key == "collections/123/thumbnails/200x200/456"
 
     @pytest.mark.asyncio
     async def test_construct_key_for_thumbnail_with_path_prefix(self):
         document = Document(collection_id="123", document_id="456")
-        key = await construct_key_for_thumbnail((200, 200), document=document, path_prefix="public")
+        key = await construct_key_for_thumbnail(
+            (200, 200), document=document, path_prefix="public"
+        )
         assert key == "public/collections/123/thumbnails/200x200/456"
 
     @pytest.mark.asyncio
     async def test_construct_key_for_thumbnail_with_filename(self):
         document = Document(collection_id="123", document_id="456")
-        key = await construct_key_for_thumbnail((200, 200), document=document, filename="thumbnail.jpg")
+        key = await construct_key_for_thumbnail(
+            (200, 200), document=document, filename="thumbnail.jpg"
+        )
         assert key == "collections/123/thumbnails/200x200/456/thumbnail.jpg"
 
     @pytest.mark.asyncio
@@ -334,6 +360,9 @@ class TestConstructStorageKeys:
 
     @pytest.mark.asyncio
     async def test_construct_key_for_thumbnail_without_document_or_ids(self):
-        with pytest.raises(ValueError, match="Either a document object or collection_id and document_id must be "
-                                             "provided."):
+        with pytest.raises(
+            ValueError,
+            match="Either a document object or collection_id and document_id must be "
+            "provided.",
+        ):
             await construct_key_for_thumbnail((200, 200))

@@ -36,7 +36,7 @@ target_metadata = SQLModel.metadata  # UPDATED
 IGNORE_TABLES = [
     # Celery tables
     "celery_taskmeta",
-    "celery_tasksetmeta"
+    "celery_tasksetmeta",
 ]
 IGNORE_TABLE_PREFIXES = [
     # IndexManager tables
@@ -90,7 +90,7 @@ def do_run_migrations(connection: Connection) -> None:
     context.configure(
         connection=connection,
         target_metadata=target_metadata,
-        include_object=include_object  # ADDED
+        include_object=include_object,  # ADDED
     )
 
     with context.begin_transaction():

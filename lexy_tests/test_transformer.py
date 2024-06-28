@@ -5,7 +5,6 @@ from lexy.models.transformer import Transformer, TransformerCreate
 
 
 class TestTransformer:
-
     def test_hello(self):
         assert True
 
@@ -24,7 +23,7 @@ class TestTransformer:
         assert response.status_code == 200, response.text
         data = response.json()
         assert len(data) > 1
-        transformer_ids = [t['transformer_id'] for t in data]
+        transformer_ids = [t["transformer_id"] for t in data]
         assert "text.embeddings.minilm" in transformer_ids
 
     @pytest.mark.asyncio
@@ -35,7 +34,7 @@ class TestTransformer:
         assert response.status_code == 200, response.text
         data = response.json()
         assert len(data) > 1
-        transformer_ids = [t['transformer_id'] for t in data]
+        transformer_ids = [t["transformer_id"] for t in data]
         assert "text.embeddings.minilm" in transformer_ids
 
     @pytest.mark.asyncio
@@ -43,7 +42,7 @@ class TestTransformer:
         transformer = TransformerCreate(
             transformer_id="test_transformer",
             path="test.tester",
-            description="Test Transformer"
+            description="Test Transformer",
         )
 
         db_transformer = Transformer.model_validate(transformer)
@@ -83,7 +82,6 @@ class TestTransformer:
 
 
 class TestTransformerModel:
-
     def test_create_transformer(self):
         transformer = TransformerCreate(transformer_id="test_transformer")
         assert transformer.transformer_id == "test_transformer"
@@ -94,12 +92,22 @@ class TestTransformerModel:
 
     def test_create_transformer_with_invalid_id(self):
         with pytest.raises(ValueError):
-            TransformerCreate(transformer_id="", description="Test Transformer")  # blank
+            TransformerCreate(
+                transformer_id="", description="Test Transformer"
+            )  # blank
         with pytest.raises(ValueError):
-            TransformerCreate(transformer_id="test transformer", description="Test Transformer")  # space
+            TransformerCreate(
+                transformer_id="test transformer", description="Test Transformer"
+            )  # space
         with pytest.raises(ValueError):
-            TransformerCreate(transformer_id="_test", description="Test Transformer")  # starts with underscore
+            TransformerCreate(
+                transformer_id="_test", description="Test Transformer"
+            )  # starts with underscore
         with pytest.raises(ValueError):
-            TransformerCreate(transformer_id="1abc", description="Test Transformer")  # starts with number
+            TransformerCreate(
+                transformer_id="1abc", description="Test Transformer"
+            )  # starts with number
         with pytest.raises(ValueError):
-            TransformerCreate(transformer_id="transformer" * 30, description="Test Transformer")  # too long
+            TransformerCreate(
+                transformer_id="transformer" * 30, description="Test Transformer"
+            )  # too long

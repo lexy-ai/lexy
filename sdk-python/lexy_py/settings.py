@@ -1,4 +1,4 @@
-""" Settings for lexy_py """
+"""Settings for lexy_py"""
 
 # service url
 SERVICE_URL: str = "http://localhost:9900"

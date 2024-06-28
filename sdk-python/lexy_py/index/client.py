@@ -1,4 +1,4 @@
-""" Client for interacting with the Indexes API. """
+"""Client for interacting with the Indexes API."""
 
 import io
 import os
@@ -37,7 +37,7 @@ class IndexClient:
         return self._lexy_client.client
 
     def list_indexes(self) -> list[Index]:
-        """ Synchronously get a list of all indexes.
+        """Synchronously get a list of all indexes.
 
         Returns:
             list[Index]: A list of all indexes.
@@ -47,7 +47,7 @@ class IndexClient:
         return [Index(**index, client=self._lexy_client) for index in r.json()]
 
     async def alist_indexes(self) -> list[Index]:
-        """ Asynchronously get a list of all indexes.
+        """Asynchronously get a list of all indexes.
 
         Returns:
             list[Index]: A list of all indexes.
@@ -57,7 +57,7 @@ class IndexClient:
         return [Index(**index, client=self._lexy_client) for index in r.json()]
 
     def get_index(self, index_id: str) -> Index:
-        """ Synchronously get an index.
+        """Synchronously get an index.
 
         Args:
             index_id (str): The ID of the index to get.
@@ -70,7 +70,7 @@ class IndexClient:
         return Index(**r.json(), client=self._lexy_client)
 
     async def aget_index(self, index_id: str) -> Index:
-        """ Asynchronously get an index.
+        """Asynchronously get an index.
 
         Args:
             index_id (str): The ID of the index to get.
@@ -82,10 +82,14 @@ class IndexClient:
         handle_response(r)
         return Index(**r.json(), client=self._lexy_client)
 
-    def add_index(self, index_id: str, description: Optional[str] = None,
-                  index_table_schema: Optional[dict[str, Any]] = None,
-                  index_fields: Optional[dict[str, Any]] = None) -> Index:
-        """ Synchronously add an index.
+    def add_index(
+        self,
+        index_id: str,
+        description: Optional[str] = None,
+        index_table_schema: Optional[dict[str, Any]] = None,
+        index_fields: Optional[dict[str, Any]] = None,
+    ) -> Index:
+        """Synchronously add an index.
 
         Args:
             index_id (str): The ID of the index to add.
@@ -117,16 +121,20 @@ class IndexClient:
             "index_id": index_id,
             "description": description,
             "index_table_schema": index_table_schema,
-            "index_fields": index_fields
+            "index_fields": index_fields,
         }
         r = self.client.post("/indexes", json=data)
         handle_response(r)
         return Index(**r.json(), client=self._lexy_client)
 
-    async def aadd_index(self, index_id: str, description: Optional[str] = None,
-                         index_table_schema: Optional[dict[str, Any]] = None,
-                         index_fields: Optional[dict[str, Any]] = None) -> Index:
-        """ Asynchronously add an index.
+    async def aadd_index(
+        self,
+        index_id: str,
+        description: Optional[str] = None,
+        index_table_schema: Optional[dict[str, Any]] = None,
+        index_fields: Optional[dict[str, Any]] = None,
+    ) -> Index:
+        """Asynchronously add an index.
 
         Args:
             index_id (str): The ID of the index to add.
@@ -158,38 +166,46 @@ class IndexClient:
             "index_id": index_id,
             "description": description,
             "index_table_schema": index_table_schema,
-            "index_fields": index_fields
+            "index_fields": index_fields,
         }
         r = await self.aclient.post("/indexes", json=data)
         handle_response(r)
         return Index(**r.json(), client=self._lexy_client)
 
     def delete_index(self, index_id: str, drop_table: bool = False) -> dict:
-        """ Synchronously delete an index.
+        """Synchronously delete an index.
 
         Args:
             index_id (str): The ID of the index to delete.
             drop_table (bool, optional): Whether to drop the index table from the database. Defaults to False.
         """
-        r = self.client.delete(f"/indexes/{index_id}", params={"drop_table": drop_table})
+        r = self.client.delete(
+            f"/indexes/{index_id}", params={"drop_table": drop_table}
+        )
         handle_response(r)
         return r.json()
 
     async def adelete_index(self, index_id: str, drop_table: bool = False) -> dict:
-        """ Asynchronously delete an index.
+        """Asynchronously delete an index.
 
         Args:
             index_id (str): The ID of the index to delete.
             drop_table (bool, optional): Whether to drop the index table from the database. Defaults to False.
         """
-        r = await self.aclient.delete(f"/indexes/{index_id}", params={"drop_table": drop_table})
+        r = await self.aclient.delete(
+            f"/indexes/{index_id}", params={"drop_table": drop_table}
+        )
         handle_response(r)
         return r.json()
 
-    def update_index(self, index_id: str, description: Optional[str] = None,
-                     index_table_schema: Optional[dict[str, Any]] = None,
-                     index_fields: Optional[dict[str, Any]] = None) -> Index:
-        """ Synchronously update an index.
+    def update_index(
+        self,
+        index_id: str,
+        description: Optional[str] = None,
+        index_table_schema: Optional[dict[str, Any]] = None,
+        index_fields: Optional[dict[str, Any]] = None,
+    ) -> Index:
+        """Synchronously update an index.
 
         Args:
             index_id (str): The ID of the index to update.
@@ -203,16 +219,22 @@ class IndexClient:
         index = IndexUpdate(
             description=description,
             index_table_schema=index_table_schema,
-            index_fields=index_fields
+            index_fields=index_fields,
         )
-        r = self.client.patch(f"/indexes/{index_id}", json=index.model_dump(exclude_none=True))
+        r = self.client.patch(
+            f"/indexes/{index_id}", json=index.model_dump(exclude_none=True)
+        )
         handle_response(r)
         return Index(**r.json(), client=self._lexy_client)
 
-    async def aupdate_index(self, index_id: str, description: Optional[str] = None,
-                            index_table_schema: Optional[dict[str, Any]] = None,
-                            index_fields: Optional[dict[str, Any]] = None) -> Index:
-        """ Asynchronously update an index.
+    async def aupdate_index(
+        self,
+        index_id: str,
+        description: Optional[str] = None,
+        index_table_schema: Optional[dict[str, Any]] = None,
+        index_fields: Optional[dict[str, Any]] = None,
+    ) -> Index:
+        """Asynchronously update an index.
 
         Args:
             index_id (str): The ID of the index to update.
@@ -226,14 +248,18 @@ class IndexClient:
         index = IndexUpdate(
             description=description,
             index_table_schema=index_table_schema,
-            index_fields=index_fields
+            index_fields=index_fields,
         )
-        r = await self.aclient.patch(f"/indexes/{index_id}", json=index.model_dump(exclude_none=True))
+        r = await self.aclient.patch(
+            f"/indexes/{index_id}", json=index.model_dump(exclude_none=True)
+        )
         handle_response(r)
         return Index(**r.json(), client=self._lexy_client)
 
-    def list_index_records(self, index_id: str, document_id: Optional[str] = None) -> list[dict]:
-        """ Synchronously get a list of all index records for an index.
+    def list_index_records(
+        self, index_id: str, document_id: Optional[str] = None
+    ) -> list[dict]:
+        """Synchronously get a list of all index records for an index.
 
         Args:
             index_id (str): The ID of the index to get records for.
@@ -249,8 +275,10 @@ class IndexClient:
         handle_response(r)
         return r.json()
 
-    async def alist_index_records(self, index_id: str, document_id: Optional[str] = None) -> list[dict]:
-        """ Asynchronously get a list of all index records for an index.
+    async def alist_index_records(
+        self, index_id: str, document_id: Optional[str] = None
+    ) -> list[dict]:
+        """Asynchronously get a list of all index records for an index.
 
         Args:
             index_id (str): The ID of the index to get records for.
@@ -266,16 +294,18 @@ class IndexClient:
         handle_response(r)
         return r.json()
 
-    def query_index(self,
-                    query_text: str = None,
-                    query_image: Image.Image | str = None,
-                    index_id: str = "default_text_embeddings",
-                    query_field: str = "embedding",
-                    k: int = 5,
-                    return_fields: list[str] = None,
-                    return_document: bool = False,
-                    embedding_model: str = None) -> list[dict]:
-        """ Synchronously query an index.
+    def query_index(
+        self,
+        query_text: str = None,
+        query_image: Image.Image | str = None,
+        index_id: str = "default_text_embeddings",
+        query_field: str = "embedding",
+        k: int = 5,
+        return_fields: list[str] = None,
+        return_document: bool = False,
+        embedding_model: str = None,
+    ) -> list[dict]:
+        """Synchronously query an index.
 
         Args:
             query_text (str): The query text.
@@ -307,32 +337,40 @@ class IndexClient:
             >>> image = Image.open(httpx.get(img_url))
             >>> lx.query_index(query_image=image, index_id="my_image_index", k=3)
         """
-        files, params = self._process_query_params(query_text=query_text,
-                                                   query_image=query_image,
-                                                   query_field=query_field,
-                                                   k=k,
-                                                   return_fields=return_fields,
-                                                   return_document=return_document,
-                                                   embedding_model=embedding_model)
+        files, params = self._process_query_params(
+            query_text=query_text,
+            query_image=query_image,
+            query_field=query_field,
+            k=k,
+            return_fields=return_fields,
+            return_document=return_document,
+            embedding_model=embedding_model,
+        )
 
-        r = self.client.post(f"/indexes/{index_id}/records/query", files=files, params=params)
+        r = self.client.post(
+            f"/indexes/{index_id}/records/query", files=files, params=params
+        )
         handle_response(r)
         search_results = r.json()["search_results"]
         if return_document:
             for result in search_results:
-                result["document"] = Document(**result["document"], client=self._lexy_client)
+                result["document"] = Document(
+                    **result["document"], client=self._lexy_client
+                )
         return search_results
 
-    async def aquery_index(self,
-                           query_text: str = None,
-                           query_image: Image.Image | str = None,
-                           index_id: str = "default_text_embeddings",
-                           query_field: str = "embedding",
-                           k: int = 5,
-                           return_fields: list[str] = None,
-                           return_document: bool = False,
-                           embedding_model: str = None) -> list[dict]:
-        """ Asynchronously query an index.
+    async def aquery_index(
+        self,
+        query_text: str = None,
+        query_image: Image.Image | str = None,
+        index_id: str = "default_text_embeddings",
+        query_field: str = "embedding",
+        k: int = 5,
+        return_fields: list[str] = None,
+        return_document: bool = False,
+        embedding_model: str = None,
+    ) -> list[dict]:
+        """Asynchronously query an index.
 
         Args:
             query_text (str): The query text.
@@ -349,34 +387,44 @@ class IndexClient:
         Returns:
             list[dict]: The query results.
         """
-        files, params = self._process_query_params(query_text=query_text,
-                                                   query_image=query_image,
-                                                   query_field=query_field,
-                                                   k=k,
-                                                   return_fields=return_fields,
-                                                   return_document=return_document,
-                                                   embedding_model=embedding_model)
+        files, params = self._process_query_params(
+            query_text=query_text,
+            query_image=query_image,
+            query_field=query_field,
+            k=k,
+            return_fields=return_fields,
+            return_document=return_document,
+            embedding_model=embedding_model,
+        )
 
-        r = await self.aclient.post(f"/indexes/{index_id}/records/query", files=files, params=params)
+        r = await self.aclient.post(
+            f"/indexes/{index_id}/records/query", files=files, params=params
+        )
         handle_response(r)
         search_results = r.json()["search_results"]
         if return_document:
             for result in search_results:
-                result["document"] = Document(**result["document"], client=self._lexy_client)
+                result["document"] = Document(
+                    **result["document"], client=self._lexy_client
+                )
         return search_results
 
     @staticmethod
-    def _process_query_params(query_text: str,
-                              query_image: Image.Image | str,
-                              query_field: str,
-                              k: int,
-                              return_fields: list[str],
-                              return_document: bool,
-                              embedding_model: str) -> tuple[dict, dict]:
+    def _process_query_params(
+        query_text: str,
+        query_image: Image.Image | str,
+        query_field: str,
+        k: int,
+        return_fields: list[str],
+        return_document: bool,
+        embedding_model: str,
+    ) -> tuple[dict, dict]:
         files = {}
 
         if query_text and query_image:
-            raise LexyClientError("Please submit either 'query_text' or 'query_image', not both.")
+            raise LexyClientError(
+                "Please submit either 'query_text' or 'query_image', not both."
+            )
         elif query_text:
             files["query_text"] = (None, query_text)
         elif query_image:
@@ -385,12 +433,16 @@ class IndexClient:
                 filename = os.path.basename(query_image)
             else:
                 image = query_image
-                filename = f'image.{image.format.lower()}' if image.format else 'image.jpg'
+                filename = (
+                    f"image.{image.format.lower()}" if image.format else "image.jpg"
+                )
             buffer = io.BytesIO()
             image_format = image.format or "jpg"
             image.save(buffer, format=image_format)
             buffer.seek(0)
-            mime_type = mimetypes.types_map.get(f".{image_format.lower()}", "application/octet-stream")
+            mime_type = mimetypes.types_map.get(
+                f".{image_format.lower()}", "application/octet-stream"
+            )
             files["query_image"] = (filename, buffer, mime_type)
         else:
             raise LexyClientError("Please submit either 'query_text' or 'query_image'.")
@@ -401,7 +453,7 @@ class IndexClient:
             "query_field": query_field,
             "k": k,
             "return_fields": return_fields,
-            "return_document": return_document
+            "return_document": return_document,
         }
         if embedding_model:
             params["embedding_model"] = embedding_model

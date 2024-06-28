@@ -9,7 +9,6 @@ from lexy.models.transformer import Transformer
 
 
 class TestBinding:
-
     def test_hello(self):
         assert True
 
@@ -84,23 +83,23 @@ class TestBinding:
     @pytest.mark.asyncio
     async def test_create_and_delete_binding(self, async_session):
         b_dict = {
-            'collection_name': 'default',
-            'transformer_id': 'text.embeddings.minilm',
-            'index_id': 'default_text_embeddings',
-            'description': 'Test binding with filter',
-            'execution_params': {},
-            'transformer_params': {},
-            'filter': {
-                'conditions': [
+            "collection_name": "default",
+            "transformer_id": "text.embeddings.minilm",
+            "index_id": "default_text_embeddings",
+            "description": "Test binding with filter",
+            "execution_params": {},
+            "transformer_params": {},
+            "filter": {
+                "conditions": [
                     {
-                        'field': 'meta.size',
-                        'operation': 'less_than',
-                        'value': 30000.0,
-                        'negate': False
+                        "field": "meta.size",
+                        "operation": "less_than",
+                        "value": 30000.0,
+                        "negate": False,
                     }
                 ],
-                'combination': 'AND'
-            }
+                "combination": "AND",
+            },
         }
         b = BindingCreate.model_validate(b_dict)
         collection = await crud.get_collection_by_name(
@@ -141,12 +140,11 @@ class TestBinding:
 
 
 class TestBindingModel:
-
     def test_create_binding(self):
         binding = BindingCreate(
             collection_name="default",
             index_id="default_text_embeddings",
-            transformer_id="text.embeddings.minilm"
+            transformer_id="text.embeddings.minilm",
         )
         assert binding.collection_name == "default"
         assert binding.index_id == "default_text_embeddings"
@@ -160,22 +158,22 @@ class TestBindingModel:
                 collection_name=None,
                 transformer_id="tid",
                 index_id="iid",
-                description="Binding with no valid collection identifier"
+                description="Binding with no valid collection identifier",
             )
         with pytest.raises(ValueError):
             # transformer identifiers missing
             BindingCreate(
-                collection_id='cid',
+                collection_id="cid",
                 transformer_name=None,
                 index_id="iid",
-                description="Binding with no valid transformer identifier"
+                description="Binding with no valid transformer identifier",
             )
         with pytest.raises(ValueError):
             # index identifiers missing
             BindingCreate(
                 collection_id="cid",
                 transformer_id="tid",
-                description="Binding with no valid index identifier"
+                description="Binding with no valid index identifier",
             )
 
     def test_update_binding(self):
@@ -187,11 +185,11 @@ class TestBindingModel:
                         "field": "meta.size",
                         "operation": "less_than",
                         "value": 30000,
-                        "negate": False
+                        "negate": False,
                     }
                 ],
-                "combination": "AND"
-            }
+                "combination": "AND",
+            },
         )
         assert binding_update.description == "Updated description"
         assert binding_update.filter is not None

@@ -10,7 +10,6 @@ from lexy_py.transformer.models import Transformer
 
 
 class TestBindingClient:
-
     def test_root(self, lx_client):
         response = lx_client.get("/")
         assert response.status_code == 200
@@ -65,7 +64,7 @@ class TestBindingClient:
             collection_name="default",
             index_id="default_text_embeddings",
             transformer_id="text.embeddings.minilm",
-            description="Test Binding"
+            description="Test Binding",
         )
         assert binding.binding_id is not None
         assert binding.collection.collection_name == "default"
@@ -74,21 +73,20 @@ class TestBindingClient:
         assert binding.description == "Test Binding"
         assert binding.status == "on"
         assert "lexy_index_fields" in binding.transformer_params
-        assert set(binding.index.index_fields.keys()) == set(binding.transformer_params["lexy_index_fields"])
+        assert set(binding.index.index_fields.keys()) == set(
+            binding.transformer_params["lexy_index_fields"]
+        )
 
         # delete test binding
         response = lx_client.delete_binding(binding_id=binding.binding_id)
-        assert response == {
-            "msg": "Binding deleted",
-            "binding_id": binding.binding_id
-        }
+        assert response == {"msg": "Binding deleted", "binding_id": binding.binding_id}
 
     def test_update_binding_with_filter(self, lx_client, celery_app, celery_worker):
         binding = lx_client.create_binding(
             collection_name="default",
             index_id="default_text_embeddings",
             transformer_id="text.embeddings.minilm",
-            description="Test Binding"
+            description="Test Binding",
         )
         assert binding.binding_id is not None
         assert binding.collection.collection_name == "default"
@@ -99,18 +97,23 @@ class TestBindingClient:
         assert binding.created_at is not None
         assert binding.updated_at is not None
         assert "lexy_index_fields" in binding.transformer_params
-        assert set(binding.index.index_fields.keys()) == set(binding.transformer_params["lexy_index_fields"])
+        assert set(binding.index.index_fields.keys()) == set(
+            binding.transformer_params["lexy_index_fields"]
+        )
         assert binding.filter is None
 
         # create filter
-        my_filter = (FilterBuilder().include("meta.size", "less_than", 30000)
-                                    .exclude("meta.type", "in", ["image", "video"]))
+        my_filter = (
+            FilterBuilder()
+            .include("meta.size", "less_than", 30000)
+            .exclude("meta.type", "in", ["image", "video"])
+        )
 
         # update binding description and filter
         binding = lx_client.update_binding(
             binding_id=binding.binding_id,
             description="Test Binding with Filter",
-            filters=my_filter
+            filters=my_filter,
         )
         assert binding.binding_id is not None
         assert binding.description == "Test Binding with Filter"
@@ -120,14 +123,13 @@ class TestBindingClient:
 
         # delete test binding
         response = lx_client.delete_binding(binding_id=binding.binding_id)
-        assert response == {
-            "msg": "Binding deleted",
-            "binding_id": binding.binding_id
-        }
+        assert response == {"msg": "Binding deleted", "binding_id": binding.binding_id}
 
-    def test_create_binding_with_invalid_filter(self, lx_client, celery_app, celery_worker):
+    def test_create_binding_with_invalid_filter(
+        self, lx_client, celery_app, celery_worker
+    ):
         # create filter with invalid conditions
-        my_filter = (FilterBuilder().include("meta.size", "less_than", "hello"))
+        my_filter = FilterBuilder().include("meta.size", "less_than", "hello")
 
         with pytest.raises(LexyAPIError) as exc_info:
             lx_client.create_binding(
@@ -135,54 +137,71 @@ class TestBindingClient:
                 index_id="default_text_embeddings",
                 transformer_id="text.embeddings.minilm",
                 description="Test Binding with Invalid Filter",
-                filters=my_filter
+                filters=my_filter,
             )
         assert isinstance(exc_info.value, LexyAPIError)
-        assert exc_info.value.response_data["status_code"] == 422, exc_info.value.response_data
+        assert (
+            exc_info.value.response_data["status_code"] == 422
+        ), exc_info.value.response_data
         assert exc_info.value.response.status_code == 422
         assert len(exc_info.value.response.json()["detail"]) == 1
         error = exc_info.value.response.json()["detail"][0]
         assert error["type"] == "value_error"
         assert error["loc"] == ["body", "filter", "conditions", 0, "value"]
-        assert error["msg"] == "Value error, Value must be a number for operation 'less_than'"
+        assert (
+            error["msg"]
+            == "Value error, Value must be a number for operation 'less_than'"
+        )
         assert error["input"] == "hello"
 
-    def test_create_binding_with_nonexistent_collection(self, lx_client, celery_app, celery_worker):
+    def test_create_binding_with_nonexistent_collection(
+        self, lx_client, celery_app, celery_worker
+    ):
         with pytest.raises(LexyAPIError) as exc_info:
             lx_client.create_binding(
                 collection_name="nonexistent_collection",
                 index_id="default_text_embeddings",
                 transformer_id="text.embeddings.minilm",
-                description="Test Binding with Nonexistent Collection"
+                description="Test Binding with Nonexistent Collection",
             )
         assert isinstance(exc_info.value, LexyAPIError)
-        assert exc_info.value.response_data["status_code"] == 400, exc_info.value.response_data
+        assert (
+            exc_info.value.response_data["status_code"] == 400
+        ), exc_info.value.response_data
         assert exc_info.value.response.status_code == 400
         assert exc_info.value.response.json()["detail"] == "Collection not found"
 
-    def test_create_binding_with_nonexistent_index(self, lx_client, celery_app, celery_worker):
+    def test_create_binding_with_nonexistent_index(
+        self, lx_client, celery_app, celery_worker
+    ):
         with pytest.raises(LexyAPIError) as exc_info:
             lx_client.create_binding(
                 collection_name="default",
                 index_id="nonexistent_index",
                 transformer_id="text.embeddings.minilm",
-                description="Test Binding with Nonexistent Index"
+                description="Test Binding with Nonexistent Index",
             )
         assert isinstance(exc_info.value, LexyAPIError)
-        assert exc_info.value.response_data["status_code"] == 400, exc_info.value.response_data
+        assert (
+            exc_info.value.response_data["status_code"] == 400
+        ), exc_info.value.response_data
         assert exc_info.value.response.status_code == 400
         assert exc_info.value.response.json()["detail"] == "Index not found"
 
-    def test_create_binding_with_nonexistent_transformer(self, lx_client, celery_app, celery_worker):
+    def test_create_binding_with_nonexistent_transformer(
+        self, lx_client, celery_app, celery_worker
+    ):
         with pytest.raises(LexyAPIError) as exc_info:
             lx_client.create_binding(
                 collection_name="default",
                 index_id="default_text_embeddings",
                 transformer_id="nonexistent_transformer",
-                description="Test Binding with Nonexistent Transformer"
+                description="Test Binding with Nonexistent Transformer",
             )
         assert isinstance(exc_info.value, LexyAPIError)
-        assert exc_info.value.response_data["status_code"] == 400, exc_info.value.response_data
+        assert (
+            exc_info.value.response_data["status_code"] == 400
+        ), exc_info.value.response_data
         assert exc_info.value.response.status_code == 400
         assert exc_info.value.response.json()["detail"] == "Transformer not found"
 
@@ -198,7 +217,7 @@ class TestBindingClient:
             index_id="default_text_embeddings",
             transformer_id="text.embeddings.minilm",
             description="Test Binding with Filter",
-            filters=my_filter
+            filters=my_filter,
         )
         assert binding.binding_id is not None
         assert binding.description == "Test Binding with Filter"
@@ -206,27 +225,22 @@ class TestBindingClient:
 
         # update binding to remove filter
         updated_binding = lx_client.update_binding(
-            binding_id=binding.binding_id,
-            filters={}
+            binding_id=binding.binding_id, filters={}
         )
         assert updated_binding.binding_id == binding.binding_id
         assert updated_binding.filter is None
 
         # delete binding
         response = lx_client.delete_binding(binding_id=binding.binding_id)
-        assert response == {
-            "msg": "Binding deleted",
-            "binding_id": binding.binding_id
-        }
+        assert response == {"msg": "Binding deleted", "binding_id": binding.binding_id}
 
 
 class TestBindingModel:
-
     def test_create_binding(self):
         binding = BindingCreate(
             collection_name="default",
             index_id="default_text_embeddings",
-            transformer_id="text.embeddings.minilm"
+            transformer_id="text.embeddings.minilm",
         )
         assert binding.collection_name == "default"
         assert binding.index_id == "default_text_embeddings"
@@ -252,10 +266,10 @@ class TestBindingModel:
                     "field": "meta.size",
                     "operation": "less_than",
                     "value": 30000,
-                    "negate": False
+                    "negate": False,
                 }
             ],
-            "combination": "AND"
+            "combination": "AND",
         }
         binding = BindingCreate(
             collection_name="default",
@@ -276,29 +290,26 @@ class TestBindingModel:
                 collection_name=None,
                 transformer_id="tid",
                 index_id="iid",
-                description="Binding with no valid collection identifier"
+                description="Binding with no valid collection identifier",
             )
         with pytest.raises(ValueError):
             # transformer identifiers missing
             BindingCreate(
-                collection_id='cid',
+                collection_id="cid",
                 transformer_name=None,
                 index_id="iid",
-                description="Binding with no valid transformer identifier"
+                description="Binding with no valid transformer identifier",
             )
         with pytest.raises(ValueError):
             # index identifiers missing
             BindingCreate(
                 collection_id="cid",
                 transformer_id="tid",
-                description="Binding with no valid index identifier"
+                description="Binding with no valid index identifier",
             )
 
     def test_update_binding(self):
-        binding_update = BindingUpdate(
-            description="Updated description",
-            status="off"
-        )
+        binding_update = BindingUpdate(description="Updated description", status="off")
         assert binding_update.description == "Updated description"
         assert binding_update.filter is None
         assert binding_update.execution_params is None
@@ -308,8 +319,7 @@ class TestBindingModel:
     def test_update_binding_with_filter_obj(self):
         my_filter = FilterBuilder().include("meta.size", "less_than", 30000)
         binding_update = BindingUpdate(
-            description="Updated description",
-            filter=my_filter
+            description="Updated description", filter=my_filter
         )
         assert binding_update.description == "Updated description"
         assert binding_update.filter == my_filter.to_dict()
@@ -324,14 +334,13 @@ class TestBindingModel:
                     "field": "meta.size",
                     "operation": "less_than",
                     "value": 30000,
-                    "negate": False
+                    "negate": False,
                 }
             ],
-            "combination": "AND"
+            "combination": "AND",
         }
         binding_update = BindingUpdate(
-            description="Updated description",
-            filter=filter_dict
+            description="Updated description", filter=filter_dict
         )
         assert binding_update.description == "Updated description"
         assert binding_update.filter == filter_dict

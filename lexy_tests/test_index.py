@@ -5,7 +5,6 @@ from lexy.models.index import Index, IndexCreate
 
 
 class TestIndex:
-
     def test_hello(self):
         assert True
 
@@ -24,7 +23,7 @@ class TestIndex:
         assert response.status_code == 200, response.text
         data = response.json()
         assert len(data) == 1
-        index_ids = [index['index_id'] for index in data]
+        index_ids = [index["index_id"] for index in data]
         assert "default_text_embeddings" in index_ids
 
     @pytest.mark.asyncio
@@ -35,7 +34,7 @@ class TestIndex:
         assert response.status_code == 200, response.text
         data = response.json()
         assert len(data) == 1
-        index_ids = [index['index_id'] for index in data]
+        index_ids = [index["index_id"] for index in data]
         assert "default_text_embeddings" in index_ids
 
     @pytest.mark.asyncio
@@ -53,10 +52,17 @@ class TestIndex:
         # define index fields
         test_index_fields = {
             "text": {"type": "text"},
-            "embedding": {"type": "embedding", "extras": {"dims": 384, "model": "text.embeddings.minilm"}},
+            "embedding": {
+                "type": "embedding",
+                "extras": {"dims": 384, "model": "text.embeddings.minilm"},
+            },
             "meta": {"type": "object"},
         }
-        index = IndexCreate(index_id="test_index", description="Test Index", index_fields=test_index_fields)
+        index = IndexCreate(
+            index_id="test_index",
+            description="Test Index",
+            index_fields=test_index_fields,
+        )
 
         db_index = Index.model_validate(index)
         async_session.add(db_index)
@@ -77,14 +83,18 @@ class TestIndex:
 
     @pytest.mark.asyncio
     async def test_delete_index_row_only(self, async_session):
-        result = await async_session.exec(select(Index).where(Index.index_id == "test_index"))
+        result = await async_session.exec(
+            select(Index).where(Index.index_id == "test_index")
+        )
         index = result.first()
         assert index is not None
 
         await async_session.delete(index)
         await async_session.commit()
 
-        result = await async_session.exec(select(Index).where(Index.index_id == "test_index"))
+        result = await async_session.exec(
+            select(Index).where(Index.index_id == "test_index")
+        )
         index = result.first()
         assert index is None
 
@@ -102,7 +112,6 @@ class TestIndexManager:
 
 
 class TestIndexModel:
-
     def test_create_index(self):
         index = IndexCreate(index_id="test_index")
         assert index.index_id == "test_index"

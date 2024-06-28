@@ -8,19 +8,19 @@ if TYPE_CHECKING:
 
 
 class Operation(str, Enum):
-    EQUALS = 'equals'
-    EQUALS_CI = 'equals_ci'  # Case-insensitive equals
-    LESS_THAN = 'less_than'
-    LESS_THAN_OR_EQUALS = 'less_than_or_equals'
-    GREATER_THAN = 'greater_than'
-    GREATER_THAN_OR_EQUALS = 'greater_than_or_equals'
-    CONTAINS = 'contains'
-    CONTAINS_CI = 'contains_ci'  # Case-insensitive contains
-    STARTS_WITH = 'starts_with'
-    STARTS_WITH_CI = 'starts_with_ci'  # Case-insensitive starts with
-    ENDS_WITH = 'ends_with'
-    ENDS_WITH_CI = 'ends_with_ci'  # Case-insensitive ends with
-    IN = 'in'
+    EQUALS = "equals"
+    EQUALS_CI = "equals_ci"  # Case-insensitive equals
+    LESS_THAN = "less_than"
+    LESS_THAN_OR_EQUALS = "less_than_or_equals"
+    GREATER_THAN = "greater_than"
+    GREATER_THAN_OR_EQUALS = "greater_than_or_equals"
+    CONTAINS = "contains"
+    CONTAINS_CI = "contains_ci"  # Case-insensitive contains
+    STARTS_WITH = "starts_with"
+    STARTS_WITH_CI = "starts_with_ci"  # Case-insensitive starts with
+    ENDS_WITH = "ends_with"
+    ENDS_WITH_CI = "ends_with_ci"  # Case-insensitive ends with
+    IN = "in"
 
 
 class FilterCondition(BaseModel):
@@ -29,15 +29,17 @@ class FilterCondition(BaseModel):
     value: Any = Field(..., description="The value to compare against")
     negate: bool = Field(False, description="Whether to negate the filter condition")
 
-    @field_validator('value')
+    @field_validator("value")
     def validate_value(cls, v: Any, info: ValidationInfo) -> Any:
-        operation = info.data.get('operation')
+        operation = info.data.get("operation")
 
         # For numeric operations
-        if operation in [Operation.LESS_THAN,
-                         Operation.LESS_THAN_OR_EQUALS,
-                         Operation.GREATER_THAN,
-                         Operation.GREATER_THAN_OR_EQUALS]:
+        if operation in [
+            Operation.LESS_THAN,
+            Operation.LESS_THAN_OR_EQUALS,
+            Operation.GREATER_THAN,
+            Operation.GREATER_THAN_OR_EQUALS,
+        ]:
             try:
                 return float(v)
             except ValueError:
@@ -47,16 +49,19 @@ class FilterCondition(BaseModel):
         if operation in [Operation.IN]:
             if not isinstance(v, Iterable):
                 raise ValueError(
-                    f"Value must be an iterable (list, tuple, set, or dict) for operation '{operation}'")
+                    f"Value must be an iterable (list, tuple, set, or dict) for operation '{operation}'"
+                )
 
         # For string operations
-        if operation in [Operation.EQUALS_CI,
-                         Operation.CONTAINS,
-                         Operation.CONTAINS_CI,
-                         Operation.STARTS_WITH,
-                         Operation.STARTS_WITH_CI,
-                         Operation.ENDS_WITH,
-                         Operation.ENDS_WITH_CI]:
+        if operation in [
+            Operation.EQUALS_CI,
+            Operation.CONTAINS,
+            Operation.CONTAINS_CI,
+            Operation.STARTS_WITH,
+            Operation.STARTS_WITH_CI,
+            Operation.ENDS_WITH,
+            Operation.ENDS_WITH_CI,
+        ]:
             if not isinstance(v, str):
                 raise ValueError(f"Value must be a string for operation '{operation}'")
 
@@ -69,16 +74,22 @@ class Filter(BaseModel):
 
     def document_meets_conditions(self, document: "Document") -> bool:
         if self.combination == "AND":
-            return all(apply_filter_condition(document, condition) for condition in self.conditions)
+            return all(
+                apply_filter_condition(document, condition)
+                for condition in self.conditions
+            )
         elif self.combination == "OR":
-            return any(apply_filter_condition(document, condition) for condition in self.conditions)
+            return any(
+                apply_filter_condition(document, condition)
+                for condition in self.conditions
+            )
         else:
             raise ValueError(f"Unsupported combination: {self.combination}")
 
 
 # Function to apply individual filter condition to a document
 def apply_filter_condition(document: "Document", condition: FilterCondition) -> bool:
-    if condition.field.startswith('meta.'):
+    if condition.field.startswith("meta."):
         doc_value = document.meta.get(condition.field[5:], None)
     else:
         doc_value = getattr(document, condition.field, None)
@@ -86,24 +97,29 @@ def apply_filter_condition(document: "Document", condition: FilterCondition) -> 
 
     if doc_value is None:
         # handle case where doc value is None
-        if condition.operation in [Operation.EQUALS,
-                                   Operation.EQUALS_CI]:
+        if condition.operation in [Operation.EQUALS, Operation.EQUALS_CI]:
             result = filter_value is None
-        elif condition.operation in [Operation.LESS_THAN,
-                                     Operation.LESS_THAN_OR_EQUALS,
-                                     Operation.GREATER_THAN,
-                                     Operation.GREATER_THAN_OR_EQUALS,
-                                     Operation.CONTAINS,
-                                     Operation.CONTAINS_CI,
-                                     Operation.STARTS_WITH,
-                                     Operation.STARTS_WITH_CI,
-                                     Operation.ENDS_WITH,
-                                     Operation.ENDS_WITH_CI]:
+        elif condition.operation in [
+            Operation.LESS_THAN,
+            Operation.LESS_THAN_OR_EQUALS,
+            Operation.GREATER_THAN,
+            Operation.GREATER_THAN_OR_EQUALS,
+            Operation.CONTAINS,
+            Operation.CONTAINS_CI,
+            Operation.STARTS_WITH,
+            Operation.STARTS_WITH_CI,
+            Operation.ENDS_WITH,
+            Operation.ENDS_WITH_CI,
+        ]:
             result = False
         elif condition.operation in [Operation.IN]:
-            result = None in filter_value if isinstance(filter_value, Iterable) else False
+            result = (
+                None in filter_value if isinstance(filter_value, Iterable) else False
+            )
         else:
-            raise ValueError(f"Unsupported operation: {condition.operation} for doc value `None`")
+            raise ValueError(
+                f"Unsupported operation: {condition.operation} for doc value `None`"
+            )
     else:
         # handle all other cases
         if condition.operation == Operation.EQUALS:
@@ -139,7 +155,9 @@ def apply_filter_condition(document: "Document", condition: FilterCondition) -> 
 
 
 # Function to apply all filters to a list of documents
-def filter_documents(docs: Iterable["Document"], filter_obj: Filter) -> Iterable["Document"]:
+def filter_documents(
+    docs: Iterable["Document"], filter_obj: Filter
+) -> Iterable["Document"]:
     """Filter documents according to a filter object.
 
     Args:
@@ -158,11 +176,17 @@ def filter_documents(docs: Iterable["Document"], filter_obj: Filter) -> Iterable
         [Document(content='foo bar', meta={'bar': 'baz'})]
     """
     for doc in docs:
-        if filter_obj.combination == 'AND':
-            if all(apply_filter_condition(doc, condition) for condition in filter_obj.conditions):
+        if filter_obj.combination == "AND":
+            if all(
+                apply_filter_condition(doc, condition)
+                for condition in filter_obj.conditions
+            ):
                 yield doc
-        elif filter_obj.combination == 'OR':
-            if any(apply_filter_condition(doc, condition) for condition in filter_obj.conditions):
+        elif filter_obj.combination == "OR":
+            if any(
+                apply_filter_condition(doc, condition)
+                for condition in filter_obj.conditions
+            ):
                 yield doc
         else:
             raise ValueError(f"Unsupported combination: {filter_obj.combination}")
@@ -170,8 +194,14 @@ def filter_documents(docs: Iterable["Document"], filter_obj: Filter) -> Iterable
 
 def document_passes_filter(document: "Document", filter_obj: Filter) -> bool:
     if filter_obj.combination == "AND":
-        return all(apply_filter_condition(document, condition) for condition in filter_obj.conditions)
+        return all(
+            apply_filter_condition(document, condition)
+            for condition in filter_obj.conditions
+        )
     elif filter_obj.combination == "OR":
-        return any(apply_filter_condition(document, condition) for condition in filter_obj.conditions)
+        return any(
+            apply_filter_condition(document, condition)
+            for condition in filter_obj.conditions
+        )
     else:
         raise ValueError(f"Unsupported combination: {filter_obj.combination}")

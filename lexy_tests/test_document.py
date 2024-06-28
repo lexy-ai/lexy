@@ -7,7 +7,6 @@ from lexy.models.document import Document, DocumentCreate, DocumentUpdate
 
 
 class TestDocument:
-
     def test_hello(self):
         assert True
 
@@ -17,7 +16,9 @@ class TestDocument:
             select(Collection).where(Collection.collection_name == "default")
         )
         default_collection = result.first()
-        document = Document(content="Test Content", collection_id=default_collection.collection_id)
+        document = Document(
+            content="Test Content", collection_id=default_collection.collection_id
+        )
 
         async_session.add(document)
         await async_session.commit()
@@ -49,7 +50,10 @@ class TestDocument:
             select(Collection).where(Collection.collection_name == "default")
         )
         default_collection = result.first()
-        doc = Document(content="a shiny new document", collection_id=default_collection.collection_id)
+        doc = Document(
+            content="a shiny new document",
+            collection_id=default_collection.collection_id,
+        )
         async_session.add(doc)
         await async_session.commit()
 
@@ -70,8 +74,12 @@ class TestDocument:
             select(Collection).where(Collection.collection_name == "code")
         )
         code_collection = result.first()
-        doc1 = Document(content="import this", collection_id=code_collection.collection_id)
-        doc2 = Document(content="export that", collection_id=code_collection.collection_id)
+        doc1 = Document(
+            content="import this", collection_id=code_collection.collection_id
+        )
+        doc2 = Document(
+            content="export that", collection_id=code_collection.collection_id
+        )
         async_session.add(doc1)
         async_session.add(doc2)
         await async_session.commit()
@@ -87,14 +95,22 @@ class TestDocument:
         assert data[0]["content"] == "import this"
         assert data[0]["collection_id"] == code_collection.collection_id
         assert data[0]["document_id"] == str(doc1.document_id)
-        assert data[0]["created_at"] == doc1.created_at.isoformat().replace("+00:00", "Z")
-        assert data[0]["updated_at"] == doc1.updated_at.isoformat().replace("+00:00", "Z")
+        assert data[0]["created_at"] == doc1.created_at.isoformat().replace(
+            "+00:00", "Z"
+        )
+        assert data[0]["updated_at"] == doc1.updated_at.isoformat().replace(
+            "+00:00", "Z"
+        )
 
         assert data[1]["content"] == "export that"
         assert data[1]["collection_id"] == code_collection.collection_id
         assert data[1]["document_id"] == str(doc2.document_id)
-        assert data[1]["created_at"] == doc2.created_at.isoformat().replace("+00:00", "Z")
-        assert data[1]["updated_at"] == doc2.updated_at.isoformat().replace("+00:00", "Z")
+        assert data[1]["created_at"] == doc2.created_at.isoformat().replace(
+            "+00:00", "Z"
+        )
+        assert data[1]["updated_at"] == doc2.updated_at.isoformat().replace(
+            "+00:00", "Z"
+        )
 
     @pytest.mark.asyncio
     async def test_document_crud(self, async_session):
@@ -106,7 +122,9 @@ class TestDocument:
 
         # create document
         document = DocumentCreate(content="Test Document CRUD")
-        db_document = Document(**document.model_dump(), collection_id=default_collection.collection_id)
+        db_document = Document(
+            **document.model_dump(), collection_id=default_collection.collection_id
+        )
         async_session.add(db_document)
         await async_session.commit()
         await async_session.refresh(db_document)
@@ -161,7 +179,9 @@ class TestDocument:
         assert doc_to_delete is None
 
     @pytest.mark.asyncio
-    async def test_add_documents_with_async_client(self, async_client, celery_app, celery_worker):
+    async def test_add_documents_with_async_client(
+        self, async_client, celery_app, celery_worker
+    ):
         response = await async_client.post(
             "/api/documents",
             json=[{"content": "hello there!"}],

@@ -6,11 +6,13 @@ from sentence_transformers import SentenceTransformer
 
 
 torch.set_num_threads(1)
-model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
 
 @lexy_transformer(name="text.embeddings.minilm")
-def text_embeddings(sentences: list[str | DocumentBase] | str | DocumentBase) -> torch.Tensor:
+def text_embeddings(
+    sentences: list[str | DocumentBase] | str | DocumentBase,
+) -> torch.Tensor:
     """Embed sentences using SentenceTransformer.
 
     Args:
@@ -46,7 +48,7 @@ def get_chunks(text, chunk_size=384) -> list[str]:
     chunks = []
     chunk = []
     chunk_length = 0
-    words = text.split(' ')
+    words = text.split(" ")
 
     for word in words:
         tokens = model.tokenize(word)
@@ -56,7 +58,7 @@ def get_chunks(text, chunk_size=384) -> list[str]:
             chunk.append(word)
             chunk_length += token_length
         else:
-            chunks.append(' '.join(chunk))
+            chunks.append(" ".join(chunk))
             chunk = [word]
             chunk_length = token_length
 
@@ -65,4 +67,4 @@ def get_chunks(text, chunk_size=384) -> list[str]:
 
 @lexy_transformer(name="embeddings.just_split")
 def just_split(text: str, n_times=3) -> list:
-    return text.split(' ', n_times)
+    return text.split(" ", n_times)
