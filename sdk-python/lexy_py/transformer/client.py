@@ -85,48 +85,57 @@ class TransformerClient:
         return Transformer(**r.json(), client=self._lexy_client)
 
     def add_transformer(
-        self, transformer_id: str, path: str, description: Optional[str] = None
+        self,
+        transformer_id: str,
+        *,
+        path: Optional[str] = None,
+        description: Optional[str] = None,
     ) -> Transformer:
         """Synchronously add a transformer.
 
         Args:
             transformer_id (str): The ID of the transformer to add.
-            path (str): The path of the transformer to add.
+            path (str, optional): The path of the transformer to add.
             description (str, optional): The description of the transformer to add.
 
         Returns:
             Transformer: The added transformer.
         """
-        data = {"transformer_id": transformer_id, "path": path}
-        if description:
-            data["description"] = description
-        r = self.client.post("/transformers", json=data)
+        transformer = Transformer(
+            transformer_id=transformer_id, path=path, description=description
+        )
+        r = self.client.post("/transformers", json=transformer.model_dump())
         handle_response(r)
         return Transformer(**r.json(), client=self._lexy_client)
 
     async def aadd_transformer(
-        self, transformer_id: str, path: str, description: Optional[str] = None
+        self,
+        transformer_id: str,
+        *,
+        path: Optional[str] = None,
+        description: Optional[str] = None,
     ) -> Transformer:
         """Asynchronously add a transformer.
 
         Args:
             transformer_id (str): The ID of the transformer to add.
-            path (str): The path of the transformer to add.
+            path (str, optional): The path of the transformer to add.
             description (str, optional): The description of the transformer to add.
 
         Returns:
             Transformer: The added transformer.
         """
-        data = {"transformer_id": transformer_id, "path": path}
-        if description:
-            data["description"] = description
-        r = await self.aclient.post("/transformers", json=data)
+        transformer = Transformer(
+            transformer_id=transformer_id, path=path, description=description
+        )
+        r = await self.aclient.post("/transformers", json=transformer.model_dump())
         handle_response(r)
         return Transformer(**r.json(), client=self._lexy_client)
 
     def update_transformer(
         self,
         transformer_id: str,
+        *,
         path: Optional[str] = None,
         description: Optional[str] = None,
     ) -> Transformer:
@@ -151,6 +160,7 @@ class TransformerClient:
     async def aupdate_transformer(
         self,
         transformer_id: str,
+        *,
         path: Optional[str] = None,
         description: Optional[str] = None,
     ) -> Transformer:

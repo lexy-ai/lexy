@@ -1,3 +1,4 @@
+# ruff: noqa: F401, F811
 import os
 
 import asyncio

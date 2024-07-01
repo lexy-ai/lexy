@@ -10,32 +10,68 @@ class TestTransformerClient:
         assert response.status_code == 200
         assert response.json() == {"Say": "Hello!"}
 
-    def test_transformers(self, lx_client):
+    def test_create_transformer(self, lx_client, celery_app, celery_worker):
+        assert "lexy.transformers.new_transformer" not in celery_app.tasks
+
+        # register new transformer
+        from lexy.transformers import lexy_transformer
+
+        @lexy_transformer("new_transformer")
+        def new_transformer(document):
+            return document.content
+
+        assert "lexy.transformers.new_transformer" in celery_app.tasks
+
+        # create new transformer
+        transformer = lx_client.create_transformer(
+            transformer_id="new_transformer",
+            path="new.test.transformer",
+            description="New Test Transformer",
+        )
+        assert transformer.transformer_id == "new_transformer"
+        assert transformer.path == "new.test.transformer"
+        assert transformer.description == "New Test Transformer"
+
+        # delete new transformer
+        response = lx_client.delete_transformer("new_transformer")
+        assert response.get("msg") == "Transformer deleted"
+        assert response.get("transformer_id") == "new_transformer"
+
+    def test_transformers(self, lx_client, celery_app, celery_worker):
         # get all transformers
         transformers = lx_client.list_transformers()
         assert len(transformers) > 0
 
+        # register test transformer
+        from lexy.transformers import lexy_transformer
+
+        @lexy_transformer("test_transformer")
+        def test_transformer(document):
+            return document.content
+
         # create test transformer
-        test_transformer = lx_client.create_transformer(
-            "test_transformer", "test.tester", "Test Transformer"
+        transformer = lx_client.create_transformer(
+            transformer_id="test_transformer",
+            path="test.tester",
+            description="Test Transformer",
         )
-        assert test_transformer.transformer_id == "test_transformer"
-        assert test_transformer.path == "test.tester"
-        assert test_transformer.description == "Test Transformer"
+        assert transformer.transformer_id == "test_transformer"
+        assert transformer.path == "test.tester"
+        assert transformer.description == "Test Transformer"
 
         # get test transformer
-        test_transformer = lx_client.get_transformer("test_transformer")
-        assert test_transformer.transformer_id == "test_transformer"
-        assert test_transformer.path == "test.tester"
-        assert test_transformer.description == "Test Transformer"
+        transformer = lx_client.get_transformer("test_transformer")
+        assert transformer.transformer_id == "test_transformer"
+        assert transformer.path == "test.tester"
+        assert transformer.description == "Test Transformer"
 
         # update test transformer
-        test_transformer = lx_client.update_transformer(
+        transformer = lx_client.update_transformer(
             "test_transformer", path="test.tester2"
         )
-        assert test_transformer.transformer_id == "test_transformer"
-        assert test_transformer.path == "test.tester2"
-        assert test_transformer.description == "Test Transformer"
+        assert transformer.transformer_id == "test_transformer"
+        assert transformer.path == "test.tester2"
+        assert transformer.description == "Test Transformer"
 
         # delete test transformer
         response = lx_client.delete_transformer("test_transformer")
@@ -73,6 +109,25 @@ class TestTransformerClient:
         assert (
             exc_info.value.response.json()["detail"]
             == "Transformer with that ID already exists"
+        )
+
+    def test_create_transformer_without_celery_task(
+        self, lx_client, celery_app, celery_worker
+    ):
+        with pytest.raises(LexyAPIError) as exc_info:
+            lx_client.create_transformer(
+                transformer_id="no_celery_task",
+                path="test.tester",
+                description="Test Transformer",
+            )
+        assert isinstance(exc_info.value, LexyAPIError)
+        assert (
+            exc_info.value.response_data["status_code"] == 400
+        ), exc_info.value.response_data
+        assert exc_info.value.response.status_code == 400
+        assert (
+            exc_info.value.response.json()["detail"]
+            == "Could not find Celery task 'lexy.transformers.no_celery_task'"
         )
 
 
