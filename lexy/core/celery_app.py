@@ -34,7 +34,6 @@ def get_task_info(task_id, verbose: bool = False) -> dict:
         "queue": task_result.queue,
         "parent": task_result.parent,
         "children": task_result.children,
-        "info": task_result.info,
     }
     if verbose:
         result["result"] = task_result.result
