@@ -5,7 +5,12 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from lexy.core.celery_tasks import celery, convert_arrays_to_lists
 from lexy.db.session import get_session
 from lexy.models.document import DocumentCreate
-from lexy.models.transformer import Transformer, TransformerCreate, TransformerUpdate
+from lexy.models.transformer import (
+    Transformer,
+    TransformerCreate,
+    TransformerUpdate,
+    default_celery_task_name,
+)
 
 
 router = APIRouter()
@@ -36,14 +41,21 @@ async def get_transformers(
 async def add_transformer(
     transformer: TransformerCreate, session: AsyncSession = Depends(get_session)
 ) -> Transformer:
-    # check if transformer already exists
+    # Check if transformer already exists
     existing_transformer = await session.get(Transformer, transformer.transformer_id)
     if existing_transformer:
         raise HTTPException(
             status_code=400, detail="Transformer with that ID already exists"
         )
-
     db_transformer = Transformer.model_validate(transformer)
+    # Verify that the Celery task exists
+    celery_task_name = default_celery_task_name(db_transformer.transformer_id)
+    registered_tasks = celery.control.inspect().registered_tasks()
+    celery_tasks = set().union(*registered_tasks.values())
+    if celery_task_name not in celery_tasks:
+        raise HTTPException(
+            status_code=400, detail=f"Could not find Celery task '{celery_task_name}'"
+        )
     session.add(db_transformer)
     await session.commit()
     await session.refresh(db_transformer)
@@ -94,6 +106,14 @@ async def update_transformer(
     transformer_data = transformer.model_dump(exclude_unset=True)
     for key, value in transformer_data.items():
         setattr(db_transformer, key, value)
+    # Verify that the Celery task exists
+    celery_task_name = default_celery_task_name(db_transformer.transformer_id)
+    registered_tasks = celery.control.inspect().registered_tasks()
+    celery_tasks = set().union(*registered_tasks.values())
+    if celery_task_name not in celery_tasks:
+        raise HTTPException(
+            status_code=400, detail=f"Could not find Celery task '{celery_task_name}'"
+        )
     session.add(db_transformer)
     await session.commit()
     await session.refresh(db_transformer)
@@ -137,7 +157,8 @@ async def transform_document(
     content_only: bool = False,
     session: AsyncSession = Depends(get_session),
 ) -> dict:
-    # TODO: set up a different end point for this without needing to pass the transformer_id
+    # TODO: set up a different end point for running a Celery task without needing to
+    #  pass a transformer_id
     if celery_task_name:
         task_name = celery_task_name
     else:

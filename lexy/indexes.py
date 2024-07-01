@@ -212,7 +212,7 @@ class IndexManager(object):
         }
 
         index_model = create_model(
-            __model_name=model_name,
+            model_name,
             __base__=(IndexRecordTable,),
             __cls_kwargs__={"table": True},
             __module__=__name__,

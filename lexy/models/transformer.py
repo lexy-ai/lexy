@@ -5,12 +5,17 @@ from sqlalchemy import Column, DateTime, func, String
 from sqlmodel import SQLModel, Field, Relationship
 
 if TYPE_CHECKING:
+    from sqlalchemy.engine.default import DefaultExecutionContext
     from lexy.models.binding import Binding
 
 
-def default_celery_task_name(context) -> str:
-    transformer_id = context.get_current_parameters()["transformer_id"]
+def default_celery_task_name(transformer_id: str) -> str:
     return f"lexy.transformers.{transformer_id}"
+
+
+def sa_default_celery_task_name(context: "DefaultExecutionContext") -> str:
+    transformer_id = context.get_current_parameters()["transformer_id"]
+    return default_celery_task_name(transformer_id)
 
 
 class TransformerBase(SQLModel):
@@ -55,7 +60,10 @@ class Transformer(TransformerBase, table=True):
     celery_task_name: Optional[str] = Field(
         default=None,
         sa_column=Column(
-            String, default=default_celery_task_name, nullable=True, unique=True
+            String,
+            default=sa_default_celery_task_name,
+            nullable=True,
+            unique=True,
         ),
     )
 
