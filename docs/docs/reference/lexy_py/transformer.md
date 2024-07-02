@@ -7,13 +7,13 @@
 ::: lexy_py.transformer.client.TransformerClient
     options:
         members:
-            - add_transformer
+            - create_transformer
             - delete_transformer
             - get_transformer
             - list_transformers
             - transform_document
             - update_transformer
-            - aadd_transformer
+            - acreate_transformer
             - adelete_transformer
             - aget_transformer
             - alist_transformers

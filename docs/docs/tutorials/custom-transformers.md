@@ -126,7 +126,7 @@ docker compose restart lexyserver lexyworker
 ## Create transformer
 
 Finally, create your transformer so that it's stored in the database and available to the Lexy server. You can do this
-by calling the [`create_transformer`](../reference/lexy_py/transformer.md#lexy_py.transformer.client.TransformerClient.add_transformer)
+by calling the [`create_transformer`](../reference/lexy_py/transformer.md#lexy_py.transformer.client.TransformerClient.create_transformer)
 method.
 
 ```python

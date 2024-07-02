@@ -52,7 +52,7 @@ class BindingClient:
         handle_response(r)
         return [Binding(**binding, client=self._lexy_client) for binding in r.json()]
 
-    def add_binding(
+    def create_binding(
         self,
         *,
         collection_name: str = None,
@@ -67,34 +67,40 @@ class BindingClient:
         filters: Optional[dict | FilterBuilder] = None,
         status: Optional[str] = None,
     ) -> Binding:
-        """Synchronously add a new binding.
+        """Synchronously create a new binding.
 
-        One of either `_name` or `_id` is required for each of `collection`, `transformer`, and `index`. If both
-        `_name` and `_id` are provided, `_id` will be used.
+        One of either `_name` or `_id` is required for each of `collection`,
+        `transformer`, and `index`. If both `_name` and `_id` are provided, `_id` will
+        be used.
 
         Args:
-            collection_name (str): The name of the collection containing the source documents.
-            collection_id (str): The ID of the collection containing the source documents.
-            transformer_name (str): The name of the transformer that the binding will run.
-            transformer_id (str): The ID of the transformer that the binding will run.
-            index_name (str): The name of the index in which the binding will store its output.
-            index_id (str): The ID of the index in which the binding will store its output.
+            collection_name (str): Name of the collection containing the source
+                documents.
+            collection_id (str): ID of the collection containing the source documents.
+            transformer_name (str): Name of the transformer that the binding will run.
+            transformer_id (str): ID of the transformer that the binding will run.
+            index_name (str): Name of the index in which the binding will store its
+                output.
+            index_id (str): ID of the index in which the binding will store its output.
             description (str, optional): A description of the binding.
-            execution_params (dict, optional): Parameters to pass to the binding's execution function.
+            execution_params (dict, optional): Parameters to pass to the binding's
+                execution function.
             transformer_params (dict, optional): Parameters to pass to the transformer.
-            filters (dict | FilterBuilder, optional): Filters to apply to documents in the collection before running
-                the transformer.
+            filters (dict | FilterBuilder, optional): Filters to apply to documents in
+                the collection before running the transformer.
             status (str, optional): The status of the binding. Defaults to "pending".
 
         Returns:
             Binding: The created binding.
 
         Raises:
-            ValueError: If neither `_name` nor `_id` is provided for each of `collection`, `transformer`, and `index`.
+            ValueError: If neither `_name` nor `_id` is provided for each of
+                `collection`, `transformer`, and `index`.
 
         Examples:
-            Create a binding that runs the transformer with ID "image.embeddings.clip" on all image documents in
-            the collection named "my_collection" and stores the output in the index with ID "image_embeddings".
+            Create a binding that runs the transformer with ID "image.embeddings.clip"
+            on all image documents in the collection named "my_collection" and stores
+            the output in the index with ID "image_embeddings".
 
             >>> from lexy_py import LexyClient, FilterBuilder
             >>> lx = LexyClient()
@@ -128,7 +134,7 @@ class BindingClient:
         handle_response(r)
         return Binding(**r.json()["binding"], client=self._lexy_client)
 
-    async def aadd_binding(
+    async def acreate_binding(
         self,
         *,
         collection_name: str = None,
@@ -143,30 +149,35 @@ class BindingClient:
         filters: Optional[dict | FilterBuilder] = None,
         status: Optional[str] = None,
     ) -> Binding:
-        """Asynchronously add a new binding.
+        """Asynchronously create a new binding.
 
-        One of either `_name` or `_id` is required for each of `collection`, `transformer`, and `index`. If both
-        `_name` and `_id` are provided, `_id` will be used.
+        One of either `_name` or `_id` is required for each of `collection`,
+        `transformer`, and `index`. If both `_name` and `_id` are provided, `_id` will
+        be used.
 
         Args:
-            collection_name (str): The name of the collection containing the source documents.
-            collection_id (str): The ID of the collection containing the source documents.
-            transformer_name (str): The name of the transformer that the binding will run.
-            transformer_id (str): The ID of the transformer that the binding will run.
-            index_name (str): The name of the index in which the binding will store its output.
-            index_id (str): The ID of the index in which the binding will store its output.
+            collection_name (str): Name of the collection containing the source
+                documents.
+            collection_id (str): ID of the collection containing the source documents.
+            transformer_name (str): Name of the transformer that the binding will run.
+            transformer_id (str): ID of the transformer that the binding will run.
+            index_name (str): Name of the index in which the binding will store its
+                output.
+            index_id (str): ID of the index in which the binding will store its output.
             description (str, optional): A description of the binding.
-            execution_params (dict, optional): Parameters to pass to the binding's execution function.
+            execution_params (dict, optional): Parameters to pass to the binding's
+                execution function.
             transformer_params (dict, optional): Parameters to pass to the transformer.
-            filters (dict | FilterBuilder, optional): Filters to apply to documents in the collection before running
-                the transformer.
+            filters (dict | FilterBuilder, optional): Filters to apply to documents in
+                the collection before running the transformer.
             status (str, optional): The status of the binding. Defaults to "pending".
 
         Returns:
             Binding: The created binding.
 
         Raises:
-            ValueError: If neither `_name` nor `_id` is provided for each of `collection`, `transformer`, and `index`.
+            ValueError: If neither `_name` nor `_id` is provided for each of
+                `collection`, `transformer`, and `index`.
         """
         # TODO: move execution_params and transformer_params logic to BindingCreate model
         if execution_params is None:

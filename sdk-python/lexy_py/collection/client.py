@@ -174,7 +174,7 @@ class CollectionClient:
         handle_response(r)
         return Collection(**r.json(), client=self._lexy_client)
 
-    def add_collection(
+    def create_collection(
         self,
         collection_name: str,
         *,
@@ -184,8 +184,10 @@ class CollectionClient:
         """Synchronously create a new collection.
 
         Args:
-            collection_name (str): The name of the collection to create. Collection names must be unique.
-            description (str, optional): The description of the collection. Defaults to None.
+            collection_name (str): The name of the collection to create. Collection
+                names must be unique.
+            description (str, optional): The description of the collection. Defaults to
+                None.
             config (dict, optional): The config of the collection. Defaults to None.
 
         Returns:
@@ -211,7 +213,7 @@ class CollectionClient:
         handle_response(r)
         return Collection(**r.json(), client=self._lexy_client)
 
-    async def aadd_collection(
+    async def acreate_collection(
         self,
         collection_name: str,
         *,
@@ -221,8 +223,10 @@ class CollectionClient:
         """Asynchronously create a new collection.
 
         Args:
-            collection_name (str): The name of the collection to create. Collection names must be unique.
-            description (str, optional): The description of the collection. Defaults to None.
+            collection_name (str): The name of the collection to create. Collection
+                names must be unique.
+            description (str, optional): The description of the collection. Defaults to
+                None.
             config (dict, optional): The config of the collection. Defaults to None.
 
         Returns:

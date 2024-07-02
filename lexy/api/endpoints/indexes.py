@@ -34,10 +34,10 @@ async def get_indexes(session: AsyncSession = Depends(get_session)) -> list[Inde
 @router.post(
     "/indexes",
     status_code=status.HTTP_201_CREATED,
-    name="add_index",
+    name="create_index",
     description="Create a new index",
 )
-async def add_index(
+async def create_index(
     index: IndexCreate, session: AsyncSession = Depends(get_session)
 ) -> Index:
     # check if index already exists

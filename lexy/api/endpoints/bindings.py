@@ -41,10 +41,10 @@ async def get_bindings(
     "/bindings",
     response_model=dict[str, BindingRead | list[dict]],
     status_code=status.HTTP_201_CREATED,
-    name="add_binding",
+    name="create_binding",
     description="Create a new binding",
 )
-async def add_binding(
+async def create_binding(
     binding: BindingCreate,
     session: AsyncSession = Depends(get_session),
     storage_client: Optional["StorageClient"] = Depends(get_storage_client),

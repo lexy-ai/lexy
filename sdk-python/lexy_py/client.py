@@ -68,7 +68,7 @@ class LexyClient:
 
         # binding
         self.binding = BindingClient(self)
-        self.create_binding = self.binding.add_binding
+        self.create_binding = self.binding.create_binding
         self.delete_binding = self.binding.delete_binding
         self.get_binding = self.binding.get_binding
         self.list_bindings = self.binding.list_bindings
@@ -76,7 +76,7 @@ class LexyClient:
 
         # collection
         self.collection = CollectionClient(self)
-        self.create_collection = self.collection.add_collection
+        self.create_collection = self.collection.create_collection
         self.delete_collection = self.collection.delete_collection
         self.get_collection = self.collection.get_collection
         self.list_collections = self.collection.list_collections
@@ -94,7 +94,7 @@ class LexyClient:
 
         # index
         self.index = IndexClient(self)
-        self.create_index = self.index.add_index
+        self.create_index = self.index.create_index
         self.delete_index = self.index.delete_index
         self.get_index = self.index.get_index
         self.list_indexes = self.index.list_indexes
@@ -103,7 +103,7 @@ class LexyClient:
 
         # transformer
         self.transformer = TransformerClient(self)
-        self.create_transformer = self.transformer.add_transformer
+        self.create_transformer = self.transformer.create_transformer
         self.delete_transformer = self.transformer.delete_transformer
         self.get_transformer = self.transformer.get_transformer
         self.list_transformers = self.transformer.list_transformers

@@ -84,22 +84,22 @@ class TransformerClient:
         handle_response(r)
         return Transformer(**r.json(), client=self._lexy_client)
 
-    def add_transformer(
+    def create_transformer(
         self,
         transformer_id: str,
         *,
         path: Optional[str] = None,
         description: Optional[str] = None,
     ) -> Transformer:
-        """Synchronously add a transformer.
+        """Synchronously create a transformer.
 
         Args:
-            transformer_id (str): The ID of the transformer to add.
-            path (str, optional): The path of the transformer to add.
-            description (str, optional): The description of the transformer to add.
+            transformer_id (str): The ID of the transformer to create.
+            path (str, optional): The path of the transformer to create.
+            description (str, optional): The description of the transformer to create.
 
         Returns:
-            Transformer: The added transformer.
+            Transformer: The created transformer.
         """
         transformer = Transformer(
             transformer_id=transformer_id, path=path, description=description
@@ -108,22 +108,22 @@ class TransformerClient:
         handle_response(r)
         return Transformer(**r.json(), client=self._lexy_client)
 
-    async def aadd_transformer(
+    async def acreate_transformer(
         self,
         transformer_id: str,
         *,
         path: Optional[str] = None,
         description: Optional[str] = None,
     ) -> Transformer:
-        """Asynchronously add a transformer.
+        """Asynchronously create a transformer.
 
         Args:
-            transformer_id (str): The ID of the transformer to add.
-            path (str, optional): The path of the transformer to add.
-            description (str, optional): The description of the transformer to add.
+            transformer_id (str): The ID of the transformer to create.
+            path (str, optional): The path of the transformer to create.
+            description (str, optional): The description of the transformer to create.
 
         Returns:
-            Transformer: The added transformer.
+            Transformer: The created transformer.
         """
         transformer = Transformer(
             transformer_id=transformer_id, path=path, description=description
