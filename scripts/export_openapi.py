@@ -13,5 +13,6 @@ openapi_dict = app.openapi()
 # Write OpenAPI schema to JSON file
 with open(openapi_json_path, "w") as f:
     json.dump(openapi_dict, f)
+    f.write("\n")
 
 print(f"OpenAPI schema written to {openapi_json_path}")
