@@ -14,10 +14,9 @@ else
 fi
 
 # Celery worker options
-celery_queue=${CELERY_QUEUE:-celery}
-celery_concurrency=${CELERY_CONCURRENCY:-4}
-celery_loglevel=${CELERY_LOGLEVEL:-info}
-celery_worker_options="-Q $celery_queue -c $celery_concurrency --loglevel=$celery_loglevel"
+celery_worker_queues=${CELERY_WORKER_QUEUES:-celery}
+celery_worker_loglevel=${CELERY_WORKER_LOGLEVEL:-info}
+celery_worker_options="-Q $celery_worker_queues --loglevel=$celery_worker_loglevel"
 
 # Start worker
 exec watchmedo auto-restart --directory /home/app/lexy/transformers/ --directory /home/app/pipelines/ --recursive --pattern '*.py' -- celery -A lexy.main.celery worker $celery_worker_options
