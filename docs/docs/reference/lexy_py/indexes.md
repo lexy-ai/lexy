@@ -7,13 +7,13 @@
 ::: lexy_py.index.client.IndexClient
     options:
         members:
-            - add_index
+            - create_index
             - delete_index
             - get_index
             - list_indexes
             - query_index
             - update_index
-            - aadd_index
+            - acreate_index
             - adelete_index
             - aget_index
             - alist_indexes

@@ -82,21 +82,23 @@ class IndexClient:
         handle_response(r)
         return Index(**r.json(), client=self._lexy_client)
 
-    def add_index(
+    def create_index(
         self,
         index_id: str,
         description: Optional[str] = None,
         index_table_schema: Optional[dict[str, Any]] = None,
         index_fields: Optional[dict[str, Any]] = None,
     ) -> Index:
-        """Synchronously add an index.
+        """Synchronously create an index.
 
         Args:
-            index_id (str): The ID of the index to add.
+            index_id (str): The ID of the index to create.
             description (str, optional): A description of the index. Defaults to None.
-            index_table_schema (dict[str, Any]): The schema of the index table. Defaults to None.
-            index_fields (dict[str, Any]): The index fields that are created in the index table. These are typically
-                the fields you want to populate using transformers. Defaults to None.
+            index_table_schema (dict[str, Any]): The schema of the index table.
+                Defaults to None.
+            index_fields (dict[str, Any]): The index fields that are created in the
+                index table. These are typically the fields you want to populate using
+                transformers. Defaults to None.
 
         Returns:
             Index: The index.
@@ -109,9 +111,9 @@ class IndexClient:
             ...     "code_embedding": {"type": "embedding", "extras": {"dims": 384, "model": "text.embeddings.minilm"}},
             ...     "n_lines": {"type": "int"},
             ... }
-            >>> index = lx.index.add_index(index_id="code_index",
-            ...                            description="Code embedding index",
-            ...                            index_fields=code_index_fields)
+            >>> index = lx.index.create_index(index_id="code_index",
+            ...                               description="Code embedding index",
+            ...                               index_fields=code_index_fields)
         """
         if index_table_schema is None:
             index_table_schema = {}
@@ -127,21 +129,23 @@ class IndexClient:
         handle_response(r)
         return Index(**r.json(), client=self._lexy_client)
 
-    async def aadd_index(
+    async def acreate_index(
         self,
         index_id: str,
         description: Optional[str] = None,
         index_table_schema: Optional[dict[str, Any]] = None,
         index_fields: Optional[dict[str, Any]] = None,
     ) -> Index:
-        """Asynchronously add an index.
+        """Asynchronously create an index.
 
         Args:
-            index_id (str): The ID of the index to add.
+            index_id (str): The ID of the index to create.
             description (str, optional): A description of the index. Defaults to None.
-            index_table_schema (dict[str, Any]): The schema of the index table. Defaults to None.
-            index_fields (dict[str, Any]): The index fields that are created in the index table. These are typically
-                the fields you want to populate using transformers. Defaults to None.
+            index_table_schema (dict[str, Any]): The schema of the index table.
+                Defaults to None.
+            index_fields (dict[str, Any]): The index fields that are created in the
+                index table. These are typically the fields you want to populate using
+                transformers. Defaults to None.
 
         Returns:
             Index: The index.
@@ -154,9 +158,9 @@ class IndexClient:
             ...     "code_embedding": {"type": "embedding", "extras": {"dims": 384, "model": "text.embeddings.minilm"}},
             ...     "n_lines": {"type": "int"},
             ... }
-            >>> index = await lx.index.aadd_index(index_id="code_index",
-            ...                                   description="Code embedding index",
-            ...                                   index_fields=code_index_fields)
+            >>> index = await lx.index.acreate_index(index_id="code_index",
+            ...                                      description="Code embedding index",
+            ...                                      index_fields=code_index_fields)
         """
         if index_table_schema is None:
             index_table_schema = {}

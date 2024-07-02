@@ -51,10 +51,10 @@ async def get_collections(
     "/collections",
     response_model=Collection,
     status_code=status.HTTP_201_CREATED,
-    name="add_collection",
+    name="create_collection",
     description="Create a new collection",
 )
-async def add_collection(
+async def create_collection(
     collection: CollectionCreate, session: AsyncSession = Depends(get_session)
 ) -> Collection:
     # check if collection with that name already exists

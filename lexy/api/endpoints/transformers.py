@@ -35,10 +35,10 @@ async def get_transformers(
     "/transformers",
     response_model=Transformer,
     status_code=status.HTTP_201_CREATED,
-    name="add_transformer",
-    description="Add a transformer",
+    name="create_transformer",
+    description="Create a transformer",
 )
-async def add_transformer(
+async def create_transformer(
     transformer: TransformerCreate, session: AsyncSession = Depends(get_session)
 ) -> Transformer:
     # Check if transformer already exists
