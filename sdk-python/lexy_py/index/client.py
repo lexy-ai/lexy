@@ -181,7 +181,8 @@ class IndexClient:
 
         Args:
             index_id (str): The ID of the index to delete.
-            drop_table (bool, optional): Whether to drop the index table from the database. Defaults to False.
+            drop_table (bool, optional): Whether to drop the index table from the
+                database. Defaults to False.
         """
         r = self.client.delete(
             f"/indexes/{index_id}", params={"drop_table": drop_table}
@@ -194,7 +195,8 @@ class IndexClient:
 
         Args:
             index_id (str): The ID of the index to delete.
-            drop_table (bool, optional): Whether to drop the index table from the database. Defaults to False.
+            drop_table (bool, optional): Whether to drop the index table from the
+                database. Defaults to False.
         """
         r = await self.aclient.delete(
             f"/indexes/{index_id}", params={"drop_table": drop_table}
@@ -214,8 +216,10 @@ class IndexClient:
         Args:
             index_id (str): The ID of the index to update.
             description (str, optional): The new description of the index.
-            index_table_schema (dict[str, Any], optional): The new schema of the index table.
-            index_fields (dict[str, Any], optional): The new value for index fields that are created in the index table.
+            index_table_schema (dict[str, Any], optional): The new schema of the index
+                table.
+            index_fields (dict[str, Any], optional): The new value for index fields
+                that are created in the index table.
 
         Returns:
             Index: The updated index.
@@ -243,8 +247,10 @@ class IndexClient:
         Args:
             index_id (str): The ID of the index to update.
             description (str, optional): The new description of the index.
-            index_table_schema (dict[str, Any], optional): The new schema of the index table.
-            index_fields (dict[str, Any], optional): The new value for index fields that are created in the index table.
+            index_table_schema (dict[str, Any], optional): The new schema of the index
+                table.
+            index_fields (dict[str, Any], optional): The new value for index fields
+                that are created in the index table.
 
         Returns:
             Index: The updated index.
@@ -313,27 +319,43 @@ class IndexClient:
 
         Args:
             query_text (str): The query text.
-            query_image (Image.Image | str): The query image. Can be a PIL Image object or a path to an image.
-            index_id (str): The ID of the index to query. Defaults to "default_text_embeddings".
+            query_image (Image.Image | str): The query image. Can be a PIL Image object
+                or a path to an image.
+            index_id (str): The ID of the index to query. Defaults to
+                "default_text_embeddings".
             query_field (str, optional): The field to query. Defaults to "embedding".
             k (int, optional): The number of records to return. Defaults to 5.
-            return_fields (list[str], optional): The fields to return. Defaults to None, which returns all fields. To
-                return fields from the linked document, use "document.<field_name>".
-            return_document (bool, optional): Whether to return the document object. Defaults to False.
-            embedding_model (str, optional): The name of the embedding model to use. Defaults to None, which uses the
-                embedding model associated with `index_id.query_field`.
+            return_fields (list[str], optional): The fields to return. Defaults to
+                None, which returns all fields. To return fields from the linked
+                document, use "document.<field_name>".
+            return_document (bool, optional): Whether to return the document object.
+                Defaults to False.
+            embedding_model (str, optional): The name of the embedding model to use.
+                Defaults to None, which uses the embedding model associated with
+                `index_id.query_field`.
 
         Returns:
             list[dict]: The query results.
 
         Examples:
+            Query an index using text:
+
             >>> from lexy_py import LexyClient
             >>> lx = LexyClient()
             >>> lx.query_index(query_text="Test Query")
 
-            >>> lx.query_index(query_text="Test Query", return_fields=["my_index_field", "document.content"])
+            Query an index using text and return specific fields:
+
+            >>> lx.query_index(
+            ...     query_text="Test Query",
+            ...     return_fields=["my_index_field", "document.content"]
+            ... )
+
+            Query an index using an image file:
 
             >>> lx.query_index(query_image="test_image.jpg", index_id="my_image_index")
+
+            Query an index using a PIL Image object:
 
             >>> import httpx
             >>> from PIL import Image
@@ -378,15 +400,20 @@ class IndexClient:
 
         Args:
             query_text (str): The query text.
-            query_image (Image.Image | str): The query image. Can be a PIL Image object or a path to an image.
-            index_id (str): The ID of the index to query. Defaults to "default_text_embeddings".
+            query_image (Image.Image | str): The query image. Can be a PIL Image object
+                or a path to an image.
+            index_id (str): The ID of the index to query. Defaults to
+                "default_text_embeddings".
             query_field (str, optional): The field to query. Defaults to "embedding".
             k (int, optional): The number of records to return. Defaults to 5.
-            return_fields (list[str], optional): The fields to return. Defaults to None, which returns all fields. To
-                return fields from the linked document, use "document.<field_name>".
-            return_document (bool, optional): Whether to return the document object. Defaults to False.
-            embedding_model (str, optional): The name of the embedding model to use. Defaults to None, which uses the
-                embedding model associated with `index_id.query_field`.
+            return_fields (list[str], optional): The fields to return. Defaults to
+                None, which returns all fields. To return fields from the linked
+                document, use "document.<field_name>".
+            return_document (bool, optional): Whether to return the document object.
+                Defaults to False.
+            embedding_model (str, optional): The name of the embedding model to use.
+                Defaults to None, which uses the embedding model associated with
+                `index_id.query_field`.
 
         Returns:
             list[dict]: The query results.

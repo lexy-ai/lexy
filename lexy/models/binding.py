@@ -20,7 +20,7 @@ class BindingStatus(str, Enum):
     DETACHED = "detached"
 
 
-# shared properties
+# Shared properties
 class BindingBase(SQLModel):
     collection_id: Optional[str] = None
     transformer_id: str = Field(
@@ -92,7 +92,7 @@ class Binding(BindingBase, table=True):
         return None
 
 
-# passed to the API from the client, can use name or id
+# Passed to the API from the client, can use name or id
 class BindingCreate(BindingBase):
     collection_name: Optional[str] = None
     collection_id: Optional[str] = None
@@ -101,7 +101,7 @@ class BindingCreate(BindingBase):
     index_name: Optional[str] = None
     index_id: Optional[str] = None
 
-    # make sure either `_name` or `_id` is provided for collection, transformer, and index
+    # Ensure either `_name` or `_id` is provided for collection, transformer, and index
     @model_validator(mode="before")
     def check_identifiers(cls, values):
         if not values.get("collection_name") and not values.get("collection_id"):

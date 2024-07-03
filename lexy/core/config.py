@@ -63,9 +63,10 @@ class AppSettings(BaseSettings):
     SERVERS: list[dict] = [{"url": "http://localhost:9900"}]
 
     # Security settings
-    # Uncomment the line below if you want to generate a new secret key every time the server restarts. Then, to use a
-    #  fixed key, you would simply set the value of SECRET_KEY in your .env file. If you uncomment the next line,
-    #  add `import secrets` to the top of this file.
+    # Uncomment the line below if you want to generate a new secret key every time the
+    #  server restarts. Then, to use a fixed key, you would simply set the value of
+    #  SECRET_KEY in your .env file. If you uncomment the next line, add
+    #  `import secrets` to the top of this file.
     # SECRET_KEY: SecretStr = Field(default_factory=secrets.token_urlsafe, env="SECRET_KEY")
     SECRET_KEY: SecretStr = Field(default="changethis", validation_alias="SECRET_KEY")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
@@ -97,9 +98,11 @@ class AppSettings(BaseSettings):
     AWS_REGION: Optional[str] = Field(default=None, validation_alias="AWS_REGION")
 
     # Google Cloud settings
-    # Path to a file containing JSON credentials for a service account. Using Optional[str] because setting to
-    #  Optional[FilePath] triggers a validation error if GOOGLE_APPLICATION_CREDENTIALS is an empty string.
-    #  If set to devnull, or to an invalid filepath, GOOGLE_APPLICATION_CREDENTIALS will be set to None.
+    # Path to a file containing JSON credentials for a service account. Using
+    #  Optional[str] because setting to Optional[FilePath] triggers a validation error
+    #  if GOOGLE_APPLICATION_CREDENTIALS is an empty string.
+    #  If set to devnull, or to an invalid filepath, GOOGLE_APPLICATION_CREDENTIALS
+    #  will be set to None.
     GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = Field(
         default=None, validation_alias="GOOGLE_APPLICATION_CREDENTIALS"
     )
@@ -206,7 +209,8 @@ class AppSettings(BaseSettings):
     def worker_transformer_imports(self):
         # TODO: Move to a separate property for pipeline imports
         # if self.PIPELINE_DIR:
-        #     # Add pipeline imports to the worker transformer imports (i.e., adds 'pipelines.*' to the imports)
+        #     # Add pipeline imports to the worker transformer imports (i.e., adds
+        #     # 'pipelines.*' to the imports)
         #     pipeline_imports = f'{self.PIPELINE_DIR.name}.*'
         #     expanded_set = self.LEXY_WORKER_TRANSFORMER_IMPORTS.union({pipeline_imports})
         #     return expand_transformer_imports(expanded_set)
@@ -219,11 +223,12 @@ class AppSettings(BaseSettings):
             pipeline_dir = Path(value).resolve()
             if not pipeline_dir.is_dir():
                 err_msg = (
-                    f"Pipeline directory '{pipeline_dir}' does not exist. "
-                    f"Run `lexy init` to initialize your project and create the directory."
+                    f"Pipeline directory '{pipeline_dir}' does not exist. Run "
+                    f"`lexy init` to initialize your project and create the directory."
                 )
                 raise ValueError(err_msg)
-            # log a warning if pipeline_dir is not in the Python path (Celery can't import pipelines)
+            # log a warning if pipeline_dir is not in the Python path (Celery can't
+            # import pipelines)
             if str(pipeline_dir) not in sys.path and str(pipeline_dir) != os.getcwd():
                 logging.warning(
                     f"Pipeline directory '{pipeline_dir}' is not in the Python path. "
@@ -259,7 +264,8 @@ class TestAppSettings(AppSettings):
     DB_ECHO_LOG: bool = False
 
     # User settings
-    # Without `env=` argument, this will revert to the environment value of FIRST_SUPERUSER_EMAIL
+    # Without `env=` argument, this will revert to the environment value of
+    # FIRST_SUPERUSER_EMAIL
     FIRST_SUPERUSER_EMAIL: EmailStr = Field(
         "test@lexy.ai", validation_alias="TEST_SUPERUSER_EMAIL"
     )
@@ -268,7 +274,8 @@ class TestAppSettings(AppSettings):
     )
 
     # Storage settings
-    # By default, use the same storage service and bucket for testing, with a different prefix
+    # By default, use the same storage service and bucket for testing, with a different
+    # prefix
     DEFAULT_STORAGE_PREFIX: Optional[str] = Field(
         default="lexy_tests", validation_alias="DEFAULT_STORAGE_PREFIX"
     )
@@ -282,8 +289,9 @@ class TestAppSettings(AppSettings):
     )
 
     # Worker settings
-    # Remove 'pipelines.*' from worker_transformer_imports - this avoids ModuleNotFoundError when running tests on
-    #  lexy-server, which does not have any of the extra pipeline requirements installed.
+    # Remove 'pipelines.*' from worker_transformer_imports - this avoids
+    #  ModuleNotFoundError when running tests on lexy-server, which does not have any
+    #  of the extra pipeline requirements installed.
     LEXY_WORKER_TRANSFORMER_IMPORTS: set[str] = {
         # 'lexy.transformers.*'
         "lexy.transformers.counter",

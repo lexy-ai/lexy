@@ -21,7 +21,9 @@ class TestFixtures:
     @pytest.mark.asyncio
     async def test_get_root_with_lx_async_client(self, lx_async_client):
         response = await lx_async_client.aclient.get(
-            "/",  # trailing slash is required on the root path only - https://stackoverflow.com/a/70354027
+            # Trailing slash is required on the root path only
+            # https://stackoverflow.com/a/70354027
+            "/",
         )
         assert response.status_code == 200
         assert response.json() == {"Say": "Hello!"}

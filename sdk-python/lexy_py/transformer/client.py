@@ -214,12 +214,15 @@ class TransformerClient:
         Args:
             transformer_id (str): The ID of the transformer to use.
             document (Document | dict): The document to transform.
-            transformer_params (dict, optional): The transformer parameters. Defaults to None.
-            content_only (bool, optional): Whether to submit only the document content and not the document itself.
-                Use this option when the transformer doesn't accept Document objects as inputs. Defaults to False.
+            transformer_params (dict, optional): The transformer parameters. Defaults
+                to None.
+            content_only (bool, optional): Whether to submit only the document content
+                and not the document itself. Use this option when the transformer
+                doesn't accept Document objects as inputs. Defaults to False.
 
         Returns:
-            dict: A dictionary containing the generated task ID and the result of the transformer.
+            dict: A dictionary containing the generated task ID and the result of the
+            transformer.
 
         Examples:
             >>> from lexy_py import LexyClient

@@ -62,8 +62,8 @@ class BaseConfig:
     result_extended = True
 
     # Worker settings
-    # list of modules to import when the Celery worker starts -- these are currently set in
-    #  `lexy.celery_app.create_celery`.
+    # List of modules to import when the Celery worker starts -- these are currently
+    # set in `lexy.celery_app.create_celery`.
     # imports = (
     #     'myapp.tasks',
     #     'lexy.core.celery_tasks',
@@ -82,10 +82,10 @@ class DevelopmentConfig(BaseConfig):
 
 
 class TestingConfig(BaseConfig):
-    # WARNING: These settings will be ignored in favor of any environment variables, even if set
-    #  explicitly. See https://github.com/celery/celery/issues/4284.
-    #  To override these settings at test time, use `pytest.ini_options` in pyproject.toml, or
-    #  overwrite value of env var in lexy_tests/conftest.py.
+    # WARNING: These settings will be ignored in favor of any environment variables,
+    #  even if set explicitly. See https://github.com/celery/celery/issues/4284.
+    #  To override these settings at test time, use `pytest.ini_options` in
+    #  pyproject.toml, or overwrite value of env var in lexy_tests/conftest.py.
     broker_url: str = "memory://"
     # TODO: these should be constructed from lexy_settings
     pg_host = os.environ.get("POSTGRES_HOST", "localhost")

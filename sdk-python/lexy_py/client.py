@@ -26,7 +26,8 @@ class LexyClient:
         collection (CollectionClient): Client for interacting with the Collections API.
         document (DocumentClient): Client for interacting with the Documents API.
         index (IndexClient): Client for interacting with the Indexes API.
-        transformer (TransformerClient): Client for interacting with the Transformers API.
+        transformer (TransformerClient): Client for interacting with the Transformers
+            API.
     """
 
     base_url: str
@@ -49,10 +50,13 @@ class LexyClient:
         """Initialize a LexyClient instance.
 
         Args:
-            base_url (str, optional): Base URL for the Lexy API. Defaults to DEFAULT_BASE_URL.
-            api_timeout (int, optional): Timeout in seconds for API requests. Defaults to API_TIMEOUT.
-            client_kwargs (dict, optional): Keyword arguments for the synchronous API client.
-            aclient_kwargs (dict, optional): Keyword arguments for the asynchronous API client.
+            base_url (str, optional): Base URL for the Lexy API. Defaults to
+                DEFAULT_BASE_URL.
+            api_timeout (int, optional): Timeout in seconds for API requests. Defaults
+                to API_TIMEOUT.
+            client_kwargs (dict, optional): Keyword args for the synchronous API client.
+            aclient_kwargs (dict, optional): Keyword args for the asynchronous API
+                client.
         """
         self.base_url = base_url
         self.api_timeout = api_timeout

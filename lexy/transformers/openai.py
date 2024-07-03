@@ -21,19 +21,23 @@ def text_embeddings(
 ) -> list[list[float]] | list[float]:
     """Embed text using the OpenAI API.
 
-    Any additional keyword arguments are passed to the client's :func:`OpenAI.embeddings.create` method.
+    Any additional keyword arguments are passed to the client's
+    :func:`OpenAI.embeddings.create` method.
 
     Args:
-        text: A single string or DocumentBase instance, or a list of strings or DocumentBase instances to embed.
-        model: The OpenAI model to use for embeddings. Can be one of "text-embedding-ada-002", "text-embedding-3-small",
-            or "text-embedding-3-large".
+        text: A single string or DocumentBase instance, or a list of strings or
+            DocumentBase instances to embed.
+        model: The OpenAI model to use for embeddings. Can be one of
+            "text-embedding-ada-002", "text-embedding-3-small", or
+            "text-embedding-3-large".
 
     Keyword Args:
-        encoding_format: The format to return the embeddings in. Can be either `float` or
-            `base64 <https://pypi.org/project/pybase64/>`__.
-        dimensions: The number of dimensions for the resulting output embeddings. Only supported in
-            "text-embedding-3" and later models.
-        user: A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse.
+        encoding_format: The format to return the embeddings in. Can be either `float`
+            or `base64 <https://pypi.org/project/pybase64/>`__.
+        dimensions: The number of dimensions for the resulting output embeddings. Only
+            supported in "text-embedding-3" and later models.
+        user: A unique identifier representing your end-user, which can help OpenAI to
+            monitor and detect abuse.
         extra_headers: Send extra headers
         extra_query: Add additional query parameters to the request
         extra_body: Add additional JSON properties to the request
@@ -64,16 +68,18 @@ def text_embeddings_3_small(
 ) -> list[list[float]] | list[float]:
     """Embed text using OpenAI's "text-embedding-3-small" model.
 
-    This runs :func:`lexy.transformers.openai.text_embeddings` with `model="text-embedding-3-small"`.
+    This runs :func:`lexy.transformers.openai.text_embeddings` with
+    `model="text-embedding-3-small"`.
 
     Args:
-        text: A single string or DocumentBase instance, or a list of strings or DocumentBase instances to embed.
+        text: A single string or DocumentBase instance, or a list of strings or
+            DocumentBase instances to embed.
 
     Returns:
         list[list[float]] | list[float]: The embeddings of the provided text.
 
     See Also:
-        :func:`lexy.transformers.openai.text_embeddings` for additional keyword arguments.
+        :func:`lexy.transformers.openai.text_embeddings` for additional keyword args.
     """
     return text_embeddings(text, model="text-embedding-3-small", **kwargs)
 
@@ -84,16 +90,18 @@ def text_embeddings_3_large(
 ) -> list[list[float]] | list[float]:
     """Embed text using OpenAI's "text-embedding-3-large" model.
 
-    This runs :func:`lexy.transformers.openai.text_embeddings` with `model="text-embedding-3-large"`.
+    This runs :func:`lexy.transformers.openai.text_embeddings` with
+    `model="text-embedding-3-large"`.
 
     Args:
-        text: A single string or DocumentBase instance, or a list of strings or DocumentBase instances to embed.
+        text: A single string or DocumentBase instance, or a list of strings or
+            DocumentBase instances to embed.
 
     Returns:
         list[list[float]] | list[float]: The embeddings of the provided text.
 
     See Also:
-        :func:`lexy.transformers.openai.text_embeddings` for additional keyword arguments.
+        :func:`lexy.transformers.openai.text_embeddings` for additional keyword args.
     """
     return text_embeddings(text, model="text-embedding-3-large", **kwargs)
 
@@ -104,15 +112,17 @@ def text_embeddings_ada_002(
 ) -> list[list[float]] | list[float]:
     """Embed text using OpenAI's "text-embedding-ada-002" model.
 
-    This runs :func:`lexy.transformers.openai.text_embeddings` with `model="text-embedding-ada-002"`.
+    This runs :func:`lexy.transformers.openai.text_embeddings` with
+    `model="text-embedding-ada-002"`.
 
     Args:
-        text: A single string or DocumentBase instance, or a list of strings or DocumentBase instances to embed.
+        text: A single string or DocumentBase instance, or a list of strings or
+            DocumentBase instances to embed.
 
     Returns:
         list[list[float]] | list[float]: The embeddings of the provided text.
 
     See Also:
-        :func:`lexy.transformers.openai.text_embeddings` for additional keyword arguments.
+        :func:`lexy.transformers.openai.text_embeddings` for additional keyword args.
     """
     return text_embeddings(text, model="text-embedding-ada-002", **kwargs)

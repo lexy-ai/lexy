@@ -8,8 +8,8 @@ from sqlalchemy.sql.schema import Table
 from sqlmodel import SQLModel, Field
 
 
-# Fields requiring SQLAlchemy objects (Column or ForeignKey) have been moved to IndexManager until SQLModel fixes
-#   inheritance for Pydantic V2+
+# Fields requiring SQLAlchemy objects (Column or ForeignKey) have been moved to
+#   IndexManager until SQLModel fixes inheritance for Pydantic V2+
 
 
 class IndexRecordBase(SQLModel):
@@ -37,8 +37,8 @@ class IndexRecordBaseTable(IndexRecordBase):
         index=True,
         nullable=False,
     )
-    # `created_at` and `updated_at` are hacked to use sa_type along with kwargs -- will update once SQLModel
-    #    inheritance is fixed
+    # `created_at` and `updated_at` are hacked to use sa_type along with kwargs -- will
+    #  update once SQLModel inheritance is fixed
     created_at: datetime = Field(
         default=None,
         sa_type=DateTime(timezone=True),  # type: ignore

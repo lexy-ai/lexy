@@ -188,7 +188,7 @@ def docker(ctx, file, overwrite, no_input):
                 click.secho(f"Removed existing file: {file}", fg="blue")
             else:
                 click.secho(
-                    f"Existing file: {file}. Use --overwrite to overwrite existing file",
+                    f"Existing file: {file}. Use --overwrite to overwrite ",
                     err=True,
                     fg="red",
                 )

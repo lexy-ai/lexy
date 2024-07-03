@@ -164,7 +164,8 @@ async def update_collection(
             status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found"
         )
     collection_data = collection.model_dump(exclude_unset=True)
-    # if collection_name is being updated, check if a collection with that name already exists
+    # if collection_name is being updated, check if a collection with that name already
+    # exists
     if "collection_name" in collection_data:
         existing_collection = await crud.get_collection_by_name(
             session=session, collection_name=collection_data["collection_name"]
@@ -292,7 +293,8 @@ async def add_collection_documents(
                 raise HTTPException(
                     status_code=400,
                     detail={
-                        "msg": f"A document with this ID already exists: {doc.document_id}.",
+                        "msg": f"A document with this ID already exists: "
+                        f"{doc.document_id}.",
                         "document_id": str(doc.document_id),
                     },
                 )
@@ -353,8 +355,9 @@ async def upload_collection_documents(
             "size": file.size,
         }
 
-        # TODO: replace file.filename with the unique document id - will require saving the document in the DB first
-        #  but for now, we're using the filename as the document_id, which is equivalent to the following:
+        # TODO: replace file.filename with the unique document id - will require saving
+        #  the document in the DB first but for now, we're using the filename as the
+        #  document_id, which is equivalent to the following:
         #    document_key = f"collections/{collection_id}/documents/{file.filename}"
         # uncomment the following line when ready
         # document_key = await construct_key_for_document(
@@ -368,7 +371,8 @@ async def upload_collection_documents(
             path_prefix=storage_prefix,
         )
 
-        # TODO: move this to a separate parsing function - don't read into memory if not parsing
+        # TODO: move this to a separate parsing function - don't read into memory if
+        #  not parsing
         file_content = await file.read()
         file_in_memory = BytesIO(file_content)
         file_in_memory.seek(0)
@@ -413,8 +417,8 @@ async def upload_collection_documents(
 
         # "post-processing" based on file type
         if file.content_type.startswith("image/"):
-            # all we're doing here is getting the width and height - if we're generating thumbnails, we'll use this
-            #  instance as the input
+            # all we're doing here is getting the width and height - if we're
+            # generating thumbnails, we'll use this instance as the input
             img = Image.open(file_in_memory)
             width, height = img.size
             file_dict["image"] = {"width": width, "height": height}
@@ -436,7 +440,8 @@ async def upload_collection_documents(
                     img_copy.thumbnail(dims, Image.Resampling.LANCZOS)
                     img_byte_arr = BytesIO()
                     img_copy.save(img_byte_arr, format=img.format or "JPEG")
-                    # Note: img_byte_arr.seek(0) is run in storage_client.upload_object by default `rewind=True`
+                    # Note: img_byte_arr.seek(0) is run in storage_client.upload_object
+                    # by default `rewind=True`
                     storage_thumbnail_meta = storage_client.upload_object(
                         img_byte_arr, storage_bucket, thumbnail_key
                     )

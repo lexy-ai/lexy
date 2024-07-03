@@ -22,8 +22,8 @@ def signed_url_is_expired(url: str, svc: Literal["Amz", "Goog"]):
 
     Args:
         url (str): The signed URL string.
-        svc (Literal['Amz', 'Goog']): The service query parameter used to check for expiration in V4 signatures.
-            Either 'Amz' for AWS or 'Goog' for GCP.
+        svc (Literal['Amz', 'Goog']): The service query parameter used to check for
+            expiration in V4 signatures. Either 'Amz' for AWS or 'Goog' for GCP.
 
     Returns:
         True if the signed URL is expired, False otherwise.

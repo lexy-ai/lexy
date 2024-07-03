@@ -24,13 +24,14 @@ from lexy import models
 os.environ["CELERY_BROKER_URL"] = celery_settings.broker_url
 os.environ["CELERY_RESULT_BACKEND"] = celery_settings.result_backend
 
-# We need to import the app **after** forcefully setting the env vars, since Celery doesn't
-#  let you assign any value other than the environment variable if one is set.
-#  See https://github.com/celery/celery/issues/4284.
+# We need to import the app **after** forcefully setting the env vars, since Celery
+# doesn't let you assign any value other than the environment variable if one is set.
+# See https://github.com/celery/celery/issues/4284.
 from lexy.main import app as lexy_test_app  # noqa: E402
 
 
-# the value of LEXY_CONFIG and CELERY_CONFIG are set using pytest-env plugin in pyproject.toml
+# Values of LEXY_CONFIG and CELERY_CONFIG are set using pytest-env plugin in
+# pyproject.toml, but overwritten in lexy_tests/__init__.py
 assert os.environ.get("LEXY_CONFIG") == "testing", "LEXY_CONFIG is not set to 'testing'"
 assert (
     os.environ.get("CELERY_CONFIG") == "testing"
@@ -143,7 +144,7 @@ def seed_data(settings: TestAppSettings, sync_engine: Engine, create_test_databa
         models.Transformer,
     ]
     for model in models_to_delete:
-        # another way to do it
+        # Another way to do it
         # local_session.query(model).delete()
         result = local_session.execute(delete(model))
         deleted_count = result.rowcount
@@ -217,13 +218,15 @@ def document_storage(settings):
 
     Tests using this fixture will be skipped if any of the following are true:
         - DEFAULT_STORAGE_BUCKET is not set
-        - DEFAULT_STORAGE_SERVICE is 's3' but S3 credentials are unavailable, invalid, or lack access
+        - DEFAULT_STORAGE_SERVICE is 's3' but S3 credentials are unavailable, invalid,
+          or lack access
         - DEFAULT_STORAGE_SERVICE is 'gcs' but GOOGLE_APPLICATION_CREDENTIALS is not set
         - DEFAULT_STORAGE_SERVICE is 'gcs' but client is not authenticated
     """
     if settings.DEFAULT_STORAGE_BUCKET is None:
         warnings.warn(
-            "DEFAULT_STORAGE_BUCKET is not set - will skip tests requiring document storage."
+            "DEFAULT_STORAGE_BUCKET is not set - will skip tests requiring document "
+            "storage."
         )
         pytest.skip("DEFAULT_STORAGE_BUCKET is not set")
 
@@ -233,16 +236,16 @@ def document_storage(settings):
         s3_client = S3Client()
         if not s3_client.is_authenticated():
             warnings.warn(
-                "DEFAULT_STORAGE_SERVICE is 's3' but credentials are unavailable, invalid, or lack access - "
-                "will skip tests requiring document storage."
+                "DEFAULT_STORAGE_SERVICE is 's3' but credentials are unavailable, "
+                "invalid, or lack access - will skip tests requiring document storage."
             )
             pytest.skip("S3 client is not authenticated")
 
     elif settings.DEFAULT_STORAGE_SERVICE == "gcs":
         if not settings.GOOGLE_APPLICATION_CREDENTIALS:
             warnings.warn(
-                "DEFAULT_STORAGE_SERVICE is 'gcs', but GOOGLE_APPLICATION_CREDENTIALS is not set - "
-                "will skip tests requiring document storage."
+                "DEFAULT_STORAGE_SERVICE is 'gcs', but GOOGLE_APPLICATION_CREDENTIALS "
+                "is not set - will skip tests requiring document storage."
             )
             pytest.skip("GOOGLE_APPLICATION_CREDENTIALS is not set")
         from lexy.storage.gcs import GCSClient
@@ -266,7 +269,7 @@ def celery_settings():
 
 @pytest.fixture(scope="session")
 def celery_config(settings, celery_settings):
-    # these are normally set in lexy.celery_app.create_celery function
+    # These are normally set in lexy.celery_app.create_celery function
     # TODO: add 'lexy.core.celery_tasks' here?
     celery_settings.imports = list(settings.worker_transformer_imports)
     celery_settings.include = settings.worker_transformer_imports
@@ -281,8 +284,8 @@ def celery_config(settings, celery_settings):
 
 @pytest.fixture(scope="session")
 def use_celery_app_trap():
-    # throws an error if a test tries to access the default celery app - can override in tests that need it
-    #  using `@pytest.mark.usefixtures('depends_on_current_app')`
+    # Throws an error if a test tries to access the default celery app - can override
+    #  in tests that need it using `@pytest.mark.usefixtures('depends_on_current_app')`
     return True
 
 

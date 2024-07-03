@@ -45,13 +45,16 @@ class DocumentClient:
     ) -> list[Document]:
         """Synchronously get a list of documents in a collection.
 
-        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
+        If both `collection_name` and `collection_id` are provided, `collection_id`
+        will be used.
 
         Args:
-            collection_name (str): The name of the collection to get documents from. Defaults to "default".
-            collection_id (str): The ID of the collection to get documents from. Defaults to None. If provided,
-                `collection_name` will be ignored.
-            limit (int): The maximum number of documents to return. Defaults to 100. Maximum allowed is 1000.
+            collection_name (str): The name of the collection to get documents from.
+                Defaults to "default".
+            collection_id (str): The ID of the collection to get documents from.
+                Defaults to None. If provided, `collection_name` will be ignored.
+            limit (int): The maximum number of documents to return. Defaults to 100.
+                Maximum allowed is 1000.
             offset (int): The offset to start from. Defaults to 0.
 
         Returns:
@@ -84,13 +87,16 @@ class DocumentClient:
     ) -> list[Document]:
         """Asynchronously get a list of documents in a collection.
 
-        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
+        If both `collection_name` and `collection_id` are provided, `collection_id`
+        will be used.
 
         Args:
-            collection_name (str): The name of the collection to get documents from. Defaults to "default".
-            collection_id (str): The ID of the collection to get documents from. Defaults to None. If provided,
-                `collection_name` will be ignored.
-            limit (int): The maximum number of documents to return. Defaults to 100. Maximum allowed is 1000.
+            collection_name (str): The name of the collection to get documents from.
+                Defaults to "default".
+            collection_id (str): The ID of the collection to get documents from.
+                Defaults to None. If provided, `collection_name` will be ignored.
+            limit (int): The maximum number of documents to return. Defaults to 100.
+                Maximum allowed is 1000.
             offset (int): The offset to start from. Defaults to 0.
 
         Returns:
@@ -123,14 +129,17 @@ class DocumentClient:
     ) -> list[Document]:
         """Synchronously add documents to a collection in batches.
 
-        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
+        If both `collection_name` and `collection_id` are provided, `collection_id`
+        will be used.
 
         Args:
             docs (Document | dict | list[Document | dict]): The documents to add.
-            collection_name (str): The name of the collection to add the documents to. Defaults to "default".
-            collection_id (str): The ID of the collection to add the documents to. Defaults to None. If provided,
-                `collection_name` will be ignored.
-            batch_size (int): The number of documents to add in each batch. Defaults to 100.
+            collection_name (str): The name of the collection to add the documents to.
+                Defaults to "default".
+            collection_id (str): The ID of the collection to add the documents to.
+                Defaults to None. If provided, `collection_name` will be ignored.
+            batch_size (int): The number of documents to add in each batch. Defaults
+                to 100.
 
         Returns:
             Documents: A list of created documents.
@@ -197,14 +206,17 @@ class DocumentClient:
     ) -> list[Document]:
         """Asynchronously add documents to a collection in batches.
 
-        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
+        If both `collection_name` and `collection_id` are provided, `collection_id`
+        will be used.
 
         Args:
             docs (Document | dict | list[Document | dict]): The documents to add.
-            collection_name (str): The name of the collection to add the documents to. Defaults to "default".
-            collection_id (str): The ID of the collection to add the documents to. Defaults to None. If provided,
-                `collection_name` will be ignored.
-            batch_size (int): The number of documents to add in each batch. Defaults to 100.
+            collection_name (str): The name of the collection to add the documents to.
+                Defaults to "default".
+            collection_id (str): The ID of the collection to add the documents to.
+                Defaults to None. If provided, `collection_name` will be ignored.
+            batch_size (int): The number of documents to add in each batch. Defaults
+                to 100.
 
         Returns:
             Documents: A list of created documents.
@@ -244,13 +256,15 @@ class DocumentClient:
     ) -> Document:
         """Synchronously add a document to a collection.
 
-        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
+        If both `collection_name` and `collection_id` are provided, `collection_id`
+        will be used.
 
         Args:
             doc (Document | dict): The document to add.
-            collection_name (str): The name of the collection to add the document to. Defaults to "default".
-            collection_id (str): The ID of the collection to add the document to. If provided, `collection_name` will
-                be ignored.
+            collection_name (str): The name of the collection to add the document to.
+                Defaults to "default".
+            collection_id (str): The ID of the collection to add the document to. If
+                provided, `collection_name` will be ignored.
 
         Returns:
             Document: The created document.
@@ -280,13 +294,15 @@ class DocumentClient:
     ) -> Document:
         """Asynchronously add a document to a collection.
 
-        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
+        If both `collection_name` and `collection_id` are provided, `collection_id`
+        will be used.
 
         Args:
             doc (Document | dict): The document to add.
-            collection_name (str): The name of the collection to add the document to. Defaults to "default".
-            collection_id (str): The ID of the collection to add the document to. If provided, `collection_name` will
-                be ignored.
+            collection_name (str): The name of the collection to add the document to.
+                Defaults to "default".
+            collection_id (str): The ID of the collection to add the document to. If
+                provided, `collection_name` will be ignored.
 
         Returns:
             Document: The created document.
@@ -406,12 +422,13 @@ class DocumentClient:
     ) -> dict:
         """Synchronously delete all documents from a collection.
 
-        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
+        If both `collection_name` and `collection_id` are provided, `collection_id`
+        will be used.
 
         Args:
             collection_name (str): The name of the collection to delete documents from.
-            collection_id (str): The ID of the collection to delete documents from. If provided, `collection_name`
-                will be ignored.
+            collection_id (str): The ID of the collection to delete documents from. If
+                provided, `collection_name` will be ignored.
 
         Raises:
             ValueError: If neither `collection_name` nor `collection_id` are provided.
@@ -440,23 +457,29 @@ class DocumentClient:
     ) -> list[Document]:
         """Synchronously upload files to a collection in batches.
 
-        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
+        If both `collection_name` and `collection_id` are provided, `collection_id`
+        will be used.
 
         Args:
-            files (str | Image.Image | list[str | Image.Image]): The files to upload. Can be a single instance or a
-                list of a string containing the path to a file or an `Image.Image` object.
-            filenames (str | list[str], optional): The filenames of the files to upload. Defaults to None.
-            collection_name (str): The name of the collection to upload the files to. Defaults to "default".
-            collection_id (str): The ID of the collection to upload the files to. Defaults to None. If provided,
-                `collection_name` will be ignored.
-            batch_size (int): The number of files to upload in each batch. Defaults to 5.
+            files (str | Image.Image | list[str | Image.Image]): The files to upload.
+                Can be a single instance or a list of a string containing the path to
+                a file or an `Image.Image` object.
+            filenames (str | list[str], optional): The filenames of the files to
+                upload. Defaults to None.
+            collection_name (str): The name of the collection to upload the files to.
+                Defaults to "default".
+            collection_id (str): The ID of the collection to upload the files to.
+                Defaults to None. If provided, `collection_name` will be ignored.
+            batch_size (int): The number of files to upload in each batch. Defaults
+                to 5.
 
         Returns:
             Documents: A list of created documents.
 
         Raises:
             TypeError: If an input file type is invalid.
-            ValueError: If the length of the filenames list does not match the length of the files list.
+            ValueError: If the length of the filenames list does not match the length
+                of the files list.
 
         Examples:
             >>> from lexy_py import LexyClient
@@ -515,23 +538,29 @@ class DocumentClient:
     ) -> list[Document]:
         """Asynchronously upload files to a collection in batches.
 
-        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
+        If both `collection_name` and `collection_id` are provided, `collection_id`
+        will be used.
 
         Args:
-            files (str | Image.Image | list[str | Image.Image]): The files to upload. Can be a single instance or a
-                list of a string containing the path to a file or an `Image.Image` object.
-            filenames (str | list[str], optional): The filenames of the files to upload. Defaults to None.
-            collection_name (str): The name of the collection to upload the files to. Defaults to "default".
-            collection_id (str): The ID of the collection to upload the files to. Defaults to None. If provided,
-                `collection_name` will be ignored.
-            batch_size (int): The number of files to upload in each batch. Defaults to 5.
+            files (str | Image.Image | list[str | Image.Image]): The files to upload.
+                Can be a single instance or a list of a string containing the path to
+                a file or an `Image.Image` object.
+            filenames (str | list[str], optional): The filenames of the files to
+                upload. Defaults to None.
+            collection_name (str): The name of the collection to upload the files to.
+                Defaults to "default".
+            collection_id (str): The ID of the collection to upload the files to.
+                Defaults to None. If provided, `collection_name` will be ignored.
+            batch_size (int): The number of files to upload in each batch. Defaults
+                to 5.
 
         Returns:
             Documents: A list of created documents.
 
         Raises:
             TypeError: If an input file type is invalid.
-            ValueError: If the length of the filenames list does not match the length of the files list.
+            ValueError: If the length of the filenames list does not match the length
+                of the files list.
         """
         created_docs = []
         files, filenames = self._align_filenames(files, filenames)
@@ -570,7 +599,8 @@ class DocumentClient:
 
         Args:
             document_id (str): The ID of the document to get presigned URL for.
-            expiration (int): The expiration time of the presigned URLs in seconds. Defaults to 3600.
+            expiration (int): The expiration time of the presigned URLs in seconds.
+                Defaults to 3600.
 
         Returns:
             dict: A dictionary containing presigned URLs.
@@ -606,7 +636,8 @@ class DocumentClient:
 
         Args:
             document_id (str): The ID of the document to get presigned URL for.
-            expiration (int): The expiration time of the presigned URLs in seconds. Defaults to 3600.
+            expiration (int): The expiration time of the presigned URLs in seconds.
+                Defaults to 3600.
 
         Returns:
             dict: A dictionary containing presigned URLs.
@@ -620,11 +651,12 @@ class DocumentClient:
     @staticmethod
     def _align_filenames(files, filenames: str | list[str] = None) -> tuple[list, list]:
         """Align files and filenames."""
-        # ensure files is a list
+        # Ensure files is a list
         if not isinstance(files, list):
             files = [files]
 
-        # if filenames is a single string (or None), convert it to a list with repeated elements
+        # If filenames is a single string (or None), convert it to a list with repeated
+        # elements
         if isinstance(filenames, str) or filenames is None:
             filenames = [filenames] * len(files)
 
@@ -679,8 +711,8 @@ class DocumentClient:
                     )
             else:
                 raise TypeError(
-                    f"Invalid type for file: {type(file)} - must be a str path to a file, or an "
-                    f"`Image.Image` object"
+                    f"Invalid type for file: {type(file)} - must be a str path to a "
+                    f"file, or an `Image.Image` object"
                 )
 
             mime_type = mimetypes.guess_type(filename)[0] or "application/octet-stream"

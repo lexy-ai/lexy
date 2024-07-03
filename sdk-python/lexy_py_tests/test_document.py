@@ -201,10 +201,13 @@ class TestDocumentClient:
         assert doc_added[0].created_at is not None
         assert doc_added[0].updated_at is not None
         assert doc_added[0].collection_id == default_collection.collection_id
-        # FIXME: Uncomment the following line after fixing the simultaneous clients issue.
-        #    The issue is caused by the following line when trying to access the image property:
-        #      r = self.client.get(f"/documents/{document_id}/urls", params={"expiration": expiration})
-        #    Need to figure out how to substitute get_document_urls with aget_document_urls.
+        # FIXME: Uncomment the following line after fixing the simultaneous clients
+        #   issue. The issue is caused by the following line when trying to access the
+        #   image property:
+        #      r = self.client.get(f"/documents/{document_id}/urls",
+        #                          params={"expiration": expiration})
+        #   Need to figure out how to substitute get_document_urls with
+        #   aget_document_urls.
         # assert doc_added[0].image is None
 
         # wait for the celery worker to finish the task
@@ -269,14 +272,15 @@ class TestDocumentClient:
         assert img_doc.client is not None
         assert img_doc.client == lx_client
 
-        # setting the client to None allows loading the image through httpx, but breaks the `.client` property
+        # Setting the client to None allows loading the image through httpx, but breaks
+        # the `.client` property
         # img_doc._client = None
         # assert img_doc.image is not None
 
         print(f"{img_doc.object_url = }")
 
-        # FIXME: lx_client.get() returns a 404 but httpx.get() returns a 200 - this is because we're appending the
-        #  API_PREFIX (e.g., "/api") to the base_url
+        # FIXME: lx_client.get() returns a 404 but httpx.get() returns a 200 - this is
+        #  because we're appending the API_PREFIX (e.g., "/api") to the base_url
         r = img_doc.client.get(img_doc.object_url, follow_redirects=True)
         print(f"{r.status_code = }")
 
@@ -311,7 +315,8 @@ class TestDocumentClient:
         assert img_doc.meta["image"]["thumbnails"][thumbnail_dims_str][
             "storage_key"
         ] == (
-            f"lexy_tests/collections/{tmp_collection_id}/thumbnails/{thumbnail_dims_str}/lexy-dalle.jpeg"
+            f"lexy_tests/collections/{tmp_collection_id}/thumbnails/"
+            f"{thumbnail_dims_str}/lexy-dalle.jpeg"
         )
 
         # upload more image documents in batches
@@ -384,7 +389,8 @@ class TestDocumentClient:
 
         text_doc = even_more_docs[2]
         assert text_doc.content.startswith(
-            "Viserys I Targaryen is the fifth king of the Targaryen dynasty to rule the Seven Kingdoms."
+            "Viserys I Targaryen is the fifth king of the Targaryen dynasty to rule "
+            "the Seven Kingdoms."
         )
         assert text_doc.document_id is not None
         assert text_doc.created_at is not None
@@ -477,7 +483,10 @@ class TestDocumentClient:
             assert object_url.startswith(
                 f"https://storage.googleapis.com/{storage_bucket}/"
             )
-        object_key = f"lexy_tests/collections/{tmp_collection_id}/documents/testing-document-urls.png"
+        object_key = (
+            f"lexy_tests/collections/{tmp_collection_id}/documents/"
+            f"testing-document-urls.png"
+        )
         assert object_key in object_url
 
         # presigned thumbnail urls
@@ -491,7 +500,10 @@ class TestDocumentClient:
             assert doc_urls["thumbnails"][thumbnail_dims_str].startswith(
                 f"https://storage.googleapis.com/{storage_bucket}/"
             )
-        thumbnail_key = f"lexy_tests/collections/{tmp_collection_id}/thumbnails/{thumbnail_dims_str}/testing-document-urls.png"
+        thumbnail_key = (
+            f"lexy_tests/collections/{tmp_collection_id}/thumbnails/"
+            f"{thumbnail_dims_str}/testing-document-urls.png"
+        )
         assert thumbnail_key in doc_urls["thumbnails"][thumbnail_dims_str]
 
         # check url expiration
@@ -555,7 +567,8 @@ class TestDocumentClient:
 
         # upload documents to the test collection
         with pytest.raises(LexyAPIError) as exc_info:
-            # NOTE: file paths are relative to the execution directory (i.e., project root)
+            # NOTE: file paths are relative to the execution directory (i.e., project
+            # root)
             lx_client.upload_documents(
                 files=[
                     "sample_data/images/lexy.png",

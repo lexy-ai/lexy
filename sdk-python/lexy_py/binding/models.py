@@ -20,7 +20,7 @@ class BindingStatus(str, Enum):
     DETACHED = "detached"
 
 
-# shared properties
+# Shared properties
 class BindingBase(BaseModel):
     """Binding base model"""
 
@@ -30,7 +30,7 @@ class BindingBase(BaseModel):
     filter: Optional[dict[str, Any]] = None
     status: Optional[BindingStatus] = Field(default=BindingStatus.PENDING)
 
-    # if a FilterBuilder instance is provided for `filter`, convert it to a dict
+    # If a FilterBuilder instance is provided for `filter`, convert it to a dict
     @field_validator("filter", mode="before")
     @classmethod
     def filter_to_dict(cls, value: Optional[FilterBuilder | dict]) -> Optional[dict]:
@@ -73,7 +73,7 @@ class BindingCreate(BindingBase):
     index_name: Optional[str] = None
     index_id: Optional[str] = None
 
-    # make sure either `_name` or `_id` is provided for collection, transformer, and index
+    # Ensure either `_name` or `_id` is provided for collection, transformer, and index
     @model_validator(mode="before")
     def check_identifiers(cls, values):
         if not values.get("collection_name") and not values.get("collection_id"):

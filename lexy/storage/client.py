@@ -38,7 +38,8 @@ def generate_signed_urls_for_document(
     Args:
         document (Document): The document object.
         storage_client (StorageClient): The storage client.
-        expiration (int): The number of seconds the presigned URLs are valid for. Default is 3600 seconds (1 hour).
+        expiration (int): The number of seconds the presigned URLs are valid for.
+            Default is 3600 seconds (1 hour).
 
     Returns:
         Dict: A dictionary containing presigned URLs.
@@ -103,7 +104,8 @@ async def construct_key_for_document(
         str: The storage key (object name).
 
     Raises:
-        ValueError: If neither a document object nor collection_id and document_id are provided.
+        ValueError: If neither a document object nor collection_id and document_id are
+            provided.
 
     Examples:
         >>> from lexy_py import LexyClient
@@ -124,7 +126,8 @@ async def construct_key_for_document(
         key = f"collections/{collection_id}/documents/{document_id}"
     else:
         raise ValueError(
-            "Either a document object or collection_id and document_id must be provided."
+            "Either a document object or collection_id and document_id must be "
+            "provided."
         )
     if path_prefix:
         key = f"{path_prefix.rstrip('/')}/{key}"
@@ -155,7 +158,8 @@ async def construct_key_for_thumbnail(
         str: The storage key (object name).
 
     Raises:
-        ValueError: If neither a document object nor collection_id and document_id are provided.
+        ValueError: If neither a document object nor collection_id and document_id are
+            provided.
 
     Examples:
         >>> from lexy_py import LexyClient
@@ -181,7 +185,8 @@ async def construct_key_for_thumbnail(
         )
     else:
         raise ValueError(
-            "Either a document object or collection_id and document_id must be provided."
+            "Either a document object or collection_id and document_id must be "
+            "provided."
         )
     if path_prefix:
         key = f"{path_prefix.rstrip('/')}/{key}"

@@ -6,10 +6,12 @@ class FilterBuilder:
     """Helper class for creating filters.
 
     Attributes:
-        conditions (list[dict]): A list of conditions to be combined. Each condition consists of a field, an operation,
-            a value, and a negation option. `field` is a string representing the field to be matched. `operation` is a
-            string representing the operation to be performed on the field. `value` is the value to be matched against.
-            `negate` is a boolean representing whether the condition should be negated.
+        conditions (list[dict]): A list of conditions to be combined. Each condition
+            consists of a field, an operation, a value, and a negation option. `field`
+            is a string representing the field to be matched. `operation` is a string
+            representing the operation to be performed on the field. `value` is the
+            value to be matched against. `negate` is a boolean representing whether the
+            condition should be negated.
 
             Valid operations include the following.
 
@@ -35,7 +37,8 @@ class FilterBuilder:
         to_json: Returns the filter object as a JSON string
 
     Examples:
-        Restrict documents to those that contain the word 'mathematics' regardless of the case:
+        Restrict documents to those that contain the word 'mathematics' regardless of
+        the case:
 
         >>> from lexy_py import FilterBuilder
         >>> builder = FilterBuilder()
@@ -48,7 +51,8 @@ class FilterBuilder:
             "combination": "AND"
         }
 
-        Restrict documents to those with a size less than 30,000 bytes and a file type that is not an image or video:
+        Restrict documents to those with a size less than 30,000 bytes and a file type
+        that is not an image or video:
 
         >>> builder = FilterBuilder()
         >>> builder.include("meta.size", "less_than", 30000)
@@ -62,7 +66,8 @@ class FilterBuilder:
             "combination": "AND"
         }
 
-        Restrict documents to those where URL is not None and does not start with 'https://www.youtube.com':
+        Restrict documents to those where URL is not None and does not start with
+        'https://www.youtube.com':
 
         >>> builder = FilterBuilder()
         >>> builder.exclude("meta.url", "starts_with", "https://www.youtube.com")
@@ -88,7 +93,8 @@ class FilterBuilder:
 
         Args:
             field: The field to be matched
-            operation: The operation to be performed on the field. Must be one of the following.
+            operation: The operation to be performed on the field. Must be one of the
+                following.
 
                 - `equals`
                 - `equals_ci` (case-insensitive equals)
@@ -115,7 +121,8 @@ class FilterBuilder:
 
         Args:
             field: The field to be matched
-            operation: The operation to be performed on the field. Must be one of the following.
+            operation: The operation to be performed on the field. Must be one of the
+                following.
 
                 - `equals`
                 - `equals_ci` (case-insensitive equals)
@@ -145,4 +152,5 @@ class FilterBuilder:
             {"conditions": self.conditions, "combination": self.combination}
         )
 
-    # TODO: implement from_dict and from_json methods to load an existing filter and modify it
+    # TODO: implement from_dict and from_json methods to load an existing filter and
+    #  modify it
