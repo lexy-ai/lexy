@@ -24,8 +24,9 @@ class DocumentBase(SQLModel):
     meta: Optional[dict[Any, Any]] = Field(sa_column=Column(JSONB), default={})
     _image: Optional["Image"] = PrivateAttr(default=None)
 
-    # TODO: this __init__ is only needed because SQLModel is missing `_init_private_attributes` - should no longer be
-    #  needed after updating to Pydantic v2. Sources:
+    # TODO: this __init__ is only needed because SQLModel is missing
+    #  `_init_private_attributes` - should no longer be needed after updating to
+    #  Pydantic v2. Sources:
     #  - https://github.com/tiangolo/sqlmodel/pull/472#issuecomment-1301647570
     #  - https://github.com/tiangolo/sqlmodel/issues/504
     def __init__(self, **data: Any):
@@ -65,7 +66,8 @@ class DocumentBase(SQLModel):
             url = self.meta.get("_urls", {}).get("object")
         return url
 
-    # FIXME: storage_client is required, but not passed in with object_url's self.refresh_object_urls()
+    # FIXME: storage_client is required, but not passed in with object_url's
+    #  self.refresh_object_urls()
     def refresh_object_urls(
         self, storage_client: "StorageClient" = None, expiration: int = 3600
     ) -> None:

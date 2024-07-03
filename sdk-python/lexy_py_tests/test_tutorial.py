@@ -30,10 +30,14 @@ class TestTutorial:
             [
                 {"content": "This is my first document! It's great!"},
                 {
-                    "content": "Starlink is a satellite internet constellation operated by American aerospace company SpaceX, providing coverage to over 60 countries."
+                    "content": "Starlink is a satellite internet constellation "
+                    "operated by American aerospace company SpaceX, "
+                    "providing coverage to over 60 countries."
                 },
                 {
-                    "content": "A latent space is an embedding of a set of items within a manifold in which items resembling each other are positioned closer to one another."
+                    "content": "A latent space is an embedding of a set of items "
+                    "within a manifold in which items resembling each "
+                    "other are positioned closer to one another."
                 },
             ]
         )
@@ -71,13 +75,16 @@ class TestTutorial:
         docs_added = bios.add_documents(
             [
                 {
-                    "content": "Stephen Curry is an American professional basketball player for the Golden State Warriors."
+                    "content": "Stephen Curry is an American professional basketball "
+                    "player for the Golden State Warriors."
                 },
                 {
-                    "content": "Dwayne 'The Rock' Johnson is a well-known actor, former professional wrestler, and businessman."
+                    "content": "Dwayne 'The Rock' Johnson is a well-known actor, "
+                    "former professional wrestler, and businessman."
                 },
                 {
-                    "content": "Taylor Swift is a singer known for her songwriting, musical versatility, and artistic reinventions."
+                    "content": "Taylor Swift is a singer known for her songwriting, "
+                    "musical versatility, and artistic reinventions."
                 },
             ]
         )
@@ -151,7 +158,8 @@ class TestTutorial:
         doc_added = bios.add_documents(
             [
                 {
-                    "content": "Beyoncé is a singer and songwriter recognized for her boundary-pushing artistry, vocals, and performances."
+                    "content": "Beyoncé is a singer and songwriter recognized for her "
+                    "boundary-pushing artistry, vocals, and performances."
                 }
             ]
         )

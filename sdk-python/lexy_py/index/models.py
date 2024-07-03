@@ -65,14 +65,18 @@ class Index(IndexModel):
 
         Args:
             query_text (str): The query text.
-            query_image (Image.Image | str): The query image. Can be a PIL Image object or a path to an image.
+            query_image (Image.Image | str): The query image. Can be a PIL Image object
+                or a path to an image.
             query_field (str, optional): The field to query. Defaults to "embedding".
             k (int, optional): The number of records to return. Defaults to 5.
-            return_fields (list[str], optional): The fields to return. Defaults to None, which returns all fields. To
-                return fields from the linked document, use "document.<field_name>".
-            return_document (bool, optional): Whether to return the document object. Defaults to False.
-            embedding_model (str, optional): The name of the embedding model to use. Defaults to None, which uses the
-                embedding model associated with `index_id.query_field`.
+            return_fields (list[str], optional): The fields to return. Defaults to
+                None, which returns all fields. To return fields from the linked
+                document, use "document.<field_name>".
+            return_document (bool, optional): Whether to return the document object.
+                Defaults to False.
+            embedding_model (str, optional): The name of the embedding model to use.
+                Defaults to None, which uses the embedding model associated with
+                `index_id.query_field`.
 
         Returns:
             Results: A list of query results.

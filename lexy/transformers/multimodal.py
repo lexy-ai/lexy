@@ -21,7 +21,8 @@ def image_embeddings_clip(
     """Embed images using CLIP.
 
     Args:
-        images: A single image or DocumentBase instance, or a list of images or DocumentBase instances to embed.
+        images: A single image or DocumentBase instance, or a list of images or
+            DocumentBase instances to embed.
 
     Returns:
         torch.Tensor: The embeddings of the provided images.
@@ -49,7 +50,8 @@ def text_embeddings_clip(
     """Embed text using CLIP.
 
     Args:
-        text: A single string or DocumentBase instance, or a list of strings or DocumentBase instances to embed.
+        text: A single string or DocumentBase instance, or a list of strings or
+            DocumentBase instances to embed.
 
     Returns:
         torch.Tensor: The embeddings of the provided text.

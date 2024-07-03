@@ -70,9 +70,7 @@ def add_sample_docs_to_db(session=db):
     if session.query(models.Document).count() > 0:
         logger.warning("Sample documents already exist - skipping sample documents")
     else:
-        # adding sample documents for code collection only - will add sample documents for default collection once
-        # the default index and binding are created through appropriate crud endpoints
-
+        # adding sample documents for code collection only
         for doc in sample_docs["code_collection_sample_docs"]:
             c = (
                 session.query(models.Collection)
@@ -163,7 +161,8 @@ def drop_tables(session=db, drop_all=True, dry_run=True):
 def reset_db(session=db, drop_all=True, dry_run=True):
     """Reset the database
 
-    WARNING: this may not work as expected - use the make target `drop-db-tables` instead
+    WARNING: this may not work as expected - use the make target `drop-db-tables`
+    instead
     """
     logger.info("Resetting database")
     drop_tables(session, drop_all=drop_all, dry_run=dry_run)

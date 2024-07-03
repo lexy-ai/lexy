@@ -25,7 +25,8 @@ async def generate_tasks_for_document(
 
     Args:
         doc (Document): The document for which to generate tasks
-        storage_client (StorageClient): The storage client to use for generating presigned object URLs
+        storage_client (StorageClient): The storage client to use for generating
+            presigned object URLs
 
     Returns:
         list[dict]: A list of tasks that were created for the document
@@ -56,7 +57,8 @@ async def generate_tasks_for_document(
         if doc.is_stored_object:
             if not storage_client:
                 raise ValueError(
-                    "Storage client must be configured when generating tasks for stored objects"
+                    "Storage client must be configured when generating tasks for "
+                    "stored objects"
                 )
             doc.refresh_object_urls(storage_client=storage_client)
         task_name = binding.transformer.celery_task_name
@@ -91,12 +93,14 @@ def process_new_binding(
 
     Steps involved:
         1. Infer values for "lexy_index_fields" if not specified
-        2. Create tasks for all documents in the collection that match the binding filters
+        2. Create tasks for all documents in the collection that match the binding's
+           filters
         3. Switch binding status to 'on'
 
     Args:
         binding (Binding): The binding to process
-        storage_client (StorageClient): The storage client to use for generating presigned object URLs
+        storage_client (StorageClient): The storage client to use for generating
+            presigned object URLs
 
     Returns:
         tuple[Binding, list[dict]]: The binding and the tasks that were created
@@ -104,8 +108,9 @@ def process_new_binding(
     Raises:
         ValueError:
             - If the binding does not have a transformer or an index associated with it
-            - If the binding does not have `lexy_index_fields` defined in `binding.transformer_params` AND
-                `binding.index.index_fields` is not defined
+            - If the binding does not have `lexy_index_fields` defined in
+              `binding.transformer_params` AND `binding.index.index_fields` is not
+              defined
 
     """
     logger.info(f"Processing new {binding = }")
@@ -121,15 +126,17 @@ def process_new_binding(
     # check that the binding has lexy_index_fields defined
     if "lexy_index_fields" not in binding.transformer_params.keys():
         logger.info(
-            f"{binding = } does not have 'lexy_index_fields' defined in 'transformer_params'"
+            f"{binding = } does not have 'lexy_index_fields' defined in "
+            f"'transformer_params'"
         )
         if len(binding.index.index_fields) > 0:
             logger.info(
-                f"Will assign them using 'index_fields' from index '{binding.index.index_id}'."
+                f"Will assign them using 'index_fields' from index "
+                f"'{binding.index.index_id}'."
             )
 
-            # it seems this next line is required because binding.transformer_params is a JSON field
-            #   see https://github.com/sqlalchemy/sqlalchemy/discussions/6473
+            # This next line is required because binding.transformer_params is a JSON
+            # field. See https://github.com/sqlalchemy/sqlalchemy/discussions/6473
             binding.transformer_params = dict(binding.transformer_params)
 
             binding.transformer_params["lexy_index_fields"] = list(
@@ -140,9 +147,10 @@ def process_new_binding(
             )
         else:
             raise ValueError(
-                f"{binding = } does not have 'lexy_index_fields' defined in 'transformer_params' "
-                f"and index '{binding.index.index_id}' does not have 'index_fields' defined. Either "
-                f"define 'lexy_index_fields' in 'transformer_params' or define 'index_fields' for index "
+                f"{binding = } does not have 'lexy_index_fields' defined in "
+                f"'transformer_params' and index '{binding.index.index_id}' does not "
+                f"have 'index_fields' defined. Either define 'lexy_index_fields' in "
+                f"'transformer_params' or define 'index_fields' for index "
                 f"'{binding.index.index_id}'."
             )
 
@@ -162,7 +170,8 @@ def process_new_binding(
         if doc.is_stored_object:
             if not storage_client:
                 raise ValueError(
-                    "Storage client must be configured when generating tasks for stored objects"
+                    "Storage client must be configured when generating tasks for "
+                    "stored objects"
                 )
             doc.refresh_object_urls(storage_client=storage_client)
         task = celery.send_task(

@@ -28,7 +28,8 @@ from lexy_tests.conftest import (
 from lexy_py import LexyClient
 
 
-# the value of LEXY_CONFIG and CELERY_CONFIG are set using pytest-env plugin in pyproject.toml
+# Values of LEXY_CONFIG and CELERY_CONFIG are set using pytest-env plugin in
+# pyproject.toml, but overwritten in lexy_tests/__init__.py
 assert os.environ.get("LEXY_CONFIG") == "testing", "LEXY_CONFIG is not set to 'testing'"
 assert (
     os.environ.get("CELERY_CONFIG") == "testing"
@@ -59,7 +60,7 @@ def lx_client(client: TestClient) -> LexyClient:
     """Create a new Lexy client instance for each synchronous test case."""
     with LexyClient(base_url=TEST_BASE_URL, api_timeout=TEST_API_TIMEOUT) as lxs:
         lxs.client = client
-        # append the API_PREFIX (e.g., "/api") to the base_url
+        # Append the API_PREFIX (e.g., "/api") to the base_url
         lxs.client.base_url = lxs.client.base_url.join(test_settings.API_PREFIX)
         lxs.aclient = None
         yield lxs
@@ -71,7 +72,7 @@ async def lx_async_client(async_client: httpx.AsyncClient) -> LexyClient:
     async with LexyClient(base_url=TEST_BASE_URL, api_timeout=TEST_API_TIMEOUT) as lxa:
         lxa.client = None
         lxa.aclient = async_client
-        # append the API_PREFIX (e.g., "/api") to the base_url
+        # Append the API_PREFIX (e.g., "/api") to the base_url
         lxa.aclient.base_url = lxa.aclient.base_url.join(test_settings.API_PREFIX)
         yield lxa
 

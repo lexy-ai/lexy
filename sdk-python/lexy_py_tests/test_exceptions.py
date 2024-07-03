@@ -27,7 +27,8 @@ class TestClientExceptions:
         assert exc_info.value.response.text == '{"detail":"Collection not found"}'
 
     def test_api_error_with_response(self, lx_client):
-        # NOTE: this requires TestClient to have the argument `raise_server_exceptions=False`
+        # NOTE: this requires TestClient to have the argument
+        #   `raise_server_exceptions=False`
         #   https://github.com/tiangolo/fastapi/discussions/9007
         with pytest.raises(LexyAPIError) as exc_info:
             lx_client.document.get_document("not_a_valid_document_id")

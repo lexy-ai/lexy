@@ -67,7 +67,8 @@ def lexy_transformer(name: str, **task_kwargs):
     """A decorator to register a transformer function with Lexy.
 
     Args:
-        name: The name of the transformer. The task will be registered with Celery as "lexy.transformers.{name}"
+        name: The name of the transformer. The task will be registered with Celery as
+            "lexy.transformers.{name}"
         **task_kwargs: Keyword arguments to pass to the Celery task decorator
     """
 
@@ -88,14 +89,16 @@ def lexy_transformer(name: str, **task_kwargs):
             # check if the number of index fields matches the number of results
             if len(lexy_index_fields) != len(results):
                 raise ValueError(
-                    f"Expected {len(lexy_index_fields)} index fields ({', '.join(lexy_index_fields)}), "
-                    f"but got {len(results)} return values from '{func.__name__}'."
+                    f"Expected {len(lexy_index_fields)} index fields "
+                    f"({', '.join(lexy_index_fields)}), but got {len(results)} return "
+                    f"values from '{func.__name__}'."
                 )
 
             # zip together labels and results and return as a dictionary inside a list
             return [dict(zip(lexy_index_fields, results))]
 
-        # modify the docstring to include documentation for the "lexy_index_fields" parameter
+        # Modify the docstring to include documentation for the "lexy_index_fields"
+        # parameter
         lexy_doc = (
             "\n\n"
             "Lexy Transformer options:\n\n"

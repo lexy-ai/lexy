@@ -128,9 +128,10 @@ async def delete_index(
 
     index_table_name = index.index_table_name
 
-    # NOTE: Deleting the index with option `drop_table=False` will leave the index model in the index manager.
-    #   To remove it, recreate the index, and then delete with `drop_table=True`. The issue with removing it from the
-    #   index manager is created when trying to recreate a table with the same name.
+    # NOTE: Deleting the index with option `drop_table=False` will leave the index
+    #   model in the index manager. To remove it, recreate the index, and then delete
+    #   with `drop_table=True`. The issue with removing it from the index manager is
+    #   created when trying to recreate a table with the same name.
     table_dropped = False
     if drop_table:
         table_dropped = index_manager.drop_index_table(index_id=index_id)

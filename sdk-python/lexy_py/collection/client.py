@@ -62,11 +62,13 @@ class CollectionClient:
     ) -> Collection:
         """Synchronously get a collection by name or ID.
 
-        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
+        If both `collection_name` and `collection_id` are provided, `collection_id`
+        will be used.
 
         Args:
             collection_name (str): The name of the collection to get.
-            collection_id (str): The ID of the collection to get. If provided, `collection_name` will be ignored.
+            collection_id (str): The ID of the collection to get. If provided,
+                `collection_name` will be ignored.
 
         Returns:
             Collection: The collection.
@@ -97,11 +99,13 @@ class CollectionClient:
     ) -> Collection:
         """Asynchronously get a collection by name or ID.
 
-        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
+        If both `collection_name` and `collection_id` are provided, `collection_id`
+        will be used.
 
         Args:
             collection_name (str): The name of the collection to get.
-            collection_id (str): The ID of the collection to get. If provided, `collection_name` will be ignored.
+            collection_id (str): The ID of the collection to get. If provided,
+                `collection_name` will be ignored.
 
         Returns:
             Collection: The collection.
@@ -253,9 +257,12 @@ class CollectionClient:
 
         Args:
             collection_id (str): The ID of the collection to update.
-            collection_name (str, optional): The updated name of the collection. Defaults to None.
-            description (str, optional): The updated description of the collection. Defaults to None.
-            config: (dict, optional): The updated config of the collection. Defaults to None.
+            collection_name (str, optional): The updated name of the collection.
+                Defaults to None.
+            description (str, optional): The updated description of the collection.
+                Defaults to None.
+            config: (dict, optional): The updated config of the collection. Defaults
+                to None.
 
         Returns:
             Collection: The updated collection.
@@ -282,9 +289,12 @@ class CollectionClient:
 
         Args:
             collection_id (str): The ID of the collection to update.
-            collection_name (str, optional): The updated name of the collection. Defaults to None.
-            description (str, optional): The updated description of the collection. Defaults to None.
-            config: (dict, optional): The updated config of the collection. Defaults to None.
+            collection_name (str, optional): The updated name of the collection.
+                Defaults to None.
+            description (str, optional): The updated description of the collection.
+                Defaults to None.
+            config: (dict, optional): The updated config of the collection. Defaults
+                to None.
 
         Returns:
             Collection: The updated collection.
@@ -308,12 +318,15 @@ class CollectionClient:
     ) -> dict:
         """Synchronously delete a collection by name or ID.
 
-        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
+        If both `collection_name` and `collection_id` are provided, `collection_id`
+        will be used.
 
         Args:
             collection_name (str): The name of the collection to delete.
-            collection_id (str): The ID of the collection to delete. If provided, `collection_name` will be ignored.
-            delete_documents (bool, optional): Whether to delete the documents in the collection. Defaults to False.
+            collection_id (str): The ID of the collection to delete. If provided,
+                `collection_name` will be ignored.
+            delete_documents (bool, optional): Whether to delete the documents in the
+                collection. Defaults to False.
 
         Raises:
             ValueError: If neither `collection_name` nor `collection_id` are provided.
@@ -353,12 +366,15 @@ class CollectionClient:
     ) -> dict:
         """Asynchronously delete a collection by name or ID.
 
-        If both `collection_name` and `collection_id` are provided, `collection_id` will be used.
+        If both `collection_name` and `collection_id` are provided, `collection_id`
+        will be used.
 
         Args:
             collection_name (str): The name of the collection to delete.
-            collection_id (str): The ID of the collection to delete. If provided, `collection_name` will be ignored.
-            delete_documents (bool, optional): Whether to delete the documents in the collection. Defaults to False.
+            collection_id (str): The ID of the collection to delete. If provided,
+                `collection_name` will be ignored.
+            delete_documents (bool, optional): Whether to delete the documents in the
+                collection. Defaults to False.
 
         Raises:
             ValueError: If neither `collection_name` nor `collection_id` are provided.

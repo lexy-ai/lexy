@@ -51,9 +51,10 @@ class TestFilterBuilder:
             "meta.url", "equals", None
         )
         assert builder.to_json() == (
-            '{"conditions": [{"field": "meta.url", "operation": "starts_with", "value": '
-            '"https://www.youtube.com", "negate": true}, {"field": "meta.url", '
-            '"operation": "equals", "value": null, "negate": true}], "combination": "AND"}'
+            '{"conditions": [{"field": "meta.url", "operation": "starts_with", '
+            '"value": "https://www.youtube.com", "negate": true}, {"field": "meta.url"'
+            ', "operation": "equals", "value": null, "negate": true}], "combination": '
+            '"AND"}'
         )
         assert builder.to_dict() == {
             "conditions": [

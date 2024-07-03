@@ -46,11 +46,13 @@ class DatabaseTask(Task):
             )
             self._index_manager = index_manager
             task_logger.debug(
-                f"Assigned index manager with index models: {self._index_manager.index_models}"
+                f"Assigned index manager with index models: "
+                f"{self._index_manager.index_models}"
             )
         if self._index_manager.index_models == {}:
             task_logger.debug(
-                "index_manager.index_models is empty - running index_manager.create_index_models()"
+                "index_manager.index_models is empty - running "
+                "index_manager.create_index_models()"
             )
             self._index_manager.create_index_models()
             task_logger.debug(
@@ -64,7 +66,8 @@ class DatabaseTask(Task):
         task_logger.debug("---------------- prior to restart ----------------")
         self.print_index_manager_models()
         task_logger.debug(
-            f"Broadcasting signal 'pool_restart' to celery worker {self.request.hostname}"
+            f"Broadcasting signal 'pool_restart' to celery worker "
+            f"{self.request.hostname}"
         )
         response = self.app.control.broadcast(
             "pool_restart",
@@ -96,19 +99,27 @@ class DatabaseTask(Task):
 
 
 def convert_arrays_to_lists(obj):
-    """Convert numpy arrays and PyTorch tensors to lists in a dictionary or list of dictionaries.
+    """Convert numpy arrays and PyTorch tensors to lists in a dictionary or list of
+    dictionaries.
 
     Args:
         obj: dictionary or list of dictionaries to convert
 
     Returns:
-        Same type as obj: dictionary or list of dictionaries with numpy arrays and PyTorch tensors converted to lists
+        Same type as obj: dictionary or list of dictionaries with numpy arrays and
+        PyTorch tensors converted to lists
 
     Examples:
-        >>> convert_arrays_to_lists({"a": np.array([1, 2, 3]), "b": {"c": torch.tensor([4, 5, 6])}})
+        >>> convert_arrays_to_lists({
+        ...     "a": np.array([1, 2, 3]),
+        ...     "b": {"c": torch.tensor([4, 5, 6])}
+        ... })
         {'a': [1, 2, 3], 'b': {'c': [4, 5, 6]}}
 
-        >>> convert_arrays_to_lists([{"a": torch.tensor([1, 2, 3])}, {"b": np.array([4, 5, 6])}])
+        >>> convert_arrays_to_lists([
+        ...     {"a": torch.tensor([1, 2, 3])},
+        ...     {"b": np.array([4, 5, 6])}
+        ... ])
         [{'a': [1, 2, 3]}, {'b': [4, 5, 6]}]
     """
     if isinstance(obj, dict):
@@ -135,7 +146,8 @@ def save_result_to_index(self, res, document_id, text, index_id):
         IndexClass = self.index_manager.index_models[index_id]
     except KeyError:
         print(
-            f"index model for {index_id} doesn't exist - will attempt to refresh index manager"
+            f"index model for {index_id} doesn't exist - will attempt to refresh index "
+            f"manager"
         )
         self.reset_index_manager()
         # noinspection PyPep8Naming
@@ -177,7 +189,8 @@ def save_records_to_index(
         IndexClass = self.index_manager.index_models[index_id]
     except KeyError:
         task_logger.warning(
-            f"index model for {index_id} doesn't exist - will attempt to refresh index manager"
+            f"index model for {index_id} doesn't exist - will attempt to refresh index "
+            f"manager"
         )
         self.reset_index_manager()
         # noinspection PyPep8Naming

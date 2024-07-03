@@ -118,8 +118,8 @@ async def query_records(
         except KeyError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Index field '{query_field}' does not have an embedding model. You can "
-                f"specify one using the 'embedding_model' parameter.",
+                detail=f"Index field '{query_field}' does not have an embedding model. "
+                f"You can specify one using the 'embedding_model' parameter.",
             )
     # if multimodal, assign model based on query type
     if "*" in embedding_model:
@@ -177,7 +177,8 @@ async def query_records(
         ]
 
     # if there's nothing else to return, return document content
-    # TODO: remove this condition once we have auto-embed option which will return the embedded content
+    # TODO: remove this condition once we have auto-embed option which will return the
+    #  embedded content
     if return_document is False and len(return_index_fields) == 0:
         return_index_fields.append(document_tbl.content.label("document.content"))
 
@@ -193,7 +194,8 @@ async def query_records(
     ).join(document_tbl, index_tbl.c.document_id == document_tbl.document_id)
 
     # optionally return the document object
-    # using this as a hack to grab document fields - will refactor to use SQLModel objects instead of tables
+    # using this as a hack to grab document fields - will refactor to use SQLModel
+    # objects instead of tables
     doc_prefix = "doc_"
     if return_document:
         document_columns = [
@@ -206,7 +208,8 @@ async def query_records(
     search_result = await session.exec(base_query.order_by(asc("distance")).limit(k))
     search_results = search_result.all()
 
-    # process results to nest document fields under "document" key - will get rid of this once we use SQLModel objects
+    # process results to nest document fields under "document" key - will get rid of
+    # this once we use SQLModel objects
     formatted_results = []
     for row in search_results:
         result_dict = row._asdict()  # Convert result row to dictionary

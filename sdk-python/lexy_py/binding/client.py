@@ -112,7 +112,8 @@ class BindingClient:
             ...     filters=image_filter
             ... )
         """
-        # TODO: move execution_params and transformer_params logic to BindingCreate model
+        # TODO: move execution_params and transformer_params logic to BindingCreate
+        #  model
         if execution_params is None:
             execution_params = {}
         if transformer_params is None:
@@ -179,7 +180,8 @@ class BindingClient:
             ValueError: If neither `_name` nor `_id` is provided for each of
                 `collection`, `transformer`, and `index`.
         """
-        # TODO: move execution_params and transformer_params logic to BindingCreate model
+        # TODO: move execution_params and transformer_params logic to BindingCreate
+        #  model
         if execution_params is None:
             execution_params = {}
         if transformer_params is None:
@@ -244,10 +246,12 @@ class BindingClient:
         Args:
             binding_id (int): The ID of the binding to update.
             description (str, optional): A description of the binding.
-            execution_params (dict, optional): Parameters to pass to the binding's execution function.
+            execution_params (dict, optional): Parameters to pass to the binding's
+                execution function.
             transformer_params (dict, optional): Parameters to pass to the transformer.
-            filters (dict | FilterBuilder, optional): Filters to apply to documents in the collection before running
-                the transformer. Set to an empty dict to remove any existing filter.
+            filters (dict | FilterBuilder, optional): Filters to apply to documents in
+                the collection before running the transformer. Set to an empty dict to
+                remove any existing filter.
             status (str, optional): The status of the binding.
 
         Returns:
@@ -282,10 +286,12 @@ class BindingClient:
         Args:
             binding_id (int): The ID of the binding to update.
             description (str, optional): A description of the binding.
-            execution_params (dict, optional): Parameters to pass to the binding's execution function.
+            execution_params (dict, optional): Parameters to pass to the binding's
+                execution function.
             transformer_params (dict, optional): Parameters to pass to the transformer.
-            filters (dict | FilterBuilder, optional): Filters to apply to documents in the collection before running
-                the transformer. Set to an empty dict to remove any existing filter.
+            filters (dict | FilterBuilder, optional): Filters to apply to documents in
+                the collection before running the transformer. Set to an empty dict to
+                remove any existing filter.
             status (str, optional): The status of the binding.
 
         Returns:

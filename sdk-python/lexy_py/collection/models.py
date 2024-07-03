@@ -27,7 +27,12 @@ class CollectionModel(BaseModel):
     collection_id: Optional[str] = None
 
     def __repr__(self):
-        return f"<Collection('{self.collection_name}', id='{self.collection_id}', description='{self.description}')>"
+        return (
+            f"<Collection("
+            f"'{self.collection_name}', "
+            f"id='{self.collection_id}', "
+            f"description='{self.description}')>"
+        )
 
 
 class CollectionUpdate(BaseModel):
@@ -66,7 +71,8 @@ class Collection(CollectionModel):
 
         Args:
             docs (Document | dict | list[Document | dict]): The documents to add.
-            batch_size (int): The number of documents to add in each batch. Defaults to 100.
+            batch_size (int): The number of documents to add in each batch. Defaults
+                to 100.
 
         Returns:
             Documents: A list of created documents.
@@ -80,7 +86,8 @@ class Collection(CollectionModel):
         """Synchronously get a list of documents in the collection.
 
         Args:
-            limit (int): The maximum number of documents to return. Defaults to 100. Maximum allowed is 1000.
+            limit (int): The maximum number of documents to return. Defaults to 100.
+                Maximum allowed is 1000.
             offset (int): The offset to start from. Defaults to 0.
 
         Returns:
@@ -100,17 +107,21 @@ class Collection(CollectionModel):
         """Synchronously upload files to the collection in batches.
 
         Args:
-            files (str | Image.Image | list[str | Image.Image]): The files to upload. Can be a single instance or a
-                list of a string containing the path to a file or an `Image.Image` object.
-            filenames (str | list[str], optional): The filenames of the files to upload. Defaults to None.
-            batch_size (int): The number of files to upload in each batch. Defaults to 5.
+            files (str | Image.Image | list[str | Image.Image]): The files to upload.
+                Can be a single instance or a list of a string containing the path to
+                a file or an `Image.Image` object.
+            filenames (str | list[str], optional): The filenames of the files to
+                upload. Defaults to None.
+            batch_size (int): The number of files to upload in each batch. Defaults
+                to 5.
 
         Returns:
             Documents: A list of created documents.
 
         Raises:
             TypeError: If an input file type is invalid.
-            ValueError: If the length of the filenames list does not match the length of the files list.
+            ValueError: If the length of the filenames list does not match the length
+                of the files list.
 
         Examples:
             >>> from lexy_py import LexyClient

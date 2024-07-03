@@ -49,7 +49,8 @@ class FilterCondition(BaseModel):
         if operation in [Operation.IN]:
             if not isinstance(v, Iterable):
                 raise ValueError(
-                    f"Value must be an iterable (list, tuple, set, or dict) for operation '{operation}'"
+                    f"Value must be an iterable (list, tuple, set, or dict) for "
+                    f"operation '{operation}'"
                 )
 
         # For string operations
@@ -168,10 +169,17 @@ def filter_documents(
         Iterable[Document]: The filtered documents.
 
     Examples:
-        >>> filter_obj = Filter(conditions=[FilterCondition(field='text', operation='contains', value='foo'),
-        ...                                 FilterCondition(field='meta.bar', operation='equals', value='baz')],
-        ...                     combination='AND')
-        >>> docs = [Document(content='foo bar', meta={'bar': 'baz'}), Document(content='foo', meta={'bar': 'qux'})]
+        >>> filter_obj = Filter(
+        ...     conditions=[
+        ...         FilterCondition(field='text', operation='contains', value='foo'),
+        ...         FilterCondition(field='meta.bar', operation='equals', value='baz')
+        ...     ],
+        ...     combination='AND'
+        ... )
+        >>> docs = [
+        ...     Document(content='foo bar', meta={'bar': 'baz'}),
+        ...     Document(content='foo', meta={'bar': 'qux'})
+        ... ]
         >>> list(filter_documents(docs, filter_obj))
         [Document(content='foo bar', meta={'bar': 'baz'})]
     """

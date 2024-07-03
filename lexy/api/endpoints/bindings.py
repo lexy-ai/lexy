@@ -55,7 +55,7 @@ async def create_binding(
             session=session, collection_id=binding.collection_id
         )
     else:
-        # BindingCreate model validator ensures that one of the two is provided (id or name)
+        # BindingCreate model validator ensures that either id or name is provided
         collection = await crud.get_collection_by_name(
             session=session, collection_name=binding.collection_name
         )
@@ -78,9 +78,10 @@ async def create_binding(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Index not found"
         )
 
-    # TODO: switch to pattern `db_binding = Binding.model_validate(binding)` once issue is resolved.
-    #  Currently SQLModel is not serializing the nested model, leading to the error 'Filter is not JSON
-    #  Serializable'. But using `Binding(**binding.model_dump())` leaves binding.filter as a dict type.
+    # TODO: switch to pattern `db_binding = Binding.model_validate(binding)` once issue
+    #  is resolved. Currently SQLModel is not serializing the nested model, leading to
+    #  the error 'Filter is not JSON Serializable'. But using
+    #  `Binding(**binding.model_dump())` leaves binding.filter as a dict type.
     #  See issue: https://github.com/tiangolo/sqlmodel/issues/63
     db_binding = Binding(**binding.model_dump())
     session.add(db_binding)

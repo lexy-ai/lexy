@@ -188,7 +188,8 @@ class TestCollectionClient:
             == "Collection with that name already exists"
         )
 
-        # update to invalid collection name '1abc' (should fail) - currently fails via the client
+        # Update to invalid collection name '1abc' (should fail) - currently fails via
+        # the client
         with pytest.raises(ValueError) as exc_info:
             lx_client.update_collection(
                 collection_id=test_collection_id, collection_name="1abc"
