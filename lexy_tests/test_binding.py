@@ -164,7 +164,7 @@ class TestBindingModel:
             # transformer identifiers missing
             BindingCreate(
                 collection_id="cid",
-                transformer_name=None,
+                transformer_id=None,
                 index_id="iid",
                 description="Binding with no valid transformer identifier",
             )
