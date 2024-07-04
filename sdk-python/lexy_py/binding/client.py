@@ -57,9 +57,7 @@ class BindingClient:
         *,
         collection_name: str = None,
         collection_id: str = None,
-        transformer_name: str = None,
         transformer_id: str = None,
-        index_name: str = None,
         index_id: str = None,
         description: Optional[str] = None,
         execution_params: Optional[dict] = None,
@@ -69,18 +67,14 @@ class BindingClient:
     ) -> Binding:
         """Synchronously create a new binding.
 
-        One of either `_name` or `_id` is required for each of `collection`,
-        `transformer`, and `index`. If both `_name` and `_id` are provided, `_id` will
-        be used.
+        One of either `_name` or `_id` is required for `collection`. If both `_name`
+        and `_id` are provided, `_id` will be used.
 
         Args:
             collection_name (str): Name of the collection containing the source
                 documents.
             collection_id (str): ID of the collection containing the source documents.
-            transformer_name (str): Name of the transformer that the binding will run.
             transformer_id (str): ID of the transformer that the binding will run.
-            index_name (str): Name of the index in which the binding will store its
-                output.
             index_id (str): ID of the index in which the binding will store its output.
             description (str, optional): A description of the binding.
             execution_params (dict, optional): Parameters to pass to the binding's
@@ -94,13 +88,12 @@ class BindingClient:
             Binding: The created binding.
 
         Raises:
-            ValueError: If neither `_name` nor `_id` is provided for each of
-                `collection`, `transformer`, and `index`.
+            ValueError: If neither `_name` nor `_id` is provided for `collection`.
 
         Examples:
             Create a binding that runs the transformer with ID "image.embeddings.clip"
             on all image documents in the collection named "my_collection" and stores
-            the output in the index with ID "image_embeddings".
+            the output in the index with ID "image_embeddings":
 
             >>> from lexy_py import LexyClient, FilterBuilder
             >>> lx = LexyClient()
@@ -121,9 +114,7 @@ class BindingClient:
         binding = BindingCreate(
             collection_name=collection_name,
             collection_id=collection_id,
-            transformer_name=transformer_name,
             transformer_id=transformer_id,
-            index_name=index_name,
             index_id=index_id,
             description=description,
             execution_params=execution_params,
@@ -140,9 +131,7 @@ class BindingClient:
         *,
         collection_name: str = None,
         collection_id: str = None,
-        transformer_name: str = None,
         transformer_id: str = None,
-        index_name: str = None,
         index_id: str = None,
         description: Optional[str] = None,
         execution_params: Optional[dict] = None,
@@ -152,18 +141,14 @@ class BindingClient:
     ) -> Binding:
         """Asynchronously create a new binding.
 
-        One of either `_name` or `_id` is required for each of `collection`,
-        `transformer`, and `index`. If both `_name` and `_id` are provided, `_id` will
-        be used.
+        One of either `_name` or `_id` is required for `collection`. If both `_name`
+        and `_id` are provided, `_id` will be used.
 
         Args:
             collection_name (str): Name of the collection containing the source
                 documents.
             collection_id (str): ID of the collection containing the source documents.
-            transformer_name (str): Name of the transformer that the binding will run.
             transformer_id (str): ID of the transformer that the binding will run.
-            index_name (str): Name of the index in which the binding will store its
-                output.
             index_id (str): ID of the index in which the binding will store its output.
             description (str, optional): A description of the binding.
             execution_params (dict, optional): Parameters to pass to the binding's
@@ -177,8 +162,7 @@ class BindingClient:
             Binding: The created binding.
 
         Raises:
-            ValueError: If neither `_name` nor `_id` is provided for each of
-                `collection`, `transformer`, and `index`.
+            ValueError: If neither `_name` nor `_id` is provided for `collection`.
         """
         # TODO: move execution_params and transformer_params logic to BindingCreate
         #  model
@@ -189,9 +173,7 @@ class BindingClient:
         binding = BindingCreate(
             collection_name=collection_name,
             collection_id=collection_id,
-            transformer_name=transformer_name,
             transformer_id=transformer_id,
-            index_name=index_name,
             index_id=index_id,
             description=description,
             execution_params=execution_params,

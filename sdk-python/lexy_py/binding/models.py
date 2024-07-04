@@ -68,22 +68,14 @@ class BindingCreate(BindingBase):
 
     collection_name: Optional[str] = None
     collection_id: Optional[str] = None
-    transformer_name: Optional[str] = None
-    transformer_id: Optional[str] = None
-    index_name: Optional[str] = None
-    index_id: Optional[str] = None
+    transformer_id: str
+    index_id: str
 
-    # Ensure either `_name` or `_id` is provided for collection, transformer, and index
+    # Ensure either `_name` or `_id` is provided for collection
     @model_validator(mode="before")
     def check_identifiers(cls, values):
         if not values.get("collection_name") and not values.get("collection_id"):
             raise ValueError("Either collection_name or collection_id must be provided")
-        if not values.get("transformer_name") and not values.get("transformer_id"):
-            raise ValueError(
-                "Either transformer_name or transformer_id must be provided"
-            )
-        if not values.get("index_name") and not values.get("index_id"):
-            raise ValueError("Either index_name or index_id must be provided")
         return values
 
 
