@@ -178,3 +178,8 @@ The server will be running at http://localhost:9900. In addition, you can find t
 
 If your virtualenv keeps getting bjorked by PyCharm, make sure that you're following the instructions above verbatim,
 and using `venv` instead of `.venv` for the path of your virtual environment.
+
+### Other issues
+
+If you encounter any issues while installing or using Lexy, please open an
+[issue](https://github.com/lexy-ai/lexy/issues) on GitHub.

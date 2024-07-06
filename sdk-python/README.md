@@ -1,10 +1,11 @@
 # Lexy Python SDK
 
-This is the Python SDK for Lexy.
+This is the Python SDK for [Lexy](https://pypi.org/project/lexy/). For detailed
+documentation and tutorials, see the [Lexy documentation](https://getlexy.com).
 
 ## Usage
 
-### Initiate client
+### Init client
 
 ```python
 from lexy_py import LexyClient
@@ -25,10 +26,4 @@ lx.add_documents([
 
 ```python
 lx.query_index("test query", index_id="default_text_embeddings", k=5)
-```
-
-## Testing
-
-```bash
-pytest sdk-python
 ```
