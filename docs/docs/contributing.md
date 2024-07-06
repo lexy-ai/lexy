@@ -1,18 +1,31 @@
 # Contributing to Lexy
 
-This document provides guidance for developers who want to contribute to the Lexy codebase. It includes information on how to set up a development environment, how to run tests, and how to contribute code.
+This document provides guidance for developers who want to contribute to the Lexy
+codebase.
 
-## Contribution Guidelines
+To set up a development environment, simply follow the instructions in the
+[installation guide](installation.md). The command `make install-dev` will install the dev, docs,
+and test dependencies.
 
-Coming soon.
+
+## Issues
+
+Take a look at open [issues](https://github.com/lexy-ai/lexy/issues) on GitHub if you'd
+like to contribute to the project. This is also a great place to submit questions,
+feature requests, and bug reports.
+
 
 ## Developer Notes
 
-This section contains some common development tasks and how to perform them.
+### Makefile
+
+Many of the common commands for development are available in the
+[`Makefile`](https://github.com/lexy-ai/lexy/blob/main/Makefile).
 
 ### Running tests
 
-To run tests locally, you can use the following make command.
+When you open a pull request, tests will run automatically on GitHub Actions. To run
+tests locally, you can use the following make command.
 
 ```bash
 make run-tests
@@ -29,7 +42,7 @@ pytest lexy_tests
 pytest sdk-python
 ```
 
-To run tests inside of an already running lexy-server container, use the following command.
+To run tests inside an already running lexy-server container, use the following command.
 
 ```bash
 make run-tests-docker

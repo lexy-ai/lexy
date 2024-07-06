@@ -60,21 +60,6 @@ markdown_extensions:
 
 plugins:
   - search
-  - encryptcontent:
-      title_prefix: ''
-      password_button: true
-      password_button_text: 'ENTER'
-      password_inventory:
-        _global:
-          lexy: !ENV [MKDOCS_ENCRYPT_PW_LEXY, 'guest']
-          lexy_trial_partner1: !ENV [MKDOCS_ENCRYPT_PW_PARTNER1, 'lexypartner1']
-          lexy_trial_partner2: !ENV [MKDOCS_ENCRYPT_PW_PARTNER2, 'lexypartner2']
-          lexy_trial_partner3: !ENV [MKDOCS_ENCRYPT_PW_PARTNER3, 'lexypartner3']
-      encrypted_something:
-        md-header__inner: [ nav, class ] #Header
-        md-footer__inner: [ nav, class ] #Footer
-        md-nav: [ nav, class ] #Menu and toc
-      remember_password: true
   - mkdocstrings:
       enabled: !ENV [ENABLE_MKDOCSTRINGS, true]
       default_handler: python
