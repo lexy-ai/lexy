@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lexy"
-version = "0.0.2"
+version = "0.0.3"
 description = "Data pipelines for AI applications."
 authors = ["Reza Shabani"]
 license = "Apache 2.0"
