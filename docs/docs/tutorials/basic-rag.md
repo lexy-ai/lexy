@@ -1,4 +1,4 @@
-# Basic RAG using Lexy
+# Retrieval Augmented Generation (RAG) with Lexy
 
 ## Introduction
 

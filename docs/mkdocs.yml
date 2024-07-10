@@ -88,7 +88,7 @@ nav:
   - Quickstart: quickstart.md
   - Tutorials:
     - tutorials/index.md
-    - Basic RAG using Lexy: tutorials/basic-rag.md
+    - Retrieval Augmented Generation (RAG): tutorials/basic-rag.md
     - Multimodal image search: tutorials/multimodal-image-search.md
     - Custom transformers: tutorials/custom-transformers.md
     - Document filters: tutorials/document-filters.md
