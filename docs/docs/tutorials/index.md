@@ -353,7 +353,7 @@ index.query(query_text='famous artists', query_field='bio_embedding', k=3)
 
 Check out the following tutorials to learn more about Lexy.
 
-- [Basic RAG using Lexy](basic-rag.md) for a basic implementation of Retrieval Augmented Generation.
+- [Retrieval Augmented Generation (RAG)](basic-rag.md) for a basic implementation of RAG using Lexy.
 - [Multimodal image search](multimodal-image-search.md) for how to use Lexy to build a multimodal search engine.
 - [Custom transformers](custom-transformers.md) for using your own functions as transformers.
 - [Document filters](document-filters.md) shows how to build pipelines for different types of documents.
