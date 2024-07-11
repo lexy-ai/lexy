@@ -30,20 +30,22 @@ my-project
 │   └── src
 ├── pipelines  # Lexy pipelines (1)
 │   ├── __init__.py
-│   ├── requirements.txt  # (2)!
+│   ├── code.py
 │   ├── my_custom_transformer.py
 │   ├── my_first_pipeline.py
-│   ├── parse_code_comments.py
-│   └── pdf_embeddings.py
+│   ├── pdf_embeddings.py
+│   └── requirements.txt  # (2)!
 ├── .env
 └── docker-compose.yaml  # (3)!
 ```
 
-1.  The modules in this directory are imported and run by the `lexyworker` container.
-2.  Extra requirements for your pipelines or custom transformers. These packages will be installed in the `lexyworker`
-    container.
-3.  You can generate this file using the Lexy CLI. Run `lexy docker` on the command line to create a sample compose
-    file.
+1.  This is the Lexy pipelines directory, defined by the environment variable
+    `PIPELINE_DIR`. The modules in this directory are imported and run by the
+    `lexyworker` container.
+2.  Extra requirements for your pipelines or custom transformers. These packages will
+    be installed whenever you restart the `lexyworker` container.
+3.  You can generate this file using the Lexy CLI. Run `lexy docker` on the command
+    line to create a sample compose file.
 
 
 ### Pipelines
@@ -56,12 +58,12 @@ These packages will be installed in the `lexyworker` container.
 
 ???+ note "Example `pipelines` directory"
 
-    === "parse_code_comments.py"
+    === "code.py"
 
         ```python
         import tree_sitter_languages
 
-        from lexy.models.document import Document
+        from lexy.models import Document
         from lexy.transformers import lexy_transformer
 
 
@@ -94,7 +96,7 @@ These packages will be installed in the `lexyworker` container.
         import httpx
         import pypdf
 
-        from lexy.models.document import Document
+        from lexy.models import Document
         from lexy.transformers import lexy_transformer
         from lexy.transformers.embeddings import text_embeddings
 
@@ -288,8 +290,9 @@ docker compose run -it --rm --no-deps lexyserver sh -c "pytest lexy_tests && pyt
 The Lexy server is a RESTful API that provides endpoints for storing and retrieving documents, applying
 transformations, and managing collections and indexes.
 
-The API is documented using Swagger. You can access the Swagger UI at `http://localhost:9900/docs` when the Lexy
-server is running.
+The API is documented using Swagger. You can view the Swagger UI in the
+[REST API docs](reference/rest-api/index.md) or access it locally at
+`http://localhost:9900/docs` when running the Lexy server.
 
 ![lexy-swagger.png](assets%2Fimages%2Flexy-swagger.png)
 
