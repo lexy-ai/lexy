@@ -67,7 +67,7 @@ class Transformer(TransformerModel):
 
         Returns:
             dict: A dictionary containing the generated task ID and the result of the
-            transformer.
+                transformer.
 
         Examples:
             >>> from lexy_py import LexyClient
