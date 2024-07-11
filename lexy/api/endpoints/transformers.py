@@ -182,6 +182,17 @@ async def transform_document(
         args=[task_arg],
         kwargs=transformer_params,
     )
-    result = task.get()
-    response = {"task_id": task.id, "result": result}
-    return convert_arrays_to_lists(response)
+    result = task.get(propagate=False)
+    if task.state == "FAILURE":
+        # Task failed, extract the exception
+        exception = task.result
+        response = {
+            "task_id": task.id,
+            "error": str(exception),
+            "traceback": task.traceback,
+        }
+        return response
+    else:
+        # Task succeeded
+        response = {"task_id": task.id, "result": result}
+        return convert_arrays_to_lists(response)

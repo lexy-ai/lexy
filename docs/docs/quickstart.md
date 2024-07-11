@@ -133,7 +133,8 @@ These packages will be installed in the `lexyworker` container.
         ```plaintext
         # Extra package requirements for pipelines
         pypdf
-        tree-sitter-languages
+        tree-sitter==0.20.4
+        tree-sitter-languages==1.8.0
         ```
 
 

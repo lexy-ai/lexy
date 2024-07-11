@@ -20,6 +20,7 @@ class TestTransformerClient:
         def new_transformer(document):
             return document.content
 
+        celery_worker.reload()
         assert "lexy.transformers.new_transformer" in celery_app.tasks
 
         # create new transformer
@@ -31,6 +32,11 @@ class TestTransformerClient:
         assert transformer.transformer_id == "new_transformer"
         assert transformer.path == "new.test.transformer"
         assert transformer.description == "New Test Transformer"
+
+        # transform document
+        response = transformer.transform_document({"content": "Hello, world!"})
+        assert "task_id" in response
+        assert response["result"] == "Hello, world!"
 
         # delete new transformer
         response = lx_client.delete_transformer("new_transformer")
@@ -93,6 +99,31 @@ class TestTransformerClient:
         assert "task_id" in response
         assert isinstance(response["result"], list)
         assert all(isinstance(elem, float) for elem in response["result"])
+
+    def test_transform_document_error(self, lx_client, celery_app, celery_worker):
+        # register new transformer
+        from lexy.transformers import lexy_transformer
+
+        @lexy_transformer("divide_by_zero")
+        def divide_by_zero(document):
+            e = 1 / 0  # noqa: F841
+            return document.content
+
+        celery_worker.reload()
+        assert "lexy.transformers.divide_by_zero" in celery_app.tasks
+
+        # create new transformer
+        transformer = lx_client.create_transformer(
+            transformer_id="divide_by_zero",
+            description="Divide by Zero",
+        )
+        assert transformer.transformer_id == "divide_by_zero"
+        assert transformer.description == "Divide by Zero"
+
+        response = transformer.transform_document({"content": "Hello, world!"})
+        assert "task_id" in response
+        assert response["error"] == "division by zero"
+        assert "ZeroDivisionError" in response["traceback"]
 
     def test_create_existing_transformer(self, lx_client):
         with pytest.raises(LexyAPIError) as exc_info:
