@@ -7,27 +7,52 @@ Up until now, we've only used the default transformers included in Lexy. These i
 and images. But we'll often want to apply custom transformations to our documents based on metadata or our own custom
 logic. In this tutorial, we'll create our own transformer for parsing comments from source code.
 
+!!! info
+    Currently, there is no clear distinction between "transformers" and "pipelines."
+    They can be used interchangeably. This will change in upcoming versions of Lexy,
+    when we introduce additional functionality for pipelines.
 
-## Add transformer code
+## Project structure
 
-Add your transformer code in a new module with the path `lexy.transformers.<your_module>`. Assuming your module is
-called `code`, your project should have the following structure:
+Let's take a look at our project structure. If we're working inside the Lexy repository,
+the structure will look like this:
 
-```hl_lines="4"
+```shell
 lexy
-├── transformers
-    ├── __init__.py
-    ├── code.py
-    ├── counter.py
-    ├── embeddings.py
-    ├── multimodal.py
-    └── openai.py
+├── ...
+├── pipelines  # (1)!
+│   ├── __init__.py
+│   └── requirements.txt  # (2)!
 ```
 
-And your file `code.py` should look something like this:
+1.  This is the Lexy pipelines directory, defined by the environment variable
+    `PIPELINE_DIR`. The modules in this directory are imported and run by the
+    `lexyworker` container.
+2.  Extra requirements for your pipelines or custom transformers. These packages will
+    be installed whenever you restart the `lexyworker` container.
 
-```python title="lexy/transformers/code.py"
-from lexy.models.document import Document
+And if you're using Lexy inside your own project, the structure might look like the one
+in the [Quickstart](../quickstart.md#building-with-lexy) guide. Either way, you'll have
+a `pipelines` directory where you can store your custom transformers.
+
+
+## Add transformer logic
+
+Let's add a new module in the pipelines directory called `code`.
+
+```hl_lines="5"
+lexy
+├── ...
+├── pipelines
+│   ├── __init__.py
+│   ├── code.py
+│   └── requirements.txt
+```
+
+And let's add the following to our file `code.py`:
+
+```python title="pipelines/code.py"
+from lexy.models import Document
 from lexy.transformers import lexy_transformer
 
 
@@ -52,82 +77,39 @@ def get_comments(doc: Document) -> list[dict]:
     return comments
 ```
 
-1.  The `@lexy_transformer` decorator registers your function as a transformer. The `name` argument is the transformer
-    ID. This is how you'll refer to your transformer when creating bindings. The `name` should be unique across all
-    transformers.
+1.  The `@lexy_transformer` decorator registers your function as a transformer. The
+    `name` argument is the transformer ID. This is how you'll refer to your transformer
+    when creating bindings. The `name` should be unique across all transformers.
 
 ## Install optional dependencies
 
-Make sure to install any dependencies required for your custom transformer code.
+Make sure to install any package dependencies required for your custom transformer code.
+You can do this by adding the package to the `requirements.txt` file in the `pipelines`
+directory and restarting the `lexyworker` container.
 
-In development, you can install your dependencies using `docker exec`. This will be temporary (for the life of the
-docker container), but makes it easy to work with your packages in development.
+```plaintext hl_lines="2-3" title="pipelines/requirements.txt"
+# Extra package requirements for pipelines
+tree-sitter==0.20.4
+tree-sitter-languages==1.8.0
+```
+
+Then restart the `lexyworker` container:
 
 ```bash
-docker exec lexy-server pip install <your_package>
-docker exec lexy-celeryworker pip install <your_package>
+docker compose restart lexyworker
 ```
 
-In production, you'll want to update `pyproject.toml` to include your package in the list of `lexy_transformers`
-extras.
+You can check the `lexyworker` container logs to see that the packages are being
+installed correctly. You can also check the `pip install` logs by running:
 
-```toml hl_lines="6 9" title="pyproject.toml"
-[tool.poetry.dependencies]
-...
-# optional dependencies
-transformers = { version = "^4.33.1", extras = ["torch"], optional = true}
-sentence-transformers = { version = "^2.2.2", optional = true}
-<your_package> = { version = "<version>", optional = true}
-
-[tool.poetry.extras]
-lexy_transformers = ["transformers", "sentence-transformers", "<your_package>"]
-```
-
-## Update configuration
-
-In `lexy.core.config`, update the values for `LEXY_SERVER_TRANSFORMER_IMPORTS` and `LEXY_WORKER_TRANSFORMER_IMPORTS`
-to include your new module.
-
-```python hl_lines="8 15" title="lexy/core/config.py"
-# code omitted above...
-
-class AppSettings(BaseSettings):
-
-    # other settings...
-
-    LEXY_SERVER_TRANSFORMER_IMPORTS: set[str] = { # (1)!
-        'lexy.transformers.code',  # add your module here
-        'lexy.transformers.counter',
-        'lexy.transformers.embeddings',
-        'lexy.transformers.multimodal',
-        'lexy.transformers.openai',
-    }
-    LEXY_WORKER_TRANSFORMER_IMPORTS: set[str] = { # (2)!
-        'lexy.transformers.code',  # add your module here
-        'lexy.transformers.counter',
-        'lexy.transformers.embeddings',
-        'lexy.transformers.multimodal',
-        'lexy.transformers.openai',
-    }
-
-    # more settings...
-```
-
-1.  These modules are imported by the Lexy server at startup. If the transformer requires significant resources, you
-    should omit it from this list and instead import it in the worker.
-2.  These modules are imported each time a worker is created or restarted.
-
-Then restart the Lexy server and worker for the updated configuration to take effect:
-
-```bash
-docker compose restart lexyserver lexyworker
+```Shell
+docker compose exec lexyworker tail /var/log/lexy-pip.log
 ```
 
 ## Create transformer
 
-Finally, create your transformer so that it's stored in the database and available to the Lexy server. You can do this
-by calling the [`create_transformer`](../reference/lexy_py/transformer.md#lexy_py.transformer.client.TransformerClient.create_transformer)
-method.
+Finally, create your transformer so that it's stored in the database and available to
+the Lexy server. You can do this by calling the [`create_transformer`](../reference/lexy_py/transformer.md#lexy_py.transformer.client.TransformerClient.create_transformer) method.
 
 ```python
 from lexy_py import LexyClient
@@ -136,7 +118,6 @@ lx = LexyClient()
 
 lx.create_transformer(
     transformer_id='code.extract_comments.v1',
-    path='lexy.transformers.code.get_comments',
     description='Parse comments and docstrings.'
 )
 ```
@@ -145,7 +126,8 @@ lx.create_transformer(
 <Transformer('code.extract_comments.v1', description='Parse comments and docstrings')>
 ```
 
-Now when you call the [`.transformers`](../reference/lexy_py/client.md#lexy_py.client.LexyClient.transformers) property of the Lexy client, you'll be able to see your transformer listed.
+Now when you call the [`.transformers`](../reference/lexy_py/client.md#lexy_py.client.LexyClient.transformers) property of the Lexy client, you'll be
+able to see your transformer listed.
 
 ```python
 lx.transformers
@@ -165,8 +147,8 @@ You're now ready to use your custom transformer to process documents!
 
 ### Testing with sample documents
 
-You can use the [`transform_document`](../reference/lexy_py/transformer.md#lexy_py.transformer.client.TransformerClient.transform_document)
-method of the `Transformer` class to test your transformer on sample documents.
+You can use the [`Transformer.transform_document`](../reference/lexy_py/transformer.md#lexy_py.transformer.models.Transformer.transform_document)
+method to test your transformer on a sample document.
 
 ```python
 code_transformer = lx.get_transformer('code.extract_comments.v1')
@@ -185,3 +167,134 @@ code_transformer.transform_document(sample_doc)
 {'task_id': '65ecd2f7-bac4-4747-9e65-a6d21a72f585',
  'result': [{'comment_text': 'my comment', 'comment_meta': {'line_no': 1, 'filename': 'example.py'}}]}
 ```
+
+If your transformer code produces an error, you'll see the error message and traceback
+in the response.
+
+
+## Updating transformer logic
+
+The transformer we've created above is just an example. You may have also noticed that
+we installed the `tree-sitter` and `tree-sitter-languages` packages in
+`requirements.txt`, but we aren't using them.
+
+Let's update `code.py` to actually parse comments from a variety of source code files.
+
+```python title="pipelines/code.py"
+import tree_sitter_languages
+
+from lexy.models import Document
+from lexy.transformers import lexy_transformer
+from lexy.transformers.embeddings import text_embeddings
+
+
+lang_from_ext = {
+    'cc': 'cpp',
+    'h': 'cpp',
+    'py': 'python',
+    'ts': 'typescript',
+    'tsx': 'tsx',
+}
+
+COMMENT_PATTERN_CPP = "(comment) @comment"
+COMMENT_PATTERN_PY = """
+    (module . (comment)* . (expression_statement (string)) @module_doc_str)
+
+    (class_definition
+        body: (block . (expression_statement (string)) @class_doc_str))
+
+    (function_definition
+        body: (block . (expression_statement (string)) @function_doc_str))
+"""
+COMMENT_PATTERN_TS = "(comment) @comment"
+COMMENT_PATTERN_TSX = "(comment) @comment"
+
+comment_patterns = {
+    'cpp': COMMENT_PATTERN_CPP,
+    'python': COMMENT_PATTERN_PY,
+    'typescript': COMMENT_PATTERN_TS,
+    'tsx': COMMENT_PATTERN_TSX
+}
+
+
+@lexy_transformer(name='code.extract_comments.v1')
+def get_comments(doc: Document) -> list[dict]:
+    lang = lang_from_ext.get(doc.meta['file_ext'].replace('.', ''))
+    comment_pattern = comment_patterns.get(lang, None)
+
+    if comment_pattern is None:
+        return []
+
+    parser = tree_sitter_languages.get_parser(lang)
+    language = tree_sitter_languages.get_language(lang)
+
+    tree = parser.parse(bytes(doc.content, "utf-8"))
+    root = tree.root_node
+
+    query = language.query(comment_pattern)
+    matches = query.captures(root)
+    comments = []
+    for m, name in matches:
+        comment_text = m.text.decode('utf-8')
+        c = {
+            'comment_text': comment_text,
+            'comment_embedding': text_embeddings(comment_text),
+            'comment_meta': {
+                'start_point': m.start_point,
+                'end_point': m.end_point,
+                'type': name
+            }
+        }
+        comments.append(c)
+    return comments
+```
+
+Our updated code now takes a `Document` object and uses the file extension to determine
+the appropriate language parser and comment patterns. It then parses comment text and
+metadata, and also embeds the comment text using the `MiniLM` transformer.
+
+When we update the transformer code, the `lexyworker` container will automatically
+restart and load the new code. Let's test the updated transformer using a slightly more
+complex sample document.
+
+```python
+sample_content = (
+    '""" This is a module docstring. """\n'
+    '\n'
+    '# This is a comment\n'
+    'class MyClass:\n'
+    '   """ This is a class docstring. """\n'
+    '   def __init__():\n'
+    '       # TODO: implement this\n'
+    '       pass\n'
+    ''
+)
+
+sample_doc = {
+    'content': sample_content,
+    'meta': {
+        'file_name': 'example.py',
+        'file_ext': '.py'
+    }
+}
+
+code_transformer.transform_document(sample_doc)
+```
+
+```{ .text .no-copy .result #code-output }
+{'task_id': '48666991-308d-47ea-badf-3dd62f7b3778',
+ 'result': [{'comment_text': '""" This is a module docstring. """',
+   'comment_embedding': [-0.028629321604967117, 0.10635735094547272, ..., 0.01644347794353962],
+   'comment_meta': {'start_point': [0, 0],
+    'end_point': [0, 35],
+    'type': 'module_doc_str'}},
+  {'comment_text': '""" This is a class docstring. """',
+   'comment_embedding': [-0.027630936354398727, 0.1391005963087082, ..., 0.07976623624563217],
+   'comment_meta': {'start_point': [4, 3],
+    'end_point': [4, 37],
+    'type': 'class_doc_str'}}]}
+```
+
+We can continue to iterate on our transformer code and test it on sample documents. Once
+we're ready, we can create an index for storing the transformer output, and then create
+a binding to apply the transformer to a collection of documents.
