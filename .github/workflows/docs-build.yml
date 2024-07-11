@@ -23,8 +23,3 @@ jobs:
       - run: pip install -r docs/requirements-docs.txt
       - run: pip install -e sdk-python
       - run: mkdocs gh-deploy --force -f docs/mkdocs.yml
-env:
-  MKDOCS_ENCRYPT_PW_LEXY: ${{ secrets.MKDOCS_ENCRYPT_PW_LEXY }}
-  MKDOCS_ENCRYPT_PW_PARTNER1: ${{ secrets.MKDOCS_ENCRYPT_PW_PARTNER1 }}
-  MKDOCS_ENCRYPT_PW_PARTNER2: ${{ secrets.MKDOCS_ENCRYPT_PW_PARTNER2 }}
-  MKDOCS_ENCRYPT_PW_PARTNER3: ${{ secrets.MKDOCS_ENCRYPT_PW_PARTNER3 }}
