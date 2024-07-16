@@ -138,10 +138,39 @@ following to rebuild the server and worker containers.
 make rebuild-dev-containers
 ```
 
+## Lexy API
+
+The Lexy server is a RESTful API that provides endpoints for storing and retrieving documents, applying
+transformations, and managing collections and indexes.
+
+The API is documented using Swagger. You can view the Swagger UI in the
+[REST API docs](https://getlexy.com/reference/rest-api/) or access it locally at
+`http://localhost:9900/docs` when running the Lexy server.
+
+![lexy-swagger.png](docs%2Fdocs%2Fassets%2Fimages%2Flexy-swagger.png)
+
+## Python SDK
+
+`lexy-py` is the Python SDK used to interact with the Lexy server.
+
+The SDK provides a `LexyClient` class that you can use to interact with the Lexy server. Here's an example of how to list
+collections using the Python SDK:
+
+```python
+from lexy_py import LexyClient
+
+lx = LexyClient()
+lx.list_collections()
+```
+
+For more information on how to use the Python SDK, see the [Python SDK reference](https://getlexy.com/reference/lexy_py/client/).
+
 ## Lexy dashboard (WIP)
 
 Lexy comes with a built-in dashboard to visualize pipelines. This is still under development, but you can run it locally.
-See [the dashboard README](./dashboard/README.md) for more details.
+See the [dashboard README](./dashboard/README.md) for more details.
+
+![lexy-dashboard.png](docs%2Fdocs%2Fassets%2Fimages%2Flexy-dashboard.png)
 
 To start the dashboard, make sure you have Node.js installed. Then, from the root directory, run the following commands:
 
