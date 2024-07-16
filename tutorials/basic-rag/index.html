@@ -1,0 +1,1042 @@
+
+<!DOCTYPE html>
+
+<html class="no-js" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="Lexy is a data platform for building AI applications." name="description"/>
+<link href="https://getlexy.com/tutorials/basic-rag/" rel="canonical"/>
+<link href="../" rel="prev"/>
+<link href="../multimodal-image-search/" rel="next"/>
+<link href="../../assets/public/favicon.ico" rel="icon"/>
+<meta content="mkdocs-1.5.3, mkdocs-material-9.5.15" name="generator"/>
+<title>Retrieval Augmented Generation (RAG) - Lexy AI</title>
+<link href="../../assets/stylesheets/main.7e359304.min.css" rel="stylesheet"/>
+<link href="../../assets/stylesheets/palette.06af60db.min.css" rel="stylesheet"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback" rel="stylesheet"/>
+<style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+<link href="../../assets/_mkdocstrings.css" rel="stylesheet"/>
+<link href="../../stylesheets/extra.css" rel="stylesheet"/>
+<script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+<script id="__analytics">function __md_analytics(){function n(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],n("js",new Date),n("config","G-GXKGDFL4B1"),document.addEventListener("DOMContentLoaded",function(){document.forms.search&&document.forms.search.query.addEventListener("blur",function(){this.value&&n("event","search",{search_term:this.value})}),document$.subscribe(function(){var a=document.forms.feedback;if(void 0!==a)for(var e of a.querySelectorAll("[type=submit]"))e.addEventListener("click",function(e){e.preventDefault();var t=document.location.pathname,e=this.getAttribute("data-md-value");n("event","feedback",{page:t,data:e}),a.firstElementChild.disabled=!0;e=a.querySelector(".md-feedback__note [data-md-value='"+e+"']");e&&(e.hidden=!1)}),a.hidden=!1}),location$.subscribe(function(e){n("config","G-GXKGDFL4B1",{page_path:e.pathname})})});var e=document.createElement("script");e.async=!0,e.src="https://www.googletagmanager.com/gtag/js?id=G-GXKGDFL4B1",document.getElementById("__analytics").insertAdjacentElement("afterEnd",e)}</script>
+<script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+</head>
+<body data-md-color-accent="pink" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
+<input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+<input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+<label class="md-overlay" for="__drawer"></label>
+<div data-md-component="skip">
+<a class="md-skip" href="#retrieval-augmented-generation-rag-with-lexy">
+          Skip to content
+        </a>
+</div>
+<div data-md-component="announce">
+</div>
+<header class="md-header md-header--shadow" data-md-component="header">
+<nav aria-label="Header" class="md-header__inner md-grid">
+<a aria-label="Lexy AI" class="md-header__button md-logo" data-md-component="logo" href="../.." title="Lexy AI">
+<img alt="logo" src="../../assets/public/logo.png"/>
+</a>
+<label class="md-header__button md-icon" for="__drawer">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"></path></svg>
+</label>
+<div class="md-header__title" data-md-component="header-title">
+<div class="md-header__ellipsis">
+<div class="md-header__topic">
+<span class="md-ellipsis">
+            Lexy AI
+          </span>
+</div>
+<div class="md-header__topic" data-md-component="header-topic">
+<span class="md-ellipsis">
+            
+              Retrieval Augmented Generation (RAG)
+            
+          </span>
+</div>
+</div>
+</div>
+<form class="md-header__option" data-md-component="palette">
+<input aria-label="Switch to dark mode" class="md-option" data-md-color-accent="pink" data-md-color-media="" data-md-color-primary="indigo" data-md-color-scheme="default" id="__palette_0" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_1" hidden="" title="Switch to dark mode">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31Z"></path></svg>
+</label>
+<input aria-label="Switch to light mode" class="md-option" data-md-color-accent="pink" data-md-color-media="" data-md-color-primary="indigo" data-md-color-scheme="slate" id="__palette_1" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_0" hidden="" title="Switch to light mode">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22Z"></path></svg>
+</label>
+</form>
+<script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+<label class="md-header__button md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
+</label>
+<div class="md-search" data-md-component="search" role="dialog">
+<label class="md-search__overlay" for="__search"></label>
+<div class="md-search__inner" role="search">
+<form class="md-search__form" name="search">
+<input aria-label="Search" autocapitalize="off" autocomplete="off" autocorrect="off" class="md-search__input" data-md-component="search-query" name="query" placeholder="Search" required="" spellcheck="false" type="text"/>
+<label class="md-search__icon md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"></path></svg>
+</label>
+<nav aria-label="Search" class="md-search__options">
+<button aria-label="Clear" class="md-search__icon md-icon" tabindex="-1" title="Clear" type="reset">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"></path></svg>
+</button>
+</nav>
+</form>
+<div class="md-search__output">
+<div class="md-search__scrollwrap" data-md-scrollfix="">
+<div class="md-search-result" data-md-component="search-result">
+<div class="md-search-result__meta">
+            Initializing search
+          </div>
+<ol class="md-search-result__list" role="presentation"></ol>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="md-header__source">
+<a class="md-source" data-md-component="source" href="https://github.com/lexy-ai/lexy" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2Z"></path></svg>
+</div>
+<div class="md-source__repository">
+    lexy-ai/lexy
+  </div>
+</a>
+</div>
+</nav>
+</header>
+<div class="md-container" data-md-component="container">
+<main class="md-main" data-md-component="main">
+<div class="md-main__inner md-grid">
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Navigation" class="md-nav md-nav--primary" data-md-level="0">
+<label class="md-nav__title" for="__drawer">
+<a aria-label="Lexy AI" class="md-nav__button md-logo" data-md-component="logo" href="../.." title="Lexy AI">
+<img alt="logo" src="../../assets/public/logo.png"/>
+</a>
+    Lexy AI
+  </label>
+<div class="md-nav__source">
+<a class="md-source" data-md-component="source" href="https://github.com/lexy-ai/lexy" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2Z"></path></svg>
+</div>
+<div class="md-source__repository">
+    lexy-ai/lexy
+  </div>
+</a>
+</div>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../..">
+<span class="md-ellipsis">
+    Home
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../installation/">
+<span class="md-ellipsis">
+    Installation
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../quickstart/">
+<span class="md-ellipsis">
+    Quickstart
+  </span>
+</a>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_4" type="checkbox"/>
+<div class="md-nav__link md-nav__container">
+<a class="md-nav__link" href="../">
+<span class="md-ellipsis">
+    Tutorials
+  </span>
+</a>
+<label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+<span class="md-nav__icon md-icon"></span>
+</label>
+</div>
+<nav aria-expanded="true" aria-labelledby="__nav_4_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_4">
+<span class="md-nav__icon md-icon"></span>
+            Tutorials
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+<span class="md-ellipsis">
+    Retrieval Augmented Generation (RAG)
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="./">
+<span class="md-ellipsis">
+    Retrieval Augmented Generation (RAG)
+  </span>
+</a>
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#introduction">
+<span class="md-ellipsis">
+      Introduction
+    </span>
+</a>
+<nav aria-label="Introduction" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#openai-api-key">
+<span class="md-ellipsis">
+      OpenAI API Key
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#sample-data">
+<span class="md-ellipsis">
+      Sample data
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#add-documents-to-lexy">
+<span class="md-ellipsis">
+      Add documents to Lexy
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#create-an-index-and-binding">
+<span class="md-ellipsis">
+      Create an Index and Binding
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#retrieve-documents">
+<span class="md-ellipsis">
+      Retrieve documents
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#context-for-gpt-4">
+<span class="md-ellipsis">
+      Context for GPT-4
+    </span>
+</a>
+<nav aria-label="Context for GPT-4" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#construct-a-prompt">
+<span class="md-ellipsis">
+      Construct a prompt
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#chat-completion">
+<span class="md-ellipsis">
+      Chat completion
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#using-metadata-as-context">
+<span class="md-ellipsis">
+      Using metadata as context
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#real-world-considerations">
+<span class="md-ellipsis">
+      Real-world considerations
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#next-steps">
+<span class="md-ellipsis">
+      Next steps
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../multimodal-image-search/">
+<span class="md-ellipsis">
+    Multimodal image search
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../custom-transformers/">
+<span class="md-ellipsis">
+    Custom transformers
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../document-filters/">
+<span class="md-ellipsis">
+    Document filters
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../structured-data-extraction/">
+<span class="md-ellipsis">
+    Structured data extraction
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../reference/rest-api/">
+<span class="md-ellipsis">
+    REST API
+  </span>
+</a>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_6" type="checkbox"/>
+<label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+<span class="md-ellipsis">
+    Python SDK
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_6_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_6">
+<span class="md-nav__icon md-icon"></span>
+            Python SDK
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../reference/lexy_py/binding/">
+<span class="md-ellipsis">
+    Binding
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../reference/lexy_py/client/">
+<span class="md-ellipsis">
+    Client
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../reference/lexy_py/collection/">
+<span class="md-ellipsis">
+    Collection
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../reference/lexy_py/document/">
+<span class="md-ellipsis">
+    Document
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../reference/lexy_py/filters/">
+<span class="md-ellipsis">
+    Filters
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../reference/lexy_py/indexes/">
+<span class="md-ellipsis">
+    Index
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../reference/lexy_py/transformer/">
+<span class="md-ellipsis">
+    Transformer
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../contributing/">
+<span class="md-ellipsis">
+    Contributing
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../faq/">
+<span class="md-ellipsis">
+    FAQ
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#introduction">
+<span class="md-ellipsis">
+      Introduction
+    </span>
+</a>
+<nav aria-label="Introduction" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#openai-api-key">
+<span class="md-ellipsis">
+      OpenAI API Key
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#sample-data">
+<span class="md-ellipsis">
+      Sample data
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#add-documents-to-lexy">
+<span class="md-ellipsis">
+      Add documents to Lexy
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#create-an-index-and-binding">
+<span class="md-ellipsis">
+      Create an Index and Binding
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#retrieve-documents">
+<span class="md-ellipsis">
+      Retrieve documents
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#context-for-gpt-4">
+<span class="md-ellipsis">
+      Context for GPT-4
+    </span>
+</a>
+<nav aria-label="Context for GPT-4" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#construct-a-prompt">
+<span class="md-ellipsis">
+      Construct a prompt
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#chat-completion">
+<span class="md-ellipsis">
+      Chat completion
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#using-metadata-as-context">
+<span class="md-ellipsis">
+      Using metadata as context
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#real-world-considerations">
+<span class="md-ellipsis">
+      Real-world considerations
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#next-steps">
+<span class="md-ellipsis">
+      Next steps
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-content" data-md-component="content">
+<article class="md-content__inner md-typeset">
+<h1 id="retrieval-augmented-generation-rag-with-lexy">Retrieval Augmented Generation (RAG) with Lexy</h1>
+<h2 id="introduction">Introduction</h2>
+<p>Let's go through a basic implementation of <strong>Retrieval-Augmented Generation (RAG)</strong> using Lexy. RAG describes the process of using
+a retriever to find relevant documents to include as context in the prompt for a language model.</p>
+<p>In this example, we'll use Lexy to store and retrieve documents describing characters from the TV show <em>House of the
+Dragon</em>. We'll then use those documents to construct a prompt that GPT-4 can use to answer questions about the
+characters.</p>
+<div class="admonition example">
+<p class="admonition-title">Notebook available</p>
+<p>You can find the complete code for this example in the <a href="https://github.com/lexy-ai/lexy">Lexy GitHub repository</a>.
+Follow along with this tutorial using the notebook <a href="https://github.com/lexy-ai/lexy/blob/main/examples/basic_rag.ipynb"><code>examples/basic_rag.ipynb</code></a>.</p>
+</div>
+<p>This tutorial is a <strong>simplified introduction</strong> to RAG, and not a real-world application. This is done intentionally to
+teach the basic concept of RAG and how it is implemented. We'll point out some of these simplifications as we go along,
+and discuss them in more detail in the section <a href="#Real-world-considerations">Real-world considerations</a>. We'll also
+provide links to additional tutorials which cover the complexities typically encountered in real-world RAG applications.</p>
+<h3 id="openai-api-key">OpenAI API Key</h3>
+<p>This example requires an OpenAI API key in order to (1) generate embeddings and (2) interact with
+GPT-4. Although this example uses OpenAI, you can use Lexy with any language model and any embedding model, including
+free, open-source models such as <code>SentenceTransformer</code>.</p>
+<p>You can add your API key as an environment variable using the <code>.env</code>
+file in the root directory of the Lexy repository. See <a href="../../faq/#how-do-i-add-a-new-environment-variable">How do I add a new environment variable</a> on the
+<a href="../../faq/">FAQ page</a> for more details.</p>
+<div class="language-shell highlight"><span class="filename">.env</span><pre><span></span><code><span id="__span-0-1"><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>your_secret_api_key
+</span></code></pre></div>
+<p>Remember to rebuild your containers after adding the environment variable (otherwise your container won't see the newly
+added variable). Simply run the following on the command line (ensure you're at the root directory for the Lexy repo):</p>
+<div class="language-shell highlight"><pre><span></span><code><span id="__span-1-1"><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a>make<span class="w"> </span>update-dev-containers
+</span></code></pre></div>
+<p>Then run the following in your notebook to load the environment variables.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a href="#__codelineno-2-1" id="__codelineno-2-1" name="__codelineno-2-1"></a><span class="kn">import</span> <span class="nn">os</span>
+</span><span id="__span-2-2"><a href="#__codelineno-2-2" id="__codelineno-2-2" name="__codelineno-2-2"></a><span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+</span><span id="__span-2-3"><a href="#__codelineno-2-3" id="__codelineno-2-3" name="__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a href="#__codelineno-2-4" id="__codelineno-2-4" name="__codelineno-2-4"></a><span class="c1"># load environment variables, including OPENAI_API_KEY</span>
+</span><span id="__span-2-5"><a href="#__codelineno-2-5" id="__codelineno-2-5" name="__codelineno-2-5"></a><span class="n">load_dotenv</span><span class="p">()</span>
+</span><span id="__span-2-6"><a href="#__codelineno-2-6" id="__codelineno-2-6" name="__codelineno-2-6"></a>
+</span><span id="__span-2-7"><a href="#__codelineno-2-7" id="__codelineno-2-7" name="__codelineno-2-7"></a><span class="c1"># alternatively, you can set the environment variable directly</span>
+</span><span id="__span-2-8"><a href="#__codelineno-2-8" id="__codelineno-2-8" name="__codelineno-2-8"></a><span class="k">if</span> <span class="s2">"OPENAI_API_KEY"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+</span><span id="__span-2-9"><a href="#__codelineno-2-9" id="__codelineno-2-9" name="__codelineno-2-9"></a>    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"OPENAI_API_KEY"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"your_secret_api_key"</span>
+</span></code></pre></div>
+<h2 id="sample-data">Sample data</h2>
+<p>Our data is in the <a href="https://github.com/lexy-ai/lexy/tree/main/sample_data/documents"><code>sample_data/documents</code></a> directory of the Lexy repo. Let's import it and take a look at the first few lines.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a href="#__codelineno-3-1" id="__codelineno-3-1" name="__codelineno-3-1"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"../sample_data/documents/hotd.txt"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+</span><span id="__span-3-2"><a href="#__codelineno-3-2" id="__codelineno-3-2" name="__codelineno-3-2"></a>    <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+</span><span id="__span-3-3"><a href="#__codelineno-3-3" id="__codelineno-3-3" name="__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a href="#__codelineno-3-4" id="__codelineno-3-4" name="__codelineno-3-4"></a><span class="n">lines</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+</span></code></pre></div>
+<div class="language-text no-copy result highlight" id="code-output"><pre><span></span><code><span id="__span-code-output-1"><a href="#__codelineno-code-output-1" id="__codelineno-code-output-1" name="__codelineno-code-output-1"></a>['Viserys I Targaryen is the fifth king of the Targaryen dynasty to rule the Seven Kingdoms. He is the father of Rhaenyra Targaryen and Aegon II Targaryen. His mount is the dragon Balerion.',
+</span><span id="__span-code-output-2"><a href="#__codelineno-code-output-2" id="__codelineno-code-output-2" name="__codelineno-code-output-2"></a> 'Rhaenyra Targaryen is the eldest child of King Viserys I Targaryen and is considered the heir to the Iron Throne. She is a dragonrider whose mount is Syrax.',
+</span><span id="__span-code-output-3"><a href="#__codelineno-code-output-3" id="__codelineno-code-output-3" name="__codelineno-code-output-3"></a> 'Aegon II Targaryen is the second-born child of Viserys I Targaryen and Alicent Hightower. He is a claimant to the Iron Throne and a dragonrider whose mount is Sunfyre.']
+</span></code></pre></div>
+<h2 id="add-documents-to-lexy">Add documents to Lexy</h2>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>This tutorial assumes you have a basic understanding of Lexy and its core concepts. If you're new to Lexy, we recommend you start with the <a href="../">Getting Started</a> tutorial to learn more about <strong>Collections</strong>, <strong>Documents</strong>, <strong>Transformers</strong>, <strong>Indexes</strong>, and <strong>Bindings</strong>.</p>
+</div>
+<p>Let's instantiate a Lexy client and create a new collection for our documents.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a href="#__codelineno-5-1" id="__codelineno-5-1" name="__codelineno-5-1"></a><span class="kn">from</span> <span class="nn">lexy_py</span> <span class="kn">import</span> <span class="n">LexyClient</span>
+</span><span id="__span-5-2"><a href="#__codelineno-5-2" id="__codelineno-5-2" name="__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a href="#__codelineno-5-3" id="__codelineno-5-3" name="__codelineno-5-3"></a><span class="n">lx</span> <span class="o">=</span> <span class="n">LexyClient</span><span class="p">()</span>
+</span></code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a href="#__codelineno-6-1" id="__codelineno-6-1" name="__codelineno-6-1"></a><span class="c1"># create a new collection</span>
+</span><span id="__span-6-2"><a href="#__codelineno-6-2" id="__codelineno-6-2" name="__codelineno-6-2"></a><span class="n">collection</span> <span class="o">=</span> <span class="n">lx</span><span class="o">.</span><span class="n">create_collection</span><span class="p">(</span>
+</span><span id="__span-6-3"><a href="#__codelineno-6-3" id="__codelineno-6-3" name="__codelineno-6-3"></a>    <span class="n">collection_name</span><span class="o">=</span><span class="s2">"house_of_the_dragon"</span><span class="p">,</span>
+</span><span id="__span-6-4"><a href="#__codelineno-6-4" id="__codelineno-6-4" name="__codelineno-6-4"></a>    <span class="n">description</span><span class="o">=</span><span class="s2">"House of the Dragon characters"</span>
+</span><span id="__span-6-5"><a href="#__codelineno-6-5" id="__codelineno-6-5" name="__codelineno-6-5"></a><span class="p">)</span>
+</span><span id="__span-6-6"><a href="#__codelineno-6-6" id="__codelineno-6-6" name="__codelineno-6-6"></a><span class="n">collection</span>
+</span></code></pre></div>
+<div class="language-text no-copy result highlight" id="code-output"><pre><span></span><code><span id="__span-code-output-1"><a href="#__codelineno-code-output-1" id="__codelineno-code-output-1" name="__codelineno-code-output-1"></a>&lt;Collection('house_of_the_dragon', description='House of the Dragon characters')&gt;
+</span></code></pre></div>
+<p>We can add documents to our new collection using the <a href="../../reference/lexy_py/collection/#lexy_py.collection.models.Collection.add_documents"><code>Collection.add_documents</code></a> method.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a href="#__codelineno-8-1" id="__codelineno-8-1" name="__codelineno-8-1"></a><span class="n">collection</span><span class="o">.</span><span class="n">add_documents</span><span class="p">([</span>
+</span><span id="__span-8-2"><a href="#__codelineno-8-2" id="__codelineno-8-2" name="__codelineno-8-2"></a>    <span class="p">{</span><span class="s2">"content"</span><span class="p">:</span> <span class="n">line</span><span class="p">}</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span>
+</span><span id="__span-8-3"><a href="#__codelineno-8-3" id="__codelineno-8-3" name="__codelineno-8-3"></a><span class="p">])</span>
+</span></code></pre></div>
+<div class="language-text no-copy result highlight" id="code-output"><pre><span></span><code><span id="__span-code-output-1"><a href="#__codelineno-code-output-1" id="__codelineno-code-output-1" name="__codelineno-code-output-1"></a>[&lt;Document("Viserys I Targaryen is the fifth king of the Targaryen dynasty to rule the Seven Kingdoms. He is...")&gt;,
+</span><span id="__span-code-output-2"><a href="#__codelineno-code-output-2" id="__codelineno-code-output-2" name="__codelineno-code-output-2"></a> &lt;Document("Rhaenyra Targaryen is the eldest child of King Viserys I Targaryen and is considered the heir to...")&gt;,
+</span><span id="__span-code-output-3"><a href="#__codelineno-code-output-3" id="__codelineno-code-output-3" name="__codelineno-code-output-3"></a> &lt;Document("Aegon II Targaryen is the second-born child of Viserys I Targaryen and Alicent Hightower. He is a...")&gt;,
+</span><span id="__span-code-output-4"><a href="#__codelineno-code-output-4" id="__codelineno-code-output-4" name="__codelineno-code-output-4"></a> &lt;Document("Daemon Targaryen is the younger brother of King Viserys I Targaryen, and is the heir to the...")&gt;,
+</span><span id="__span-code-output-5"><a href="#__codelineno-code-output-5" id="__codelineno-code-output-5" name="__codelineno-code-output-5"></a> &lt;Document("Aemond Targaryen is the second son of King Viserys I Targaryen and Alicent Hightower. He is a...")&gt;,
+</span><span id="__span-code-output-6"><a href="#__codelineno-code-output-6" id="__codelineno-code-output-6" name="__codelineno-code-output-6"></a> &lt;Document("Alicent Hightower is the Queen of the Seven Kingdoms and the mother of Aegon II Targaryen, the...")&gt;,
+</span><span id="__span-code-output-7"><a href="#__codelineno-code-output-7" id="__codelineno-code-output-7" name="__codelineno-code-output-7"></a> &lt;Document("Otto Hightower is the Hand of the King to Viserys I Targaryen and the father of Alicent...")&gt;,
+</span><span id="__span-code-output-8"><a href="#__codelineno-code-output-8" id="__codelineno-code-output-8" name="__codelineno-code-output-8"></a> &lt;Document("Laena Velaryon is a dragonrider and the wife of Daemon Targaryen. Her mount is the dragon Vhagar.")&gt;,
+</span><span id="__span-code-output-9"><a href="#__codelineno-code-output-9" id="__codelineno-code-output-9" name="__codelineno-code-output-9"></a> &lt;Document("Corlys Velaryon, also known as the Sea Snake, is the Lord of the Tides and head of House...")&gt;,
+</span><span id="__span-code-output-10"><a href="#__codelineno-code-output-10" id="__codelineno-code-output-10" name="__codelineno-code-output-10"></a> &lt;Document("Rhaenys Targaryen, also known as the Queen Who Never Was, is a dragonrider and the wife of Corlys...")&gt;,
+</span><span id="__span-code-output-11"><a href="#__codelineno-code-output-11" id="__codelineno-code-output-11" name="__codelineno-code-output-11"></a> &lt;Document("Syrax is the dragon ridden by Rhaenyra Targaryen. She is known for her golden scales and fierce...")&gt;,
+</span><span id="__span-code-output-12"><a href="#__codelineno-code-output-12" id="__codelineno-code-output-12" name="__codelineno-code-output-12"></a> &lt;Document("Vhagar is one of the oldest and largest dragons, originally ridden by Visenya Targaryen. She...")&gt;,
+</span><span id="__span-code-output-13"><a href="#__codelineno-code-output-13" id="__codelineno-code-output-13" name="__codelineno-code-output-13"></a> &lt;Document("Sunfyre is a dragon known for his magnificent golden scales and is the mount of Aegon II Targaryen.")&gt;,
+</span><span id="__span-code-output-14"><a href="#__codelineno-code-output-14" id="__codelineno-code-output-14" name="__codelineno-code-output-14"></a> &lt;Document("Meleys, also known as the Red Queen, is the dragon ridden by Rhaenys Targaryen. She is known for...")&gt;,
+</span><span id="__span-code-output-15"><a href="#__codelineno-code-output-15" id="__codelineno-code-output-15" name="__codelineno-code-output-15"></a> &lt;Document("Seasmoke is a dragon ridden by Laenor Velaryon, son of Corlys Velaryon and Rhaenys Targaryen. He...")&gt;,
+</span><span id="__span-code-output-16"><a href="#__codelineno-code-output-16" id="__codelineno-code-output-16" name="__codelineno-code-output-16"></a> &lt;Document("Vermax is a dragon ridden by Jacaerys Velaryon, the eldest son of Rhaenyra Targaryen. He is known...")&gt;,
+</span><span id="__span-code-output-17"><a href="#__codelineno-code-output-17" id="__codelineno-code-output-17" name="__codelineno-code-output-17"></a> &lt;Document("Balerion, also known as the Black Dread, was the largest of the Targaryen dragons. He was ridden...")&gt;,
+</span><span id="__span-code-output-18"><a href="#__codelineno-code-output-18" id="__codelineno-code-output-18" name="__codelineno-code-output-18"></a> &lt;Document("Caraxes, also known as the Blood Wyrm, is the dragon ridden by Daemon Targaryen. He is known for...")&gt;,
+</span><span id="__span-code-output-19"><a href="#__codelineno-code-output-19" id="__codelineno-code-output-19" name="__codelineno-code-output-19"></a> &lt;Document("Dreamfyre is a dragon ridden by Helaena Targaryen, the daughter of King Viserys I Targaryen. She...")&gt;,
+</span><span id="__span-code-output-20"><a href="#__codelineno-code-output-20" id="__codelineno-code-output-20" name="__codelineno-code-output-20"></a> &lt;Document("Harrenhal is a massive castle in the Riverlands, known for its size and cursed history. It plays...")&gt;,
+</span><span id="__span-code-output-21"><a href="#__codelineno-code-output-21" id="__codelineno-code-output-21" name="__codelineno-code-output-21"></a> &lt;Document("The Dance of the Dragons is a Targaryen civil war between the supporters of Rhaenyra Targaryen...")&gt;]
+</span></code></pre></div>
+<h2 id="create-an-index-and-binding">Create an Index and Binding</h2>
+<p>We'll create a binding to embed each document, and an index to store the resulting embeddings. We're going to use the OpenAI embedding model <code>text-embedding-3-small</code> to embed our documents. See the <a href="https://platform.openai.com/docs/guides/embeddings">OpenAI API documentation</a> for more information on the available embedding models.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a href="#__codelineno-10-1" id="__codelineno-10-1" name="__codelineno-10-1"></a><span class="c1"># create an index</span>
+</span><span id="__span-10-2"><a href="#__codelineno-10-2" id="__codelineno-10-2" name="__codelineno-10-2"></a><span class="n">index_fields</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="__span-10-3"><a href="#__codelineno-10-3" id="__codelineno-10-3" name="__codelineno-10-3"></a>    <span class="s2">"embedding"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"embedding"</span><span class="p">,</span> <span class="s2">"extras"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"dims"</span><span class="p">:</span> <span class="mi">1536</span><span class="p">,</span> <span class="s2">"model"</span><span class="p">:</span> <span class="s2">"text.embeddings.openai-3-small"</span><span class="p">}}</span>
+</span><span id="__span-10-4"><a href="#__codelineno-10-4" id="__codelineno-10-4" name="__codelineno-10-4"></a><span class="p">}</span>
+</span><span id="__span-10-5"><a href="#__codelineno-10-5" id="__codelineno-10-5" name="__codelineno-10-5"></a><span class="n">index</span> <span class="o">=</span> <span class="n">lx</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span>
+</span><span id="__span-10-6"><a href="#__codelineno-10-6" id="__codelineno-10-6" name="__codelineno-10-6"></a>    <span class="n">index_id</span><span class="o">=</span><span class="s2">"hotd_embeddings"</span><span class="p">,</span>
+</span><span id="__span-10-7"><a href="#__codelineno-10-7" id="__codelineno-10-7" name="__codelineno-10-7"></a>    <span class="n">description</span><span class="o">=</span><span class="s2">"Text embeddings for House of the Dragon collection"</span><span class="p">,</span>
+</span><span id="__span-10-8"><a href="#__codelineno-10-8" id="__codelineno-10-8" name="__codelineno-10-8"></a>    <span class="n">index_fields</span><span class="o">=</span><span class="n">index_fields</span>
+</span><span id="__span-10-9"><a href="#__codelineno-10-9" id="__codelineno-10-9" name="__codelineno-10-9"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>To embed each document and store the result in our index, we'll create a
+<a href="../../reference/lexy_py/binding/#lexy_py.binding.models.Binding"><code>Binding</code></a> which connects our "<strong>house_of_the_dragon</strong>"
+collection to our "<strong>hotd_embeddings</strong>" index using a
+<a href="../../reference/lexy_py/transformer/#lexy_py.transformer.models.Transformer"><code>Transformer</code></a>. The
+<a href="../../reference/lexy_py/client/#lexy_py.client.LexyClient.transformers"><code>LexyClient.transformers</code></a> property shows a
+list of available transformers.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a href="#__codelineno-11-1" id="__codelineno-11-1" name="__codelineno-11-1"></a><span class="c1"># list of available transformers</span>
+</span><span id="__span-11-2"><a href="#__codelineno-11-2" id="__codelineno-11-2" name="__codelineno-11-2"></a><span class="n">lx</span><span class="o">.</span><span class="n">transformers</span>
+</span></code></pre></div>
+<div class="language-text no-copy result highlight" id="code-output"><pre><span></span><code><span id="__span-code-output-1"><a href="#__codelineno-code-output-1" id="__codelineno-code-output-1" name="__codelineno-code-output-1"></a>[&lt;Transformer('image.embeddings.clip', description='Embed images using 'openai/clip-vit-base-patch32'.')&gt;,
+</span><span id="__span-code-output-2"><a href="#__codelineno-code-output-2" id="__codelineno-code-output-2" name="__codelineno-code-output-2"></a> &lt;Transformer('text.embeddings.clip', description='Embed text using 'openai/clip-vit-base-patch32'.')&gt;,
+</span><span id="__span-code-output-3"><a href="#__codelineno-code-output-3" id="__codelineno-code-output-3" name="__codelineno-code-output-3"></a> &lt;Transformer('text.embeddings.minilm', description='Text embeddings using "sentence-transformers/all-MiniLM-L6-v2"')&gt;,
+</span><span id="__span-code-output-4"><a href="#__codelineno-code-output-4" id="__codelineno-code-output-4" name="__codelineno-code-output-4"></a> &lt;Transformer('text.embeddings.openai-3-large', description='Text embeddings using OpenAI's "text-embedding-3-large" model')&gt;,
+</span><span id="__span-code-output-5"><a href="#__codelineno-code-output-5" id="__codelineno-code-output-5" name="__codelineno-code-output-5"></a> &lt;Transformer('text.embeddings.openai-3-small', description='Text embeddings using OpenAI's "text-embedding-3-small" model')&gt;,
+</span><span id="__span-code-output-6"><a href="#__codelineno-code-output-6" id="__codelineno-code-output-6" name="__codelineno-code-output-6"></a> &lt;Transformer('text.embeddings.openai-ada-002', description='OpenAI text embeddings using model text-embedding-ada-002')&gt;]
+</span></code></pre></div>
+<p>For this example, we'll use <code>text.embeddings.openai-3-small</code>. Let's create our binding.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a href="#__codelineno-13-1" id="__codelineno-13-1" name="__codelineno-13-1"></a><span class="c1"># create a binding</span>
+</span><span id="__span-13-2"><a href="#__codelineno-13-2" id="__codelineno-13-2" name="__codelineno-13-2"></a><span class="n">binding</span> <span class="o">=</span> <span class="n">lx</span><span class="o">.</span><span class="n">create_binding</span><span class="p">(</span>
+</span><span id="__span-13-3"><a href="#__codelineno-13-3" id="__codelineno-13-3" name="__codelineno-13-3"></a>    <span class="n">collection_name</span><span class="o">=</span><span class="s2">"house_of_the_dragon"</span><span class="p">,</span>
+</span><span id="__span-13-4"><a href="#__codelineno-13-4" id="__codelineno-13-4" name="__codelineno-13-4"></a>    <span class="n">index_id</span><span class="o">=</span><span class="s2">"hotd_embeddings"</span><span class="p">,</span>
+</span><span id="__span-13-5"><a href="#__codelineno-13-5" id="__codelineno-13-5" name="__codelineno-13-5"></a>    <span class="n">transformer_id</span><span class="o">=</span><span class="s2">"text.embeddings.openai-3-small"</span>
+</span><span id="__span-13-6"><a href="#__codelineno-13-6" id="__codelineno-13-6" name="__codelineno-13-6"></a><span class="p">)</span>
+</span><span id="__span-13-7"><a href="#__codelineno-13-7" id="__codelineno-13-7" name="__codelineno-13-7"></a><span class="n">binding</span>
+</span></code></pre></div>
+<div class="language-text no-copy result highlight" id="code-output"><pre><span></span><code><span id="__span-code-output-1"><a href="#__codelineno-code-output-1" id="__codelineno-code-output-1" name="__codelineno-code-output-1"></a>&lt;Binding(id=5, status=ON, collection='house_of_the_dragon', transformer='text.embeddings.openai-3-small', index='hotd_embeddings')&gt;
+</span></code></pre></div>
+<p>Our binding was created successfully and is now active (i.e., <code>binding.status = ON</code>). Any new documents added to our
+collection will automatically be embedded and added to our index. The diagram below shows the relationship between our
+collection, transformer, and index.</p>
+<div style="text-align: center;">
+<pre class="mermaid"><code>flowchart LR
+    collection["Collection
+
+    &amp;quot;house_of_the_dragon&amp;quot;"]
+    --&gt;
+    transformer["Transformer
+
+    &amp;quot;text.embeddings.openai-3-small&amp;quot;"]
+    --&gt;
+    index["Index
+
+    &amp;quot;hotd_embeddings&amp;quot;"];</code></pre>
+</div>
+<h2 id="retrieve-documents">Retrieve documents</h2>
+<p>Now that our documents are embedded and those embeddings are stored in our index, we can use the
+<a href="../../reference/lexy_py/indexes/#lexy_py.index.models.Index.query"><code>Index.query</code></a> method to retrieve the most relevant
+documents for a given query. Specifically, the method returns the <code>k</code> documents that are most similar to our query
+string, as measured by <strong>cosine similarity</strong>.</p>
+<p>Let's test this out by retrieving the two most relevant documents for the query "parents in Westeros".</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a href="#__codelineno-15-1" id="__codelineno-15-1" name="__codelineno-15-1"></a><span class="n">index</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query_text</span><span class="o">=</span><span class="s2">"parents in Westeros"</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-text no-copy result highlight" id="code-output"><pre><span></span><code><span id="__span-code-output-1"><a href="#__codelineno-code-output-1" id="__codelineno-code-output-1" name="__codelineno-code-output-1"></a>[{'document_id': 'aaed8d7f-dd68-41dc-86f8-57b8c7b9a2d4',
+</span><span id="__span-code-output-2"><a href="#__codelineno-code-output-2" id="__codelineno-code-output-2" name="__codelineno-code-output-2"></a>  'custom_id': None,
+</span><span id="__span-code-output-3"><a href="#__codelineno-code-output-3" id="__codelineno-code-output-3" name="__codelineno-code-output-3"></a>  'meta': {},
+</span><span id="__span-code-output-4"><a href="#__codelineno-code-output-4" id="__codelineno-code-output-4" name="__codelineno-code-output-4"></a>  'index_record_id': '7ee2e437-ed91-4338-8d94-b6d20a7c7f17',
+</span><span id="__span-code-output-5"><a href="#__codelineno-code-output-5" id="__codelineno-code-output-5" name="__codelineno-code-output-5"></a>  'distance': 1.1038025617599487,
+</span><span id="__span-code-output-6"><a href="#__codelineno-code-output-6" id="__codelineno-code-output-6" name="__codelineno-code-output-6"></a>  'document.content': 'Viserys I Targaryen is the fifth king of the Targaryen dynasty to rule the Seven Kingdoms. He is the father of Rhaenyra Targaryen and Aegon II Targaryen. His mount is the dragon Balerion.'},
+</span><span id="__span-code-output-7"><a href="#__codelineno-code-output-7" id="__codelineno-code-output-7" name="__codelineno-code-output-7"></a> {'document_id': '82eb4376-13cc-4533-bf5b-46c252be53ae',
+</span><span id="__span-code-output-8"><a href="#__codelineno-code-output-8" id="__codelineno-code-output-8" name="__codelineno-code-output-8"></a>  'custom_id': None,
+</span><span id="__span-code-output-9"><a href="#__codelineno-code-output-9" id="__codelineno-code-output-9" name="__codelineno-code-output-9"></a>  'meta': {},
+</span><span id="__span-code-output-10"><a href="#__codelineno-code-output-10" id="__codelineno-code-output-10" name="__codelineno-code-output-10"></a>  'index_record_id': 'cc796fdb-7d8a-4e9e-888d-d85f7211f343',
+</span><span id="__span-code-output-11"><a href="#__codelineno-code-output-11" id="__codelineno-code-output-11" name="__codelineno-code-output-11"></a>  'distance': 1.1070433855056763,
+</span><span id="__span-code-output-12"><a href="#__codelineno-code-output-12" id="__codelineno-code-output-12" name="__codelineno-code-output-12"></a>  'document.content': 'Alicent Hightower is the Queen of the Seven Kingdoms and the mother of Aegon II Targaryen, the second-born child of Viserys I and heir to the throne after Rhaenyra. She is the wife of Viserys I Targaryen.'}]
+</span></code></pre></div>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>The <code>distance</code> field in the results shows the cosine distance between that document and the query text. The lower
+the distance, the more similar the document is to the query text.</p>
+</div>
+<p>The documents returned by our query are profiles of Viserys Targaryen and Alicent Hightower, whose profiles specifically
+describe them as parents. Notice that none of the documents returned contain any of the exact words in the phrase
+"parents in Westeros". Yet the embedding model is able to identify these documents as being semantically similar to the
+text in our query, most likely because they contain the phrases "<em>...the father of...</em>" and "<em>...the mother of...</em>".</p>
+<details class="note">
+<summary>Note on cosine similarity</summary>
+<p>If you find yourself thinking that cosine similarity doesn't necessarily mean the documents are the most relevant,
+you're absolutely right! Cosine similarity is just one way to measure the similarity between two vectors. There are
+many other ways to measure document relevance, and the best approach often depends on the specific use case.
+In future tutorials, we'll explore more advanced methods, including those that combine multiple similarity metrics.</p>
+</details>
+<h2 id="context-for-gpt-4">Context for GPT-4</h2>
+<p>While the documents we've retrieved might not be super useful on their own, but we can provide them as context to a language model in order to generate a more informative response. Let's construct a prompt for GPT-4 to answer questions about House of the Dragon.</p>
+<h3 id="construct-a-prompt">Construct a prompt</h3>
+<p>With RAG, we construct our prompt <strong>dynamically</strong> using our retrieved documents. Given a question, we'll first retrieve the documents that are most relevant, and then include them in our prompt as context. Below is a basic template for our prompt.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a href="#__codelineno-17-1" id="__codelineno-17-1" name="__codelineno-17-1"></a><span class="n">system_prompt</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="__span-17-2"><a href="#__codelineno-17-2" id="__codelineno-17-2" name="__codelineno-17-2"></a>    <span class="s2">"You are an exceptionally intelligent AI assistant. Answer the following "</span>
+</span><span id="__span-17-3"><a href="#__codelineno-17-3" id="__codelineno-17-3" name="__codelineno-17-3"></a>    <span class="s2">"questions using the context provided. PLEASE CITE YOUR SOURCES. Be concise."</span>
+</span><span id="__span-17-4"><a href="#__codelineno-17-4" id="__codelineno-17-4" name="__codelineno-17-4"></a><span class="p">)</span>
+</span><span id="__span-17-5"><a href="#__codelineno-17-5" id="__codelineno-17-5" name="__codelineno-17-5"></a>
+</span><span id="__span-17-6"><a href="#__codelineno-17-6" id="__codelineno-17-6" name="__codelineno-17-6"></a><span class="n">question_template</span> <span class="o">=</span> <span class="s2">"""</span><span class="se">\</span>
+</span><span id="__span-17-7"><a href="#__codelineno-17-7" id="__codelineno-17-7" name="__codelineno-17-7"></a><span class="s2">Question:</span>
+</span><span id="__span-17-8"><a href="#__codelineno-17-8" id="__codelineno-17-8" name="__codelineno-17-8"></a><span class="si">{question}</span>
+</span><span id="__span-17-9"><a href="#__codelineno-17-9" id="__codelineno-17-9" name="__codelineno-17-9"></a>
+</span><span id="__span-17-10"><a href="#__codelineno-17-10" id="__codelineno-17-10" name="__codelineno-17-10"></a><span class="s2">Context:</span>
+</span><span id="__span-17-11"><a href="#__codelineno-17-11" id="__codelineno-17-11" name="__codelineno-17-11"></a><span class="si">{context}</span>
+</span><span id="__span-17-12"><a href="#__codelineno-17-12" id="__codelineno-17-12" name="__codelineno-17-12"></a><span class="s2">"""</span>
+</span></code></pre></div>
+<p>As an example, let's construct a prompt for the question "who is the dragon ridden by Daemon Targaryen?".</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a href="#__codelineno-18-1" id="__codelineno-18-1" name="__codelineno-18-1"></a><span class="c1"># retrieve most relevant documents</span>
+</span><span id="__span-18-2"><a href="#__codelineno-18-2" id="__codelineno-18-2" name="__codelineno-18-2"></a><span class="n">question_ex</span> <span class="o">=</span> <span class="s2">"who is the dragon ridden by Daemon Targaryen?"</span>
+</span><span id="__span-18-3"><a href="#__codelineno-18-3" id="__codelineno-18-3" name="__codelineno-18-3"></a><span class="n">results_ex</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query_text</span><span class="o">=</span><span class="n">question_ex</span><span class="p">)</span>
+</span><span id="__span-18-4"><a href="#__codelineno-18-4" id="__codelineno-18-4" name="__codelineno-18-4"></a>
+</span><span id="__span-18-5"><a href="#__codelineno-18-5" id="__codelineno-18-5" name="__codelineno-18-5"></a><span class="c1"># format results as context</span>
+</span><span id="__span-18-6"><a href="#__codelineno-18-6" id="__codelineno-18-6" name="__codelineno-18-6"></a><span class="n">context_ex</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+</span><span id="__span-18-7"><a href="#__codelineno-18-7" id="__codelineno-18-7" name="__codelineno-18-7"></a>    <span class="sa">f</span><span class="s1">'[doc_id: </span><span class="si">{</span><span class="n">er</span><span class="p">[</span><span class="s2">"document_id"</span><span class="p">]</span><span class="si">}</span><span class="s1">] </span><span class="si">{</span><span class="n">er</span><span class="p">[</span><span class="s2">"document.content"</span><span class="p">]</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">er</span> <span class="ow">in</span> <span class="n">results_ex</span>
+</span><span id="__span-18-8"><a href="#__codelineno-18-8" id="__codelineno-18-8" name="__codelineno-18-8"></a><span class="p">])</span>
+</span><span id="__span-18-9"><a href="#__codelineno-18-9" id="__codelineno-18-9" name="__codelineno-18-9"></a>
+</span><span id="__span-18-10"><a href="#__codelineno-18-10" id="__codelineno-18-10" name="__codelineno-18-10"></a><span class="c1"># construct prompt</span>
+</span><span id="__span-18-11"><a href="#__codelineno-18-11" id="__codelineno-18-11" name="__codelineno-18-11"></a><span class="n">prompt_ex</span> <span class="o">=</span> <span class="n">question_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">question</span><span class="o">=</span><span class="n">question_ex</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context_ex</span><span class="p">)</span>
+</span><span id="__span-18-12"><a href="#__codelineno-18-12" id="__codelineno-18-12" name="__codelineno-18-12"></a><span class="nb">print</span><span class="p">(</span><span class="n">prompt_ex</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-text no-copy result highlight" id="code-output"><pre><span></span><code><span id="__span-code-output-1"><a href="#__codelineno-code-output-1" id="__codelineno-code-output-1" name="__codelineno-code-output-1"></a>Question:
+</span><span id="__span-code-output-2"><a href="#__codelineno-code-output-2" id="__codelineno-code-output-2" name="__codelineno-code-output-2"></a>who is the dragon ridden by Daemon Targaryen?
+</span><span id="__span-code-output-3"><a href="#__codelineno-code-output-3" id="__codelineno-code-output-3" name="__codelineno-code-output-3"></a>
+</span><span id="__span-code-output-4"><a href="#__codelineno-code-output-4" id="__codelineno-code-output-4" name="__codelineno-code-output-4"></a>Context:
+</span><span id="__span-code-output-5"><a href="#__codelineno-code-output-5" id="__codelineno-code-output-5" name="__codelineno-code-output-5"></a>[doc_id: 8baa2a34-10f7-48e5-b053-1c6b8317af94] Daemon Targaryen is the younger brother of King Viserys I Targaryen, and is the heir to the throne of the Seven Kingdoms after Rhaenyra. He is a dragonrider whose mount is Caraxes.
+</span><span id="__span-code-output-6"><a href="#__codelineno-code-output-6" id="__codelineno-code-output-6" name="__codelineno-code-output-6"></a>[doc_id: a01b386d-12ad-4edb-9784-c5e0ee80d1fb] Caraxes, also known as the Blood Wyrm, is the dragon ridden by Daemon Targaryen. He is known for his red scales and fierce temperament.
+</span><span id="__span-code-output-7"><a href="#__codelineno-code-output-7" id="__codelineno-code-output-7" name="__codelineno-code-output-7"></a>[doc_id: ec5315c6-efe3-45de-82e2-16f37c563290] Syrax is the dragon ridden by Rhaenyra Targaryen. She is known for her golden scales and fierce temperament.
+</span><span id="__span-code-output-8"><a href="#__codelineno-code-output-8" id="__codelineno-code-output-8" name="__codelineno-code-output-8"></a>[doc_id: 82cf6758-049a-49c9-a4b2-155f5bf3635e] Rhaenyra Targaryen is the eldest child of King Viserys I Targaryen and is considered the heir to the Iron Throne. She is a dragonrider whose mount is Syrax.
+</span><span id="__span-code-output-9"><a href="#__codelineno-code-output-9" id="__codelineno-code-output-9" name="__codelineno-code-output-9"></a>[doc_id: d319aced-f363-4287-b034-260c6f5e5c70] Aemond Targaryen is the second son of King Viserys I Targaryen and Alicent Hightower. He is a dragonrider whose mount is Vhagar.
+</span></code></pre></div>
+<h3 id="chat-completion">Chat completion</h3>
+<p>Now we can use this prompt to generate a response using GPT-4. We'll use the same OpenAI client we've been using in Lexy to interact with the OpenAI API.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a href="#__codelineno-20-1" id="__codelineno-20-1" name="__codelineno-20-1"></a><span class="c1"># import OpenAI client</span>
+</span><span id="__span-20-2"><a href="#__codelineno-20-2" id="__codelineno-20-2" name="__codelineno-20-2"></a><span class="kn">from</span> <span class="nn">lexy.transformers.openai</span> <span class="kn">import</span> <span class="n">openai_client</span>
+</span></code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-21-1"><a href="#__codelineno-21-1" id="__codelineno-21-1" name="__codelineno-21-1"></a><span class="c1"># generate response</span>
+</span><span id="__span-21-2"><a href="#__codelineno-21-2" id="__codelineno-21-2" name="__codelineno-21-2"></a><span class="n">oai_response</span> <span class="o">=</span> <span class="n">openai_client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+</span><span id="__span-21-3"><a href="#__codelineno-21-3" id="__codelineno-21-3" name="__codelineno-21-3"></a>    <span class="n">model</span><span class="o">=</span><span class="s2">"gpt-4"</span><span class="p">,</span>
+</span><span id="__span-21-4"><a href="#__codelineno-21-4" id="__codelineno-21-4" name="__codelineno-21-4"></a>    <span class="n">messages</span><span class="o">=</span><span class="p">[</span>
+</span><span id="__span-21-5"><a href="#__codelineno-21-5" id="__codelineno-21-5" name="__codelineno-21-5"></a>        <span class="p">{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">system_prompt</span><span class="p">},</span>
+</span><span id="__span-21-6"><a href="#__codelineno-21-6" id="__codelineno-21-6" name="__codelineno-21-6"></a>        <span class="p">{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">prompt_ex</span><span class="p">}</span>
+</span><span id="__span-21-7"><a href="#__codelineno-21-7" id="__codelineno-21-7" name="__codelineno-21-7"></a>    <span class="p">]</span>
+</span><span id="__span-21-8"><a href="#__codelineno-21-8" id="__codelineno-21-8" name="__codelineno-21-8"></a><span class="p">)</span>
+</span><span id="__span-21-9"><a href="#__codelineno-21-9" id="__codelineno-21-9" name="__codelineno-21-9"></a><span class="nb">print</span><span class="p">(</span><span class="n">oai_response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-text no-copy result highlight" id="code-output-textwrap"><pre><span></span><code><span id="__span-code-output-textwrap-1"><a href="#__codelineno-code-output-textwrap-1" id="__codelineno-code-output-textwrap-1" name="__codelineno-code-output-textwrap-1"></a>The dragon ridden by Daemon Targaryen is Caraxes. Caraxes, also known as the Blood Wyrm, is known for his red scales and fierce temperament.
+</span><span id="__span-code-output-textwrap-2"><a href="#__codelineno-code-output-textwrap-2" id="__codelineno-code-output-textwrap-2" name="__codelineno-code-output-textwrap-2"></a>[doc_id: 8baa2a34-10f7-48e5-b053-1c6b8317af94]
+</span><span id="__span-code-output-textwrap-3"><a href="#__codelineno-code-output-textwrap-3" id="__codelineno-code-output-textwrap-3" name="__codelineno-code-output-textwrap-3"></a>[doc_id: a01b386d-12ad-4edb-9784-c5e0ee80d1fb]
+</span></code></pre></div>
+<p>We can see that GPT-4 has used the context we provided to answer the question, and has specifically cited the second document as relevant context for our search result.</p>
+<div class="admonition note">
+<p class="admonition-title">Note on GPT-4 completions</p>
+<p>Keep in mind that the response from GPT-4 varies, and the responses shown here may differ from the ones
+you'll see when running the same code. In particular, the response will often list document references in
+inconsistent ways. If you need a more structured response, you may want to try OpenAI's
+<a href="https://platform.openai.com/docs/guides/text-generation/json-mode">JSON mode</a>.</p>
+</div>
+<p>Let's put everything together into two functions: <code>construct_prompt</code> will construct a prompt given a user question, and <code>chat_completion</code> will prompt a completion from GPT-4.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-23-1"><a href="#__codelineno-23-1" id="__codelineno-23-1" name="__codelineno-23-1"></a><span class="k">def</span> <span class="nf">construct_prompt</span><span class="p">(</span><span class="n">question</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="__span-23-2"><a href="#__codelineno-23-2" id="__codelineno-23-2" name="__codelineno-23-2"></a>                     <span class="n">result_template</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"[doc_id: </span><span class="si">{r[document_id]}</span><span class="s2">] </span><span class="si">{r[document.content]}</span><span class="s2">"</span><span class="p">,</span>
+</span><span id="__span-23-3"><a href="#__codelineno-23-3" id="__codelineno-23-3" name="__codelineno-23-3"></a>                     <span class="o">**</span><span class="n">query_kwargs</span><span class="p">):</span>
+</span><span id="__span-23-4"><a href="#__codelineno-23-4" id="__codelineno-23-4" name="__codelineno-23-4"></a>    <span class="c1"># retrieve most relevant results</span>
+</span><span id="__span-23-5"><a href="#__codelineno-23-5" id="__codelineno-23-5" name="__codelineno-23-5"></a>    <span class="n">results</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">query_text</span><span class="o">=</span><span class="n">question</span><span class="p">,</span> <span class="o">**</span><span class="n">query_kwargs</span><span class="p">)</span>
+</span><span id="__span-23-6"><a href="#__codelineno-23-6" id="__codelineno-23-6" name="__codelineno-23-6"></a>    <span class="c1"># format results for context</span>
+</span><span id="__span-23-7"><a href="#__codelineno-23-7" id="__codelineno-23-7" name="__codelineno-23-7"></a>    <span class="n">context</span> <span class="o">=</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+</span><span id="__span-23-8"><a href="#__codelineno-23-8" id="__codelineno-23-8" name="__codelineno-23-8"></a>        <span class="n">result_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">r</span><span class="o">=</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span>
+</span><span id="__span-23-9"><a href="#__codelineno-23-9" id="__codelineno-23-9" name="__codelineno-23-9"></a>    <span class="p">])</span>
+</span><span id="__span-23-10"><a href="#__codelineno-23-10" id="__codelineno-23-10" name="__codelineno-23-10"></a>    <span class="c1"># format prompt</span>
+</span><span id="__span-23-11"><a href="#__codelineno-23-11" id="__codelineno-23-11" name="__codelineno-23-11"></a>    <span class="k">return</span> <span class="n">question_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">question</span><span class="o">=</span><span class="n">question</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+</span><span id="__span-23-12"><a href="#__codelineno-23-12" id="__codelineno-23-12" name="__codelineno-23-12"></a>
+</span><span id="__span-23-13"><a href="#__codelineno-23-13" id="__codelineno-23-13" name="__codelineno-23-13"></a><span class="k">def</span> <span class="nf">chat_completion</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="__span-23-14"><a href="#__codelineno-23-14" id="__codelineno-23-14" name="__codelineno-23-14"></a>                    <span class="n">system</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">system_prompt</span><span class="p">,</span>
+</span><span id="__span-23-15"><a href="#__codelineno-23-15" id="__codelineno-23-15" name="__codelineno-23-15"></a>                    <span class="o">**</span><span class="n">chat_kwargs</span><span class="p">):</span>
+</span><span id="__span-23-16"><a href="#__codelineno-23-16" id="__codelineno-23-16" name="__codelineno-23-16"></a>    <span class="c1"># generate response</span>
+</span><span id="__span-23-17"><a href="#__codelineno-23-17" id="__codelineno-23-17" name="__codelineno-23-17"></a>    <span class="k">return</span> <span class="n">openai_client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+</span><span id="__span-23-18"><a href="#__codelineno-23-18" id="__codelineno-23-18" name="__codelineno-23-18"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">"gpt-4"</span><span class="p">,</span>
+</span><span id="__span-23-19"><a href="#__codelineno-23-19" id="__codelineno-23-19" name="__codelineno-23-19"></a>        <span class="n">messages</span><span class="o">=</span><span class="p">[</span>
+</span><span id="__span-23-20"><a href="#__codelineno-23-20" id="__codelineno-23-20" name="__codelineno-23-20"></a>            <span class="p">{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">system</span><span class="p">},</span>
+</span><span id="__span-23-21"><a href="#__codelineno-23-21" id="__codelineno-23-21" name="__codelineno-23-21"></a>            <span class="p">{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">message</span><span class="p">}</span>
+</span><span id="__span-23-22"><a href="#__codelineno-23-22" id="__codelineno-23-22" name="__codelineno-23-22"></a>        <span class="p">],</span>
+</span><span id="__span-23-23"><a href="#__codelineno-23-23" id="__codelineno-23-23" name="__codelineno-23-23"></a>        <span class="o">**</span><span class="n">chat_kwargs</span><span class="p">,</span>
+</span><span id="__span-23-24"><a href="#__codelineno-23-24" id="__codelineno-23-24" name="__codelineno-23-24"></a>    <span class="p">)</span>
+</span></code></pre></div>
+<p>Now let's try asking GPT-4 some more questions.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-24-1"><a href="#__codelineno-24-1" id="__codelineno-24-1" name="__codelineno-24-1"></a><span class="n">q</span> <span class="o">=</span> <span class="s2">"which one is the blue dragon?"</span>
+</span><span id="__span-24-2"><a href="#__codelineno-24-2" id="__codelineno-24-2" name="__codelineno-24-2"></a><span class="n">oai_response</span> <span class="o">=</span> <span class="n">chat_completion</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">construct_prompt</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
+</span><span id="__span-24-3"><a href="#__codelineno-24-3" id="__codelineno-24-3" name="__codelineno-24-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">oai_response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-text no-copy result highlight" id="code-output-textwrap"><pre><span></span><code><span id="__span-code-output-textwrap-1"><a href="#__codelineno-code-output-textwrap-1" id="__codelineno-code-output-textwrap-1" name="__codelineno-code-output-textwrap-1"></a>The blue dragon is Dreamfyre, ridden by Helaena Targaryen. She is known for her pale blue scales and graceful flight.
+</span><span id="__span-code-output-textwrap-2"><a href="#__codelineno-code-output-textwrap-2" id="__codelineno-code-output-textwrap-2" name="__codelineno-code-output-textwrap-2"></a>[doc_id: 8aca8431-c146-4db2-a4d3-d57673fb0f7c]
+</span></code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-26-1"><a href="#__codelineno-26-1" id="__codelineno-26-1" name="__codelineno-26-1"></a><span class="n">q</span> <span class="o">=</span> <span class="s2">"who rides Vhagar?"</span>
+</span><span id="__span-26-2"><a href="#__codelineno-26-2" id="__codelineno-26-2" name="__codelineno-26-2"></a><span class="n">oai_response</span> <span class="o">=</span> <span class="n">chat_completion</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">construct_prompt</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
+</span><span id="__span-26-3"><a href="#__codelineno-26-3" id="__codelineno-26-3" name="__codelineno-26-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">oai_response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-text no-copy result highlight" id="code-output-textwrap"><pre><span></span><code><span id="__span-code-output-textwrap-1"><a href="#__codelineno-code-output-textwrap-1" id="__codelineno-code-output-textwrap-1" name="__codelineno-code-output-textwrap-1"></a>Vhagar is ridden by Visenya Targaryen, Laena Velaryon, and Aemond Targaryen.
+</span><span id="__span-code-output-textwrap-2"><a href="#__codelineno-code-output-textwrap-2" id="__codelineno-code-output-textwrap-2" name="__codelineno-code-output-textwrap-2"></a>[doc_id: dc9e31bb-dfe7-429f-9275-9165c1b60c01]
+</span><span id="__span-code-output-textwrap-3"><a href="#__codelineno-code-output-textwrap-3" id="__codelineno-code-output-textwrap-3" name="__codelineno-code-output-textwrap-3"></a>[doc_id: d319aced-f363-4287-b034-260c6f5e5c70]
+</span><span id="__span-code-output-textwrap-4"><a href="#__codelineno-code-output-textwrap-4" id="__codelineno-code-output-textwrap-4" name="__codelineno-code-output-textwrap-4"></a>[doc_id: 03a84e62-bf9c-45f5-ac64-b50308b6c5fb]
+</span></code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-28-1"><a href="#__codelineno-28-1" id="__codelineno-28-1" name="__codelineno-28-1"></a><span class="n">q</span> <span class="o">=</span> <span class="s2">"who is the second son of King Viserys?"</span>
+</span><span id="__span-28-2"><a href="#__codelineno-28-2" id="__codelineno-28-2" name="__codelineno-28-2"></a><span class="n">oai_response</span> <span class="o">=</span> <span class="n">chat_completion</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">construct_prompt</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
+</span><span id="__span-28-3"><a href="#__codelineno-28-3" id="__codelineno-28-3" name="__codelineno-28-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">oai_response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-text no-copy result highlight" id="code-output-textwrap"><pre><span></span><code><span id="__span-code-output-textwrap-1"><a href="#__codelineno-code-output-textwrap-1" id="__codelineno-code-output-textwrap-1" name="__codelineno-code-output-textwrap-1"></a>The second son of King Viserys I Targaryen is Aemond Targaryen.
+</span><span id="__span-code-output-textwrap-2"><a href="#__codelineno-code-output-textwrap-2" id="__codelineno-code-output-textwrap-2" name="__codelineno-code-output-textwrap-2"></a>[doc_id: d319aced-f363-4287-b034-260c6f5e5c70]
+</span></code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-30-1"><a href="#__codelineno-30-1" id="__codelineno-30-1" name="__codelineno-30-1"></a><span class="n">q</span> <span class="o">=</span> <span class="s2">"who is the heir to the throne?"</span>
+</span><span id="__span-30-2"><a href="#__codelineno-30-2" id="__codelineno-30-2" name="__codelineno-30-2"></a><span class="n">oai_response</span> <span class="o">=</span> <span class="n">chat_completion</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">construct_prompt</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
+</span><span id="__span-30-3"><a href="#__codelineno-30-3" id="__codelineno-30-3" name="__codelineno-30-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">oai_response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-text no-copy result highlight" id="code-output-textwrap"><pre><span></span><code><span id="__span-code-output-textwrap-1"><a href="#__codelineno-code-output-textwrap-1" id="__codelineno-code-output-textwrap-1" name="__codelineno-code-output-textwrap-1"></a>The heir to the throne after King Viserys I Targaryen is Rhaenyra Targaryen, who is his eldest child. Following Rhaenyra, the heir is Daemon Targaryen, the king's younger brother. Aegon II Targaryen, the second-born child of Viserys I, is also a claimant to the throne.
+</span><span id="__span-code-output-textwrap-2"><a href="#__codelineno-code-output-textwrap-2" id="__codelineno-code-output-textwrap-2" name="__codelineno-code-output-textwrap-2"></a>[doc_id: 82cf6758-049a-49c9-a4b2-155f5bf3635e]
+</span><span id="__span-code-output-textwrap-3"><a href="#__codelineno-code-output-textwrap-3" id="__codelineno-code-output-textwrap-3" name="__codelineno-code-output-textwrap-3"></a>[doc_id: 8baa2a34-10f7-48e5-b053-1c6b8317af94]
+</span><span id="__span-code-output-textwrap-4"><a href="#__codelineno-code-output-textwrap-4" id="__codelineno-code-output-textwrap-4" name="__codelineno-code-output-textwrap-4"></a>[doc_id: a2418a31-870e-4876-b5b2-96eaf61b0f69]
+</span></code></pre></div>
+<h2 id="using-metadata-as-context">Using metadata as context</h2>
+<p>We often want to use additional metadata in our prompts to provide even more context or useful instructions to our
+language model. Let's look at an example where we might want to include document metadata when constructing our
+prompts.</p>
+<p>First, let's ask "which is the largest Targaryen dragon?". We get the correct answer, Balerion.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-32-1"><a href="#__codelineno-32-1" id="__codelineno-32-1" name="__codelineno-32-1"></a><span class="n">q</span> <span class="o">=</span> <span class="s2">"which is the largest Targaryen dragon?"</span>
+</span><span id="__span-32-2"><a href="#__codelineno-32-2" id="__codelineno-32-2" name="__codelineno-32-2"></a><span class="n">oai_response</span> <span class="o">=</span> <span class="n">chat_completion</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">construct_prompt</span><span class="p">(</span><span class="n">q</span><span class="p">))</span>
+</span><span id="__span-32-3"><a href="#__codelineno-32-3" id="__codelineno-32-3" name="__codelineno-32-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">oai_response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-text no-copy result highlight" id="code-output-textwrap"><pre><span></span><code><span id="__span-code-output-textwrap-1"><a href="#__codelineno-code-output-textwrap-1" id="__codelineno-code-output-textwrap-1" name="__codelineno-code-output-textwrap-1"></a>The largest Targaryen dragon was Balerion, also known as the Black Dread. He was ridden by Aegon the Conqueror and King Viserys I Targaryen.
+</span><span id="__span-code-output-textwrap-2"><a href="#__codelineno-code-output-textwrap-2" id="__codelineno-code-output-textwrap-2" name="__codelineno-code-output-textwrap-2"></a>[doc_id: 9271dfb9-c8f2-48b4-9124-e54c0e0bf725]
+</span></code></pre></div>
+<p>But what if we want to add new documents to our collection, and those documents contain new or contradictory
+information? In that case, we'll want to include additional metadata in our prompt which the language model can use when
+deriving an answer.</p>
+<p>Let's add a new document to our collection which describes a new dragon that is larger than Balerion. Because the
+binding we created earlier has status set to ON, our new document will automatically be embedded and added to our index.
+This document will be a more recent document, as measured by the value of its <code>updated_at</code> field.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-34-1"><a href="#__codelineno-34-1" id="__codelineno-34-1" name="__codelineno-34-1"></a><span class="c1"># add a new document</span>
+</span><span id="__span-34-2"><a href="#__codelineno-34-2" id="__codelineno-34-2" name="__codelineno-34-2"></a><span class="n">collection</span><span class="o">.</span><span class="n">add_documents</span><span class="p">([</span>
+</span><span id="__span-34-3"><a href="#__codelineno-34-3" id="__codelineno-34-3" name="__codelineno-34-3"></a>    <span class="p">{</span><span class="s2">"content"</span><span class="p">:</span> <span class="s2">"Lexy was by far the largest of the Targaryen dragons, and was ridden by AGI the Conqueror."</span><span class="p">}</span>
+</span><span id="__span-34-4"><a href="#__codelineno-34-4" id="__codelineno-34-4" name="__codelineno-34-4"></a><span class="p">])</span>
+</span></code></pre></div>
+<div class="language-text no-copy result wrap highlight" id="code-output"><pre><span></span><code><span id="__span-code-output-1"><a href="#__codelineno-code-output-1" id="__codelineno-code-output-1" name="__codelineno-code-output-1"></a>[&lt;Document("Lexy was by far the largest of the Targaryen dragons, and was ridden by AGI the Conqueror.")&gt;]
+</span></code></pre></div>
+<p>Now let's ask the same question as before, but this time we'll include the <code>updated_at</code> field in our prompt. We'll use the <code>return_fields</code> parameter to return the document's <code>updated_at</code> field along with our search results, and we'll update our <code>result_template</code> to include its value. Let's take a look at our new prompt.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-36-1"><a href="#__codelineno-36-1" id="__codelineno-36-1" name="__codelineno-36-1"></a><span class="n">new_result_template</span> <span class="o">=</span> \
+</span><span id="__span-36-2"><a href="#__codelineno-36-2" id="__codelineno-36-2" name="__codelineno-36-2"></a>    <span class="s2">"[doc_id: </span><span class="si">{r[document_id]}</span><span class="s2">, updated_at: </span><span class="si">{r[document.updated_at]}</span><span class="s2">] </span><span class="si">{r[document.content]}</span><span class="s2">"</span>
+</span><span id="__span-36-3"><a href="#__codelineno-36-3" id="__codelineno-36-3" name="__codelineno-36-3"></a>
+</span><span id="__span-36-4"><a href="#__codelineno-36-4" id="__codelineno-36-4" name="__codelineno-36-4"></a><span class="n">new_prompt</span> <span class="o">=</span> <span class="n">construct_prompt</span><span class="p">(</span>
+</span><span id="__span-36-5"><a href="#__codelineno-36-5" id="__codelineno-36-5" name="__codelineno-36-5"></a>    <span class="n">question</span><span class="o">=</span><span class="s2">"which is the largest Targaryen dragon?"</span><span class="p">,</span>
+</span><span id="__span-36-6"><a href="#__codelineno-36-6" id="__codelineno-36-6" name="__codelineno-36-6"></a>    <span class="n">result_template</span><span class="o">=</span><span class="n">new_result_template</span><span class="p">,</span>
+</span><span id="__span-36-7"><a href="#__codelineno-36-7" id="__codelineno-36-7" name="__codelineno-36-7"></a>    <span class="n">return_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">"document.content"</span><span class="p">,</span> <span class="s2">"document.updated_at"</span><span class="p">]</span>
+</span><span id="__span-36-8"><a href="#__codelineno-36-8" id="__codelineno-36-8" name="__codelineno-36-8"></a><span class="p">)</span>
+</span><span id="__span-36-9"><a href="#__codelineno-36-9" id="__codelineno-36-9" name="__codelineno-36-9"></a><span class="nb">print</span><span class="p">(</span><span class="n">new_prompt</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-text no-copy result highlight" id="code-output"><pre><span></span><code><span id="__span-code-output-1"><a href="#__codelineno-code-output-1" id="__codelineno-code-output-1" name="__codelineno-code-output-1"></a>Question:
+</span><span id="__span-code-output-2"><a href="#__codelineno-code-output-2" id="__codelineno-code-output-2" name="__codelineno-code-output-2"></a>which is the largest Targaryen dragon?
+</span><span id="__span-code-output-3"><a href="#__codelineno-code-output-3" id="__codelineno-code-output-3" name="__codelineno-code-output-3"></a>
+</span><span id="__span-code-output-4"><a href="#__codelineno-code-output-4" id="__codelineno-code-output-4" name="__codelineno-code-output-4"></a>Context:
+</span><span id="__span-code-output-5"><a href="#__codelineno-code-output-5" id="__codelineno-code-output-5" name="__codelineno-code-output-5"></a>[doc_id: 9271dfb9-c8f2-48b4-9124-e54c0e0bf725, updated_at: 2024-03-05T22:30:05.819224+00:00] Balerion, also known as the Black Dread, was the largest of the Targaryen dragons. He was ridden by Aegon the Conqueror during the War of Conquest and later by King Viserys I Targaryen.
+</span><span id="__span-code-output-6"><a href="#__codelineno-code-output-6" id="__codelineno-code-output-6" name="__codelineno-code-output-6"></a>[doc_id: c5dd2ec7-fbb8-415e-bc6b-2510e3354e74, updated_at: 2024-03-06T04:21:26.292323+00:00] Lexy was by far the largest of the Targaryen dragons, and was ridden by AGI the Conqueror.
+</span><span id="__span-code-output-7"><a href="#__codelineno-code-output-7" id="__codelineno-code-output-7" name="__codelineno-code-output-7"></a>[doc_id: 8baa2a34-10f7-48e5-b053-1c6b8317af94, updated_at: 2024-03-05T22:30:05.796365+00:00] Daemon Targaryen is the younger brother of King Viserys I Targaryen, and is the heir to the throne of the Seven Kingdoms after Rhaenyra. He is a dragonrider whose mount is Caraxes.
+</span><span id="__span-code-output-8"><a href="#__codelineno-code-output-8" id="__codelineno-code-output-8" name="__codelineno-code-output-8"></a>[doc_id: 82cf6758-049a-49c9-a4b2-155f5bf3635e, updated_at: 2024-03-05T22:30:05.788765+00:00] Rhaenyra Targaryen is the eldest child of King Viserys I Targaryen and is considered the heir to the Iron Throne. She is a dragonrider whose mount is Syrax.
+</span><span id="__span-code-output-9"><a href="#__codelineno-code-output-9" id="__codelineno-code-output-9" name="__codelineno-code-output-9"></a>[doc_id: a2418a31-870e-4876-b5b2-96eaf61b0f69, updated_at: 2024-03-05T22:30:05.793991+00:00] Aegon II Targaryen is the second-born child of Viserys I Targaryen and Alicent Hightower. He is a claimant to the Iron Throne and a dragonrider whose mount is Sunfyre.
+</span></code></pre></div>
+<p>We can see that our prompt now includes the <code>updated_at</code> field for each document. Now let's update our system prompt to tell GPT-4 to use the latest document when faced with conflicting information.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-38-1"><a href="#__codelineno-38-1" id="__codelineno-38-1" name="__codelineno-38-1"></a><span class="n">new_system_prompt</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="__span-38-2"><a href="#__codelineno-38-2" id="__codelineno-38-2" name="__codelineno-38-2"></a>    <span class="s2">"You are an exceptionally intelligent AI assistant. Answer the following "</span>
+</span><span id="__span-38-3"><a href="#__codelineno-38-3" id="__codelineno-38-3" name="__codelineno-38-3"></a>    <span class="s2">"questions using the context provided. PLEASE CITE YOUR SOURCES. Be concise. "</span>
+</span><span id="__span-38-4"><a href="#__codelineno-38-4" id="__codelineno-38-4" name="__codelineno-38-4"></a>    <span class="s2">"If the documents provided contain conflicting information, use the most "</span>
+</span><span id="__span-38-5"><a href="#__codelineno-38-5" id="__codelineno-38-5" name="__codelineno-38-5"></a>    <span class="s2">"recent document as determined by the `updated_at` field."</span>
+</span><span id="__span-38-6"><a href="#__codelineno-38-6" id="__codelineno-38-6" name="__codelineno-38-6"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>Now when asking GPT-4 again, we see the updated answer with the new data.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-39-1"><a href="#__codelineno-39-1" id="__codelineno-39-1" name="__codelineno-39-1"></a><span class="n">q</span> <span class="o">=</span> <span class="s2">"which is the largest Targaryen dragon?"</span>
+</span><span id="__span-39-2"><a href="#__codelineno-39-2" id="__codelineno-39-2" name="__codelineno-39-2"></a><span class="n">oai_response</span> <span class="o">=</span> <span class="n">chat_completion</span><span class="p">(</span>
+</span><span id="__span-39-3"><a href="#__codelineno-39-3" id="__codelineno-39-3" name="__codelineno-39-3"></a>    <span class="n">message</span><span class="o">=</span><span class="n">construct_prompt</span><span class="p">(</span>
+</span><span id="__span-39-4"><a href="#__codelineno-39-4" id="__codelineno-39-4" name="__codelineno-39-4"></a>        <span class="n">question</span><span class="o">=</span><span class="n">q</span><span class="p">,</span>
+</span><span id="__span-39-5"><a href="#__codelineno-39-5" id="__codelineno-39-5" name="__codelineno-39-5"></a>        <span class="n">result_template</span><span class="o">=</span><span class="n">new_result_template</span><span class="p">,</span>
+</span><span id="__span-39-6"><a href="#__codelineno-39-6" id="__codelineno-39-6" name="__codelineno-39-6"></a>        <span class="n">return_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">"document.content"</span><span class="p">,</span> <span class="s2">"document.updated_at"</span><span class="p">]</span>
+</span><span id="__span-39-7"><a href="#__codelineno-39-7" id="__codelineno-39-7" name="__codelineno-39-7"></a>    <span class="p">),</span>
+</span><span id="__span-39-8"><a href="#__codelineno-39-8" id="__codelineno-39-8" name="__codelineno-39-8"></a>    <span class="n">system</span><span class="o">=</span><span class="n">new_system_prompt</span>
+</span><span id="__span-39-9"><a href="#__codelineno-39-9" id="__codelineno-39-9" name="__codelineno-39-9"></a><span class="p">)</span>
+</span><span id="__span-39-10"><a href="#__codelineno-39-10" id="__codelineno-39-10" name="__codelineno-39-10"></a><span class="nb">print</span><span class="p">(</span><span class="n">oai_response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="language-text no-copy result highlight" id="code-output-textwrap"><pre><span></span><code><span id="__span-code-output-textwrap-1"><a href="#__codelineno-code-output-textwrap-1" id="__codelineno-code-output-textwrap-1" name="__codelineno-code-output-textwrap-1"></a>The largest Targaryen dragon is Lexy, as indicated in the most recent document.
+</span><span id="__span-code-output-textwrap-2"><a href="#__codelineno-code-output-textwrap-2" id="__codelineno-code-output-textwrap-2" name="__codelineno-code-output-textwrap-2"></a>[doc_id: c5dd2ec7-fbb8-415e-bc6b-2510e3354e74, updated_at: 2024-03-06T04:21:26.292323+00:00]
+</span></code></pre></div>
+<h2 id="real-world-considerations">Real-world considerations</h2>
+<p>As mentioned earlier, this tutorial is intended to teach the basics of RAG and how it's implemented. Let's briefly
+review some of the simplifications we've made. Our future tutorials will cover these topics in more detail, and
+show how Lexy helps to address them when building real-world AI applications.</p>
+<ul>
+<li><strong>Dataset size</strong>: Our <a href="https://github.com/lexy-ai/lexy/blob/main/sample_data/documents/hotd.txt">sample dataset</a> is
+  small, both in the number of documents and the size of each document. In fact, our dataset is so small that we don't
+  even need to perform retrieval; we could simply choose to include all of our documents in the prompt with each API
+  call. But in real world applications, we might have millions of documents, in which case we'll need to
+  dynamically retrieve the documents that are most relevant for a particular query.</li>
+<li><strong>Document chunking</strong>: We've used the full text of each document as context for our language model. Documents used in
+  real-world applications will be much longer. We'll often want to break our documents up into smaller pieces (i.e.,
+  chunks), and use those pieces to construct more informative prompts for our language model.</li>
+<li><strong>Multimodal data</strong>: Our documents only contain text data. In practice, real-world data will include other types of data
+  including images, audio, and video. We'll often want to embed and retrieve multimodal data, and to query for one
+  modality using another (e.g., search for images using audio, or search for text using video).</li>
+<li><strong>File-based documents</strong>: Our documents consist of "free form" text. In practice, our documents may be stored as
+  external files in a variety of file formats, including PDFs, Word documents, and images. We'll often want to
+  catalogue, ingest, and process these file-based documents, and to use different parsing logic based on the file or
+  the specific application.</li>
+<li><strong>Metadata and relationships</strong>: We've only used the <code>updated_at</code> field as an example of metadata. In the real world,
+  our document metadata will contain many more fields, including complex relationships with other documents and
+  entities. For example, we may choose to chunk and embed a function docstring, which resides in a single file of
+  Python code, which is part of a larger source code repository, and which could be accessible to multiple organizations.</li>
+<li><strong>Retrieval methods</strong>: We've used a simple cosine similarity search to retrieve documents. In a real-world
+  application, we will want to use more advanced retrieval methods, such as BM25.</li>
+<li><strong>Custom transformations</strong>: We've used the OpenAI API to transform our text documents into vector embeddings. We may
+  want to use more advanced transformations, such as a custom (i.e., fine-tuned) embedding model, or a combination of
+  multiple Transformer models, some of which might require running your own servers.</li>
+<li><strong>Topic relevance</strong>: In practice, one of the most difficult aspects of this type of dynamic RAG application is
+  knowing <strong><em>when</em></strong> to use it (i.e., which requests should trigger it) and <strong><em>how</em></strong> to use it (i.e., which template
+  should be populated). This is especially true in cases where the language model already contains some information on
+  the underlying topic (i.e., the information contained in our documents is part of the dataset used to train the
+  language model). This is certainly the case with our example (GPT-4 already knows about House of the Dragon, and can
+  answer our questions without the need to refer to our documents). We plan on discussing this topic as part of a
+  future blog post.</li>
+</ul>
+<h2 id="next-steps">Next steps</h2>
+<p>In this tutorial we learned how to implement Retrieval-Augmented Generation (RAG) using Lexy. Specifically, we've seen
+how to use Lexy to store and retrieve documents, and how to include those documents and their metadata as context for a
+language model like GPT-4.</p>
+<p>While this is a simple example, the basic principles are powerful. As we'll see, they can be applied to build far more
+complex AI applications. In the coming examples we'll learn:</p>
+<ul>
+<li>How to parse and store custom metadata along with our documents.</li>
+<li>How to use Lexy to summarize documents, and then leverage those summaries to retrieve the most relevant documents.</li>
+<li>How to use document filters and custom Transformers to build flexible pipelines for our data.</li>
+<li>How to ingest and process file-based documents (including PDFs and images) for use in our AI applications.</li>
+</ul>
+</article>
+</div>
+<script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+</div>
+</main>
+<footer class="md-footer">
+<div class="md-footer-meta md-typeset">
+<div class="md-footer-meta__inner md-grid">
+<div class="md-copyright">
+</div>
+</div>
+</div>
+</footer>
+</div>
+<div class="md-dialog" data-md-component="dialog">
+<div class="md-dialog__inner md-typeset"></div>
+</div>
+<script id="__config" type="application/json">{"base": "../..", "features": ["content.code.annotate", "content.code.copy", "content.tabs.link", "navigation.indexes"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+<script src="../../assets/javascripts/bundle.bd41221c.min.js"></script>
+<script>document$.subscribe(() => {
+            window.update_swagger_ui_iframe_height = function (id) {
+                var iFrameID = document.getElementById(id);
+                if (iFrameID) {
+                    full_height = (iFrameID.contentWindow.document.body.scrollHeight + 80) + "px";
+                    iFrameID.height = full_height;
+                    iFrameID.style.height = full_height;
+                }
+            }
+        
+            let iframe_id_list = []
+            var iframes = document.getElementsByClassName("swagger-ui-iframe");
+            for (var i = 0; i < iframes.length; i++) { 
+                iframe_id_list.push(iframes[i].getAttribute("id"))
+            }
+        
+            let ticking = true;
+            
+            document.addEventListener('scroll', function(e) {
+                if (!ticking) {
+                    window.requestAnimationFrame(()=> {
+                        let half_vh = window.innerHeight/2;
+                        for(var i = 0; i < iframe_id_list.length; i++) {
+                            let element = document.getElementById(iframe_id_list[i])
+                            if(element==null){
+                                return
+                            }
+                            let diff = element.getBoundingClientRect().top
+                            if(element.contentWindow.update_top_val){
+                                element.contentWindow.update_top_val(half_vh - diff)
+                            }
+                        }
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+        
+            const dark_scheme_name = "slate"
+            
+            window.scheme = document.body.getAttribute("data-md-color-scheme")
+            const options = {
+                attributeFilter: ['data-md-color-scheme'],
+            };
+            function color_scheme_callback(mutations) {
+                for (let mutation of mutations) {
+                    if (mutation.attributeName === "data-md-color-scheme") {
+                        scheme = document.body.getAttribute("data-md-color-scheme")
+                        var iframe_list = document.getElementsByClassName("swagger-ui-iframe")
+                        for(var i = 0; i < iframe_list.length; i++) {
+                            var ele = iframe_list.item(i);
+                            if (ele) {
+                                if (scheme === dark_scheme_name) {
+                                    ele.contentWindow.enable_dark_mode();
+                                } else {
+                                    ele.contentWindow.disable_dark_mode();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            observer = new MutationObserver(color_scheme_callback);
+            observer.observe(document.body, options);
+            })</script></body>
+</html>
