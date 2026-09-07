@@ -43,11 +43,17 @@ method.
 
 
 ```python
-lx.add_documents([
-    {"content": "This is my first document! It's great!"},
-    {"content": "Starlink is a satellite internet constellation operated by American aerospace company SpaceX, providing coverage to over 60 countries."},
-    {"content": "A latent space is an embedding of a set of items within a manifold in which items resembling each other are positioned closer to one another."}
-])
+lx.add_documents(
+    [
+        {"content": "This is my first document! It's great!"},
+        {
+            "content": "Starlink is a satellite internet constellation operated by American aerospace company SpaceX, providing coverage to over 60 countries."
+        },
+        {
+            "content": "A latent space is an embedding of a set of items within a manifold in which items resembling each other are positioned closer to one another."
+        },
+    ]
+)
 ```
 
 ```{ .text .no-copy .result #code-output }
@@ -82,7 +88,7 @@ We can query the default index for "_what is deep learning_" and see our documen
 
 
 ```python
-lx.query_index('what is deep learning')
+lx.query_index("what is deep learning")
 ```
 
 ```{ .text .no-copy .result #code-output }
@@ -131,7 +137,7 @@ lx.collections
 Let's create a new "**bios**" collection for famous biographies.
 
 ```python
-bios = lx.create_collection('bios', description='Famous biographies')
+bios = lx.create_collection("bios", description="Famous biographies")
 bios
 ```
 
@@ -161,11 +167,19 @@ Let's add a few documents to our collection.
 
 
 ```python
-bios.add_documents([
-    {"content": "Stephen Curry is an American professional basketball player for the Golden State Warriors."},
-    {"content": "Dwayne 'The Rock' Johnson is a well-known actor, former professional wrestler, and businessman."},
-    {"content": "Taylor Swift is a singer known for her songwriting, musical versatility, and artistic reinventions."}
-])
+bios.add_documents(
+    [
+        {
+            "content": "Stephen Curry is an American professional basketball player for the Golden State Warriors."
+        },
+        {
+            "content": "Dwayne 'The Rock' Johnson is a well-known actor, former professional wrestler, and businessman."
+        },
+        {
+            "content": "Taylor Swift is a singer known for her songwriting, musical versatility, and artistic reinventions."
+        },
+    ]
+)
 ```
 
 ```{ .text .no-copy .result #code-output }
@@ -213,15 +227,14 @@ field called **`bio_embedding`** that will store the embeddings output from the 
 # define index fields
 index_fields = {
     "bio_embedding": {
-        "type": "embedding", "extras": {"dims": 384, "model": "text.embeddings.minilm"}
+        "type": "embedding",
+        "extras": {"dims": 384, "model": "text.embeddings.minilm"},
     }
 }
 
 # create index
 index = lx.create_index(
-    index_id='bios_index',
-    description='Biography embeddings',
-    index_fields=index_fields
+    index_id="bios_index", description="Biography embeddings", index_fields=index_fields
 )
 index
 ```
@@ -261,9 +274,9 @@ flowchart LR
 
 ```python
 binding = lx.create_binding(
-    collection_name='bios',
-    transformer_id='text.embeddings.minilm',
-    index_id='bios_index'
+    collection_name="bios",
+    transformer_id="text.embeddings.minilm",
+    index_id="bios_index",
 )
 binding
 ```
@@ -278,7 +291,7 @@ binding
 We can now query our index for "_famous artists_" and see the results ranked by cosine similarity.
 
 ```python
-index.query(query_text='famous artists', query_field='bio_embedding', k=3)
+index.query(query_text="famous artists", query_field="bio_embedding", k=3)
 ```
 
 
@@ -310,9 +323,13 @@ Let's add another document.
 
 
 ```python
-bios.add_documents([
-    {"content": "Beyoncé is a singer and songwriter recognized for her boundary-pushing artistry, vocals, and performances."}
-])
+bios.add_documents(
+    [
+        {
+            "content": "Beyoncé is a singer and songwriter recognized for her boundary-pushing artistry, vocals, and performances."
+        }
+    ]
+)
 ```
 
 ```{ .text .no-copy .result #code-output }
@@ -323,7 +340,7 @@ bios.add_documents([
 Now let's run the same query again for "_famous artists_". We can see the results have been updated and include our new document.
 
 ```python
-index.query(query_text='famous artists', query_field='bio_embedding', k=3)
+index.query(query_text="famous artists", query_field="bio_embedding", k=3)
 ```
 
 

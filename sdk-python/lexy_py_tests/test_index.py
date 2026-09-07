@@ -136,9 +136,9 @@ class TestIndexClient:
             lx_client.index.query_index(
                 "this should fail!", query_field="not_a_real_field"
             )
-        assert (
-            exc_info.value.response_data["status_code"] == 404
-        ), exc_info.value.response_data
+        assert exc_info.value.response_data["status_code"] == 404, (
+            exc_info.value.response_data
+        )
         assert exc_info.value.response.status_code == 404
         assert exc_info.value.response.text == (
             '{"detail":"Field \'not_a_real_field\' not found in index '
@@ -152,9 +152,9 @@ class TestIndexClient:
             lx_client.index.query_index(
                 "this should also fail!", return_fields=["not_an_index_field"]
             )
-        assert (
-            exc_info.value.response_data["status_code"] == 400
-        ), exc_info.value.response_data
+        assert exc_info.value.response_data["status_code"] == 400, (
+            exc_info.value.response_data
+        )
         assert exc_info.value.response.status_code == 400
         assert exc_info.value.response.text == (
             '{"detail":"Field \'not_an_index_field\' not found in index '
@@ -168,9 +168,9 @@ class TestIndexClient:
             lx_client.index.query_index(
                 "this one too!", return_fields=["document.not_a_document_field"]
             )
-        assert (
-            exc_info.value.response_data["status_code"] == 400
-        ), exc_info.value.response_data
+        assert exc_info.value.response_data["status_code"] == 400, (
+            exc_info.value.response_data
+        )
         assert exc_info.value.response.status_code == 400
         assert (
             exc_info.value.response.text
