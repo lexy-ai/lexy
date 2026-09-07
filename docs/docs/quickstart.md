@@ -69,22 +69,19 @@ These packages will be installed in the `lexyworker` container.
 
         def parse_code(content):
             # just an example - replace with your own logic
-            return [
-                {'text': 'my comment', 'line_no': 1, 'filename': 'example.py'}
-            ]
+            return [{"text": "my comment", "line_no": 1, "filename": "example.py"}]
 
 
-        @lexy_transformer(name='code.extract_comments.v1')
+        @lexy_transformer(name="code.extract_comments.v1")
         def get_comments(doc: Document) -> list[dict]:
             comments = []
             for c in parse_code(doc.content):
-                comments.append({
-                    'comment_text': c['text'],
-                    'comment_meta': {
-                        'line_no': c['line_no'],
-                        'filename': c['filename']
+                comments.append(
+                    {
+                        "comment_text": c["text"],
+                        "comment_meta": {"line_no": c["line_no"], "filename": c["filename"]},
                     }
-                })
+                )
             return comments
         ```
 
@@ -106,7 +103,7 @@ These packages will be installed in the `lexyworker` container.
             return pypdf.PdfReader(BytesIO(response.content))
 
 
-        @lexy_transformer(name='pdf.embed_pages.text_only')
+        @lexy_transformer(name="pdf.embed_pages.text_only")
         def embed_pdf_pages(doc: Document) -> list[dict]:
 
             pdf = pdf_reader_from_url(doc.object_url)
@@ -116,14 +113,14 @@ These packages will be installed in the `lexyworker` container.
                 page_text = page.extract_text()
                 images = [im.name for im in page.images]
                 p = {
-                    'page_text': page_text,
-                    'page_text_embedding': text_embeddings(page_text),
-                    'page_meta': {
-                        'page_num': page_num,
-                        'page_text_length': len(page_text),
-                        'images': images,
-                        'n_images': len(images)
-                    }
+                    "page_text": page_text,
+                    "page_text_embedding": text_embeddings(page_text),
+                    "page_meta": {
+                        "page_num": page_num,
+                        "page_text_length": len(page_text),
+                        "images": images,
+                        "n_images": len(images),
+                    },
                 }
                 pages.append(p)
 

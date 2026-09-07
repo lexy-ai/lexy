@@ -16,10 +16,12 @@ lx = LexyClient()
 ### Add documents
 
 ```python
-lx.add_documents([
-    {"content": "This is a test document"},
-    {"content": "This is another one!"},
-])
+lx.add_documents(
+    [
+        {"content": "This is a test document"},
+        {"content": "This is another one!"},
+    ]
+)
 ```
 
 ### Query index

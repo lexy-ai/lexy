@@ -31,9 +31,9 @@ from lexy_py import LexyClient
 # Values of LEXY_CONFIG and CELERY_CONFIG are set using pytest-env plugin in
 # pyproject.toml, but overwritten in lexy_tests/__init__.py
 assert os.environ.get("LEXY_CONFIG") == "testing", "LEXY_CONFIG is not set to 'testing'"
-assert (
-    os.environ.get("CELERY_CONFIG") == "testing"
-), "CELERY_CONFIG is not set to 'testing'"
+assert os.environ.get("CELERY_CONFIG") == "testing", (
+    "CELERY_CONFIG is not set to 'testing'"
+)
 
 
 DB_WARNING_MSG = (
