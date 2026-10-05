@@ -58,22 +58,19 @@ from lexy.transformers import lexy_transformer
 
 def parse_code(content):
     # just an example - replace with your own logic
-    return [
-        {'text': 'my comment', 'line_no': 1, 'filename': 'example.py'}
-    ]
+    return [{"text": "my comment", "line_no": 1, "filename": "example.py"}]
 
 
-@lexy_transformer(name='code.extract_comments.v1')  # (1)!
+@lexy_transformer(name="code.extract_comments.v1")  # (1)!
 def get_comments(doc: Document) -> list[dict]:
     comments = []
     for c in parse_code(doc.content):
-        comments.append({
-            'comment_text': c['text'],
-            'comment_meta': {
-                'line_no': c['line_no'],
-                'filename': c['filename']
+        comments.append(
+            {
+                "comment_text": c["text"],
+                "comment_meta": {"line_no": c["line_no"], "filename": c["filename"]},
             }
-        })
+        )
     return comments
 ```
 
@@ -117,8 +114,8 @@ from lexy_py import LexyClient
 lx = LexyClient()
 
 lx.create_transformer(
-    transformer_id='code.extract_comments.v1',
-    description='Parse comments and docstrings.'
+    transformer_id="code.extract_comments.v1",
+    description="Parse comments and docstrings.",
 )
 ```
 
@@ -151,14 +148,9 @@ You can use the [`Transformer.transform_document`](../reference/lexy_py/transfor
 method to test your transformer on a sample document.
 
 ```python
-code_transformer = lx.get_transformer('code.extract_comments.v1')
+code_transformer = lx.get_transformer("code.extract_comments.v1")
 
-sample_doc = {
-    'content': 'print("hello world")',
-    'meta': {
-      'filename': 'example.py'
-    }
-}
+sample_doc = {"content": 'print("hello world")', "meta": {"filename": "example.py"}}
 
 code_transformer.transform_document(sample_doc)
 ```
@@ -189,11 +181,11 @@ from lexy.transformers.embeddings import text_embeddings
 
 
 lang_from_ext = {
-    'cc': 'cpp',
-    'h': 'cpp',
-    'py': 'python',
-    'ts': 'typescript',
-    'tsx': 'tsx',
+    "cc": "cpp",
+    "h": "cpp",
+    "py": "python",
+    "ts": "typescript",
+    "tsx": "tsx",
 }
 
 COMMENT_PATTERN_CPP = "(comment) @comment"
@@ -210,16 +202,16 @@ COMMENT_PATTERN_TS = "(comment) @comment"
 COMMENT_PATTERN_TSX = "(comment) @comment"
 
 comment_patterns = {
-    'cpp': COMMENT_PATTERN_CPP,
-    'python': COMMENT_PATTERN_PY,
-    'typescript': COMMENT_PATTERN_TS,
-    'tsx': COMMENT_PATTERN_TSX
+    "cpp": COMMENT_PATTERN_CPP,
+    "python": COMMENT_PATTERN_PY,
+    "typescript": COMMENT_PATTERN_TS,
+    "tsx": COMMENT_PATTERN_TSX,
 }
 
 
-@lexy_transformer(name='code.extract_comments.v1')
+@lexy_transformer(name="code.extract_comments.v1")
 def get_comments(doc: Document) -> list[dict]:
-    lang = lang_from_ext.get(doc.meta['file_ext'].replace('.', ''))
+    lang = lang_from_ext.get(doc.meta["file_ext"].replace(".", ""))
     comment_pattern = comment_patterns.get(lang, None)
 
     if comment_pattern is None:
@@ -235,15 +227,15 @@ def get_comments(doc: Document) -> list[dict]:
     matches = query.captures(root)
     comments = []
     for m, name in matches:
-        comment_text = m.text.decode('utf-8')
+        comment_text = m.text.decode("utf-8")
         c = {
-            'comment_text': comment_text,
-            'comment_embedding': text_embeddings(comment_text),
-            'comment_meta': {
-                'start_point': m.start_point,
-                'end_point': m.end_point,
-                'type': name
-            }
+            "comment_text": comment_text,
+            "comment_embedding": text_embeddings(comment_text),
+            "comment_meta": {
+                "start_point": m.start_point,
+                "end_point": m.end_point,
+                "type": name,
+            },
         }
         comments.append(c)
     return comments
@@ -260,22 +252,19 @@ complex sample document.
 ```python
 sample_content = (
     '""" This is a module docstring. """\n'
-    '\n'
-    '# This is a comment\n'
-    'class MyClass:\n'
+    "\n"
+    "# This is a comment\n"
+    "class MyClass:\n"
     '   """ This is a class docstring. """\n'
-    '   def __init__():\n'
-    '       # TODO: implement this\n'
-    '       pass\n'
-    ''
+    "   def __init__():\n"
+    "       # TODO: implement this\n"
+    "       pass\n"
+    ""
 )
 
 sample_doc = {
-    'content': sample_content,
-    'meta': {
-        'file_name': 'example.py',
-        'file_ext': '.py'
-    }
+    "content": sample_content,
+    "meta": {"file_name": "example.py", "file_ext": ".py"},
 }
 
 code_transformer.transform_document(sample_doc)

@@ -16,7 +16,7 @@ Let's first create a collection to store our images. We'll use the **`images_tut
 
 ```python
 # create a new collection
-images_tutorial = lx.create_collection('images_tutorial')
+images_tutorial = lx.create_collection("images_tutorial")
 images_tutorial
 ```
 
@@ -39,14 +39,17 @@ this pattern, including **`image.embeddings.clip`** and **`text.embeddings.clip`
 ```python
 # define index fields
 index_fields = {
-    "embedding": {"type": "embedding", "extras": {"dims": 512, "model": "*.embeddings.clip"}},
+    "embedding": {
+        "type": "embedding",
+        "extras": {"dims": 512, "model": "*.embeddings.clip"},
+    },
 }
 
 # create index
 idx = lx.create_index(
-    index_id='image_tutorial_index',
-    description='Index for images tutorial',
-    index_fields=index_fields
+    index_id="image_tutorial_index",
+    description="Index for images tutorial",
+    index_fields=index_fields,
 )
 idx
 ```
@@ -87,9 +90,9 @@ embeddings transformer, and store the results in **`image_tutorial_index`**.
 
 ```python
 binding = lx.create_binding(
-    collection_name='images_tutorial',
-    transformer_id='image.embeddings.clip',
-    index_id='image_tutorial_index'
+    collection_name="images_tutorial",
+    transformer_id="image.embeddings.clip",
+    index_id="image_tutorial_index",
 )
 binding
 ```
@@ -117,6 +120,7 @@ datasets and requires the `datasets` package to be installed.
 # import test data from HuggingFace datasets - requires `pip install datasets`
 
 from datasets import load_dataset
+
 data = load_dataset("shabani1/image-text-demo", split="train")
 ```
 
@@ -136,10 +140,12 @@ len(data)
 ```python
 # add documents to the collection
 for i, row in enumerate(data, start=1):
-    print(i, row['text'])
-    lx.upload_documents(files=row['image'],
-                        filenames=row['text'] + '.jpg',
-                        collection_name='images_tutorial')
+    print(i, row["text"])
+    lx.upload_documents(
+        files=row["image"],
+        filenames=row["text"] + ".jpg",
+        collection_name="images_tutorial",
+    )
 ```
 
 ```{ .text .no-copy .result #code-output }
@@ -209,17 +215,19 @@ import httpx
 from IPython.display import display, HTML
 from PIL import Image
 
+
 def image_from_url(url):
     response = httpx.get(url)
     response.raise_for_status()
     return Image.open(response)
 
+
 def display_results_html(records):
     html_content = ""
     for r in records:
-        d = r['document']
+        d = r["document"]
         thumbnail_url = d.thumbnail_url
-        fname = d.meta.get('filename')
+        fname = d.meta.get("filename")
         score = f"score: {r['distance']:.4f}"
         # Creating a row for each result with image on the left and text on the right
         html_content += f"""
@@ -233,7 +241,6 @@ def display_results_html(records):
         """
     # Display all results as HTML
     display(HTML(html_content))
-
 ```
 
 ### Query by text
@@ -242,7 +249,7 @@ We can query our index by text to find matching images.
 
 
 ```python
-results = idx.query(query_text='best friends', return_document=True)
+results = idx.query(query_text="best friends", return_document=True)
 display_results_html(results)
 ```
 
@@ -294,7 +301,7 @@ display_results_html(results)
 
 
 ```python
-results = idx.query(query_text='gotham city', return_document=True)
+results = idx.query(query_text="gotham city", return_document=True)
 display_results_html(results)
 ```
 
@@ -350,7 +357,7 @@ We can also query our index by image to find matching images.
 
 
 ```python
-img = image_from_url('https://getlexy.com/assets/images/dalle-agi.jpeg')
+img = image_from_url("https://getlexy.com/assets/images/dalle-agi.jpeg")
 img
 ```
 
@@ -414,7 +421,9 @@ display_results_html(results)
 
 
 ```python
-img = image_from_url('https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Night_in_the_Greater_Tokyo_Area_ISS054.jpg/2560px-Night_in_the_Greater_Tokyo_Area_ISS054.jpg')
+img = image_from_url(
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Night_in_the_Greater_Tokyo_Area_ISS054.jpg/2560px-Night_in_the_Greater_Tokyo_Area_ISS054.jpg"
+)
 img
 ```
 
@@ -480,7 +489,9 @@ display_results_html(results)
 
 
 ```python
-img = image_from_url('https://upload.wikimedia.org/wikipedia/commons/e/ed/Shanghai_skyline_2018%28cropped%29.jpg')
+img = image_from_url(
+    "https://upload.wikimedia.org/wikipedia/commons/e/ed/Shanghai_skyline_2018%28cropped%29.jpg"
+)
 img
 ```
 

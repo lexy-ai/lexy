@@ -140,9 +140,9 @@ class TestBindingClient:
                 filters=my_filter,
             )
         assert isinstance(exc_info.value, LexyAPIError)
-        assert (
-            exc_info.value.response_data["status_code"] == 422
-        ), exc_info.value.response_data
+        assert exc_info.value.response_data["status_code"] == 422, (
+            exc_info.value.response_data
+        )
         assert exc_info.value.response.status_code == 422
         assert len(exc_info.value.response.json()["detail"]) == 1
         error = exc_info.value.response.json()["detail"][0]
@@ -165,9 +165,9 @@ class TestBindingClient:
                 description="Test Binding with Nonexistent Collection",
             )
         assert isinstance(exc_info.value, LexyAPIError)
-        assert (
-            exc_info.value.response_data["status_code"] == 400
-        ), exc_info.value.response_data
+        assert exc_info.value.response_data["status_code"] == 400, (
+            exc_info.value.response_data
+        )
         assert exc_info.value.response.status_code == 400
         assert exc_info.value.response.json()["detail"] == "Collection not found"
 
@@ -182,9 +182,9 @@ class TestBindingClient:
                 description="Test Binding with Nonexistent Index",
             )
         assert isinstance(exc_info.value, LexyAPIError)
-        assert (
-            exc_info.value.response_data["status_code"] == 400
-        ), exc_info.value.response_data
+        assert exc_info.value.response_data["status_code"] == 400, (
+            exc_info.value.response_data
+        )
         assert exc_info.value.response.status_code == 400
         assert exc_info.value.response.json()["detail"] == "Index not found"
 
@@ -199,9 +199,9 @@ class TestBindingClient:
                 description="Test Binding with Nonexistent Transformer",
             )
         assert isinstance(exc_info.value, LexyAPIError)
-        assert (
-            exc_info.value.response_data["status_code"] == 400
-        ), exc_info.value.response_data
+        assert exc_info.value.response_data["status_code"] == 400, (
+            exc_info.value.response_data
+        )
         assert exc_info.value.response.status_code == 400
         assert exc_info.value.response.json()["detail"] == "Transformer not found"
 

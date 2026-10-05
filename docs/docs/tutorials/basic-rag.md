@@ -90,8 +90,7 @@ lx = LexyClient()
 ```python
 # create a new collection
 collection = lx.create_collection(
-    collection_name="house_of_the_dragon",
-    description="House of the Dragon characters"
+    collection_name="house_of_the_dragon", description="House of the Dragon characters"
 )
 collection
 ```
@@ -105,9 +104,7 @@ We can add documents to our new collection using the [`Collection.add_documents`
 
 
 ```python
-collection.add_documents([
-    {"content": line} for line in lines
-])
+collection.add_documents([{"content": line} for line in lines])
 ```
 
 ```{ .text .no-copy .result #code-output }
@@ -143,12 +140,15 @@ We'll create a binding to embed each document, and an index to store the resulti
 ```python
 # create an index
 index_fields = {
-    "embedding": {"type": "embedding", "extras": {"dims": 1536, "model": "text.embeddings.openai-3-small"}}
+    "embedding": {
+        "type": "embedding",
+        "extras": {"dims": 1536, "model": "text.embeddings.openai-3-small"},
+    }
 }
 index = lx.create_index(
     index_id="hotd_embeddings",
     description="Text embeddings for House of the Dragon collection",
-    index_fields=index_fields
+    index_fields=index_fields,
 )
 ```
 
@@ -181,7 +181,7 @@ For this example, we'll use `text.embeddings.openai-3-small`. Let's create our b
 binding = lx.create_binding(
     collection_name="house_of_the_dragon",
     index_id="hotd_embeddings",
-    transformer_id="text.embeddings.openai-3-small"
+    transformer_id="text.embeddings.openai-3-small",
 )
 binding
 ```
@@ -293,9 +293,9 @@ question_ex = "who is the dragon ridden by Daemon Targaryen?"
 results_ex = index.query(query_text=question_ex)
 
 # format results as context
-context_ex = "\n".join([
-    f'[doc_id: {er["document_id"]}] {er["document.content"]}' for er in results_ex
-])
+context_ex = "\n".join(
+    [f"[doc_id: {er['document_id']}] {er['document.content']}" for er in results_ex]
+)
 
 # construct prompt
 prompt_ex = question_template.format(question=question_ex, context=context_ex)
@@ -331,8 +331,8 @@ oai_response = openai_client.chat.completions.create(
     model="gpt-4",
     messages=[
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": prompt_ex}
-    ]
+        {"role": "user", "content": prompt_ex},
+    ],
 )
 print(oai_response.choices[0].message.content)
 ```
@@ -356,27 +356,26 @@ Let's put everything together into two functions: `construct_prompt` will constr
 
 
 ```python
-def construct_prompt(question: str,
-                     result_template: str = "[doc_id: {r[document_id]}] {r[document.content]}",
-                     **query_kwargs):
+def construct_prompt(
+    question: str,
+    result_template: str = "[doc_id: {r[document_id]}] {r[document.content]}",
+    **query_kwargs,
+):
     # retrieve most relevant results
     results = index.query(query_text=question, **query_kwargs)
     # format results for context
-    context = "\n".join([
-        result_template.format(r=r) for r in results
-    ])
+    context = "\n".join([result_template.format(r=r) for r in results])
     # format prompt
     return question_template.format(question=question, context=context)
 
-def chat_completion(message: str,
-                    system: str = system_prompt,
-                    **chat_kwargs):
+
+def chat_completion(message: str, system: str = system_prompt, **chat_kwargs):
     # generate response
     return openai_client.chat.completions.create(
         model="gpt-4",
         messages=[
             {"role": "system", "content": system},
-            {"role": "user", "content": message}
+            {"role": "user", "content": message},
         ],
         **chat_kwargs,
     )
@@ -469,9 +468,13 @@ This document will be a more recent document, as measured by the value of its `u
 
 ```python
 # add a new document
-collection.add_documents([
-    {"content": "Lexy was by far the largest of the Targaryen dragons, and was ridden by AGI the Conqueror."}
-])
+collection.add_documents(
+    [
+        {
+            "content": "Lexy was by far the largest of the Targaryen dragons, and was ridden by AGI the Conqueror."
+        }
+    ]
+)
 ```
 
 ```{ .text .no-copy .result .wrap #code-output }
@@ -483,13 +486,12 @@ Now let's ask the same question as before, but this time we'll include the `upda
 
 
 ```python
-new_result_template = \
-    "[doc_id: {r[document_id]}, updated_at: {r[document.updated_at]}] {r[document.content]}"
+new_result_template = "[doc_id: {r[document_id]}, updated_at: {r[document.updated_at]}] {r[document.content]}"
 
 new_prompt = construct_prompt(
     question="which is the largest Targaryen dragon?",
     result_template=new_result_template,
-    return_fields=["document.content", "document.updated_at"]
+    return_fields=["document.content", "document.updated_at"],
 )
 print(new_prompt)
 ```
@@ -529,9 +531,9 @@ oai_response = chat_completion(
     message=construct_prompt(
         question=q,
         result_template=new_result_template,
-        return_fields=["document.content", "document.updated_at"]
+        return_fields=["document.content", "document.updated_at"],
     ),
-    system=new_system_prompt
+    system=new_system_prompt,
 )
 print(oai_response.choices[0].message.content)
 ```
