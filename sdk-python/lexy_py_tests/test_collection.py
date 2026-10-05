@@ -100,9 +100,9 @@ class TestCollectionClient:
         with pytest.raises(LexyAPIError) as exc_info:
             lx_client.create_collection("default", description="Default Collection")
         assert isinstance(exc_info.value, LexyAPIError)
-        assert (
-            exc_info.value.response_data["status_code"] == 400
-        ), exc_info.value.response_data
+        assert exc_info.value.response_data["status_code"] == 400, (
+            exc_info.value.response_data
+        )
         assert exc_info.value.response.status_code == 400
         assert (
             exc_info.value.response.json()["detail"]
@@ -134,9 +134,9 @@ class TestCollectionClient:
         with pytest.raises(LexyAPIError) as exc_info:
             lx_client.delete_collection(collection_name="test_delete_collection")
         assert isinstance(exc_info.value, LexyAPIError)
-        assert (
-            exc_info.value.response_data["status_code"] == 400
-        ), exc_info.value.response_data
+        assert exc_info.value.response_data["status_code"] == 400, (
+            exc_info.value.response_data
+        )
         assert exc_info.value.response.status_code == 400
         assert exc_info.value.response.json()["detail"] == (
             "There are still documents in this collection. "
@@ -157,9 +157,9 @@ class TestCollectionClient:
         with pytest.raises(LexyAPIError) as exc_info:
             lx_client.delete_collection(collection_name="nonexistent_collection")
         assert isinstance(exc_info.value, LexyAPIError)
-        assert (
-            exc_info.value.response_data["status_code"] == 404
-        ), exc_info.value.response_data
+        assert exc_info.value.response_data["status_code"] == 404, (
+            exc_info.value.response_data
+        )
         assert exc_info.value.response.status_code == 404
         assert exc_info.value.response.json()["detail"] == "Collection not found"
 
@@ -179,9 +179,9 @@ class TestCollectionClient:
                 collection_id=test_collection_id, collection_name="default"
             )
         assert isinstance(exc_info.value, LexyAPIError)
-        assert (
-            exc_info.value.response_data["status_code"] == 400
-        ), exc_info.value.response_data
+        assert exc_info.value.response_data["status_code"] == 400, (
+            exc_info.value.response_data
+        )
         assert exc_info.value.response.status_code == 400
         assert (
             exc_info.value.response.json()["detail"]

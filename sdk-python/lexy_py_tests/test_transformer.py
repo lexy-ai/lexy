@@ -133,9 +133,9 @@ class TestTransformerClient:
                 description="Existing Transformer",
             )
         assert isinstance(exc_info.value, LexyAPIError)
-        assert (
-            exc_info.value.response_data["status_code"] == 400
-        ), exc_info.value.response_data
+        assert exc_info.value.response_data["status_code"] == 400, (
+            exc_info.value.response_data
+        )
         assert exc_info.value.response.status_code == 400
         assert (
             exc_info.value.response.json()["detail"]
@@ -152,9 +152,9 @@ class TestTransformerClient:
                 description="Test Transformer",
             )
         assert isinstance(exc_info.value, LexyAPIError)
-        assert (
-            exc_info.value.response_data["status_code"] == 400
-        ), exc_info.value.response_data
+        assert exc_info.value.response_data["status_code"] == 400, (
+            exc_info.value.response_data
+        )
         assert exc_info.value.response.status_code == 400
         assert (
             exc_info.value.response.json()["detail"]
